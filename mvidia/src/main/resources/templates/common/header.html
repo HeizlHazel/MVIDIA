@@ -14,18 +14,18 @@
         .top-right{display:flex;align-items:center;gap:16px}
         .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 10px;font-variant-numeric:tabular-nums;font-weight:700}
         .session-box{display:flex;align-items:center;gap:8px}
-        .mini-btn{height:30px;background:transparent;color:#fff;border:1px solid #fff;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:50%}
+        .mini-btn{height:30px;background:transparent;color:#fff;border:1px solid #000000;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:50%}
         .mini-btn:hover{background:rgba(255,255,255,.12)}
         .countdown{min-width:78px;padding:6px 10px;font-variant-numeric:tabular-nums;text-align:center;font-weight:800;background-color:#1F4551;border-color:#1F4551;border-radius:999px}
-        .logout{border-radius:999px}
-        .extend{border-radius:999px}
+        .logout{border-radius:999px; background:#dc3545; border-color:#dc3545;}
+        .extend{border-radius:999px; background-color: #6C757D; border-color: #6C757D;}
         .icon{position:relative;font-size:20px;padding:8px;border-radius:50%}
         .badge{position:absolute;top:0;right:0;min-width:18px;height:18px;border-radius:9px;background:#ff4444;display:grid;place-items:center;font-size:10px}
         .profile{display:flex;align-items:center;gap:10px}
         .avatar{width:32px;height:32px;border-radius:50%;background:#e1e9ee}
-        .meta{display:flex;flex-direction:column;line-height:1.1}
-        .meta .name{font-weight:600;font-size:13px}
-        .meta .dept{font-size:11px;opacity:.9}
+        .meta{display:flex;flex-direction:column;line-height:1.5}
+        .meta .name{font-weight:600;font-size:15px; text-align:center;}
+        .meta .dept{font-size:11px;opacity:.9; text-align:center;}
     </style>
 </head>
 <body>
@@ -64,8 +64,8 @@
                      style="background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWQ9IiIgdmlld0JveD0iMCAwIDM1IDM1IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjE3LjUiIGN5PSIxNy41IiByPSIxNy41IiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTE3LjUgMTBDMTMuOSAxMCAxMSAxMi45IDExIDE2LjVTMTMuOSAyMyAxNy41IDIzUzI0IDIwLjEgMjQgMTYuNVMyMS4xIDEwIDE3LjUgMTBaTTE3LjUgMTNDMTkuNDMgMTMgMjEgMTQuNTcgMjEgMTYuNVMxOS40MyAyMCAxNy41IDIwUzE0IDE4LjQzIDE0IDE2LjVTMTUuNTcgMTMgMTcuNSAxM1oiIGZpbGw9IiM5OTkiLz48L3N2Zz4=')">
                 </div>
                 <div class="meta">
-                    <div class="name" id="userName" th:text="${#authentication?.name}">김철수</div>
-                    <div class="dept" id="userDept" th:text="${session.userDept?:'기술지원팀'}">기술지원팀</div>
+                    <div class="name" id="userName" >김철수</div>
+                    <div class="dept" id="userDept">인사팀</div>
                 </div>
             </div>
         </div>

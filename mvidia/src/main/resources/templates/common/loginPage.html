@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <style>
+        :root{
+          --brand:#002B39;
+          --paper:rgba(255,255,255,.95);
+          --muted:#6b7c86;
+          --radius:16px;
+          --shadow:0 10px 30px rgba(0,0,0,.25);
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{
+          min-height:100vh;
+          background:#001b23 url('/images/login_screen_bg_adjusted2.jpg') no-repeat center/cover;
+          display:flex;align-items:center;justify-content:center;
+          font-family:'Segoe UI','Noto Sans KR',system-ui,sans-serif;
+        }
+        .login-card{
+          width:380px;background:var(--paper);
+          border-radius:var(--radius); box-shadow:var(--shadow);
+          padding:36px 28px;
+          backdrop-filter:saturate(160%) blur(2px);
+        }
+        .logo{width:140px;margin:0 auto 16px}
+        .logo img{width:100%;display:block}
+        h1{font-size:26px;margin:6px 0 4px;color:var(--brand);font-weight:800}
+        .sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+        label{font-weight:700;margin-bottom:6px}
+        .input{
+          width:100%;padding:12px;border:1px solid #cfd8dc;border-radius:10px;
+          font-size:15px;background:#fff
+        }
+        .input:focus{outline:none;border-color:var(--brand)}
+        .btn-primary{
+          width:100%;padding:12px;border-radius:10px;border:0;
+          background:var(--brand);font-weight:800
+        }
+
+        .btn-primary:hover{background:#014657}
+        .links{margin-top:12px;text-align:center}
+        .links .link-btn{color:#28b16c;text-decoration:underline;background:transparent;border:0}
+        .help{
+          margin-top:18px;background:#e9f2ff;border:1px solid #cfe3ff;border-radius:10px;
+          padding:10px 12px;color:#204a70;font-size:12px
+        }
+        .pw-wrap{ position:relative; }
+        .pw-toggle{
+          position:absolute; right:10px; top:50%; transform:translateY(-50%);
+          width:36px; height:36px; display:grid; place-items:center;
+          background:transparent; border:0; cursor:pointer; border-radius:8px;
+          color:#6b7c86;
+        }
+        .pw-toggle:hover{ background:rgba(0,0,0,.06); }
+        .pw-toggle:focus{ outline:2px solid #2bb67333; outline-offset:2px; }
+        .pw-toggle svg{ display:none; }
+        .pw-toggle[data-show="false"] #iconEyeOff{ display:block; } /* 기본: 감긴 눈 */
+        .pw-toggle[data-show="true"]  #iconEye{    display:block; } /* 토글 후: 열린 눈 */
+        .pw-toggle svg { width:20px; height:20px; color:#0b2230; } /* 선 색상 */
+        /* 입력 글자색을 확실히 지정 */
+        .input{ color:#0b2230; }
+
+        /* 혹시 브라우저/확장프로그램이 -webkit-text-security를 강제로 거는 경우 대비 */
+        .pw-wrap.showing input{
+          -webkit-text-security: none !important;
+          -text-security: none !important; /* 일부 브라우저 */
+        }
+    </style>
+</head>
+<body>
+<main class="login-card">
+    <div class="logo">
+        <img th:src="@{/images/mvidia_logo_colored.png}" alt="MVIDIA 로고">
+    </div>
+    <p class="sub" align="center">Enterprise Resource Planning</p>
+
+    <form method="post" action="/auth/login" novalidate>
+        <div class="mb-3">
+            <label for="username" class="form-label">아이디(사번)</label>
+            <input id="username" name="username" type="text" class="input" placeholder="사번을 입력하세요 (예: EMP001)" required>
+        </div>
+        <div class="mb-2">
+            <label for="password" class="form-label">비밀번호</label>
+            <div class="pw-wrap">
+                <input id="password" name="password" type="password" class="input"
+                       placeholder="비밀번호를 입력하세요" required>
+
+                <button type="button" class="pw-toggle"
+                        id="pwToggleBtn" data-show="false"
+                        aria-label="비밀번호 표시" aria-pressed="false">
+
+                    <svg id="iconEye" viewBox="0 0 24 24">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
+                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="3"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+
+
+                    <svg id="iconEyeOff" viewBox="0 0 24 24">
+                        <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"
+                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="4" y1="4" x2="20" y2="20"
+                              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-2">로그인</button>
+
+    </form>
+
+    <div class="links">
+        <button type="button" class="link-btn" data-toggle="modal" data-target="#forgotModal">비밀번호 찾기</button>
+    </div>
+
+</main>
+
+<div class="modal fade" id="forgotModal" tabindex="-1" role="dialog" aria-labelledby="forgotTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form class="modal-content" method="post" action="/auth/forgot-password" id="forgotForm">
+            <div class="modal-header">
+                <h5 class="modal-title" id="forgotTitle">비밀번호 찾기</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-2">사번을 입력하면 등록된 (구글) 이메일로 비밀번호 변경 링크를 보내드려요.</p>
+                <label for="employeeId" class="form-label">사번</label>
+                <input id="employeeId" name="employeeId" type="text" class="form-control" placeholder="예: EMP001" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">취소</button>
+                <button type="submit" class="btn btn-success">전송</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+      let pwd = document.getElementById('password'); // let (교체 대비)
+      const btn = document.getElementById('pwToggleBtn');
+      const wrap = pwd.closest('.pw-wrap');
+
+      if (!pwd || !btn) return;
+
+      function setTypeSafely(input, nextType){
+        try{
+          input.setAttribute('type', nextType);
+          return input; // 정상
+        }catch(e){
+          // 드물게 비밀번호 필드 type 변경이 막히는 브라우저/환경 대응
+          const clone = input.cloneNode(true);
+          clone.setAttribute('type', nextType);
+          // 이벤트/값 보존
+          clone.value = input.value;
+          input.parentNode.replaceChild(clone, input);
+          return clone;
+        }
+      }
+
+      btn.addEventListener('click', () => {
+        const willShow = btn.getAttribute('data-show') !== 'true'; // false → 보이기
+        // type 전환(안전)
+        pwd = setTypeSafely(pwd, willShow ? 'text' : 'password');
+
+        // 상태 표시(UI/접근성)
+        btn.setAttribute('data-show', willShow ? 'true' : 'false');
+        btn.setAttribute('aria-pressed', String(willShow));
+        btn.setAttribute('aria-label', willShow ? '비밀번호 숨기기' : '비밀번호 표시');
+
+        // 강제 가시화용 클래스 (CSS fallback)
+        wrap.classList.toggle('showing', willShow);
+        // 전환 후 커서/포커스 유지
+        pwd.focus({preventScroll:true});
+        // 커서를 맨 끝으로
+        const val = pwd.value; pwd.value = ''; pwd.value = val;
+      });
+
+      // ESC로 다시 가리기
+      pwd.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && (btn.getAttribute('data-show') === 'true')) {
+          btn.click();
+        }
+      });
+    })();
+
+    // 모달 제출 → AJAX로 사번 검증 & 메일 발송
+    document.getElementById('forgotForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const form = e.target;
+      const empNo = document.getElementById('employeeId').value.trim();
+      if(!empNo){ alert('사번을 입력하세요'); return; }
+
+      const resp = await fetch(form.action, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ employeeId: empNo })
+      });
+      const text = await resp.text();
+
+      if(text === 'NOT_FOUND'){
+        alert('존재하지 않는 사번입니다');
+        document.getElementById('employeeId').focus();
+        return;
+      }
+      // OK assumed
+      alert('등록된 이메일로 비밀번호 변경 링크가 발송되었습니다.');
+
+      // Bootstrap 4에서 모달 숨기기 (jQuery 사용)
+      $('#forgotModal').modal('hide');
+      form.reset();
+    });
+</script>
+</body>
+</html>

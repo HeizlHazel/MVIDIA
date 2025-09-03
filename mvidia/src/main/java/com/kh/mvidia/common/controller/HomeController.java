@@ -9,13 +9,13 @@ public class HomeController {
 	
 	@GetMapping("/")
 	public String index(){
-		return "layout/main.html";
+		return "common/mainPage";
 	}
 	
 	@GetMapping("/main")
 	public String main(Model model) {
 		model.addAttribute("sessionSeconds", 3600);
-		return "main";
+		return "common/mainPage";
 	}
 	
 }

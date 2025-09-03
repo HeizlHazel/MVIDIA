@@ -1,12 +1,78 @@
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="header">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .tb{height:64px;background:#002B39;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+        .logo-img{width:40px;height:40px;object-fit:contain;margin-right:10px;display:block}
+        .tb .logo{display:flex;align-items:center;gap:10px;font-weight:800}
+        .top-right{display:flex;align-items:center;gap:16px}
+        .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 10px;font-variant-numeric:tabular-nums;font-weight:700}
+        .session-box{display:flex;align-items:center;gap:8px}
+        .mini-btn{height:30px;background:transparent;color:#fff;border:1px solid #fff;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:50%}
+        .mini-btn:hover{background:rgba(255,255,255,.12)}
+        .countdown{min-width:78px;padding:6px 10px;font-variant-numeric:tabular-nums;text-align:center;font-weight:800;background-color:#1F4551;border-color:#1F4551;border-radius:999px}
+        .logout{border-radius:999px}
+        .extend{border-radius:999px}
+        .icon{position:relative;font-size:20px;padding:8px;border-radius:50%}
+        .badge{position:absolute;top:0;right:0;min-width:18px;height:18px;border-radius:9px;background:#ff4444;display:grid;place-items:center;font-size:10px}
+        .profile{display:flex;align-items:center;gap:10px}
+        .avatar{width:32px;height:32px;border-radius:50%;background:#e1e9ee}
+        .meta{display:flex;flex-direction:column;line-height:1.1}
+        .meta .name{font-weight:600;font-size:13px}
+        .meta .dept{font-size:11px;opacity:.9}
+    </style>
 </head>
 <body>
+    <div th:fragment="header (sessionSeconds=3600, logoPath=@{/images/mVIDIA_2-Photoroom.png})" class="tb">
+        <div class="logo">
+            <img class="logo-img" th:src="${logoPath}" alt="MVIDIA 로고">
+            <div>MVIDIA · ERP</div>
+        </div>
 
+        <div class="top-right">
+            <!-- 세션 타이머/연장/로그아웃 -->
+            <div class="session-box" aria-label="세션 제어">
+          <span id="sessionCountdown" class="countdown"
+                th:attr="data-seconds=${sessionSeconds?:0}"
+                th:text="${#numbers.formatInteger(((sessionSeconds?:0)/60),2)} + ':'
+              + ${#numbers.formatInteger(((sessionSeconds?:0)%60),2)}">
+                60:00
+            </span>
+
+                <form id="extendForm" th:action="@{/session/extend}" method="post" class="extend">
+                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}"/>
+                    <button class="mini-btn" type="submit">연장</button>
+                </form>
+
+                <form id="logoutForm" th:action="@{/logout}" method="post" class="logout">
+                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}"/>
+                    <button class="mini-btn" type="submit">로그아웃</button>
+                </form>
+            </div>
+
+            <div class="icon" title="쪽지">📧<span class="badge" id="messageCount" th:text="${messageCount?:0}">0</span></div>
+            <div class="icon" title="알림">🔔<span class="badge" id="notificationCount" th:text="${notificationCount?:0}">0</span></div>
+
+            <div class="profile">
+                <div class="avatar"
+                     style="background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWQ9IiIgdmlld0JveD0iMCAwIDM1IDM1IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjE3LjUiIGN5PSIxNy41IiByPSIxNy41IiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTE3LjUgMTBDMTMuOSAxMCAxMSAxMi45IDExIDE2LjVTMTMuOSAyMyAxNy41IDIzUzI0IDIwLjEgMjQgMTYuNVMyMS4xIDEwIDE3LjUgMTBaTTE3LjUgMTNDMTkuNDMgMTMgMjEgMTQuNTcgMjEgMTYuNVMxOS40MyAyMCAxNy41IDIwUzE0IDE4LjQzIDE0IDE2LjVTMTUuNTcgMTMgMTcuNSAxM1oiIGZpbGw9IiM5OTkiLz48L3N2Zz4=')">
+                </div>
+                <div class="meta">
+                    <div class="name" id="userName" th:text="${#authentication?.name}">김철수</div>
+                    <div class="dept" id="userDept" th:text="${session.userDept?:'기술지원팀'}">기술지원팀</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 필요한 스크립트들(프로젝트 공통 레이아웃에서 한번만 로드해도 됨) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script th:src="@{/js/layout.js}"></script>
 </body>
 </html>

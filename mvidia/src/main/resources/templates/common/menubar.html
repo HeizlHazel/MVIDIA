@@ -1,12 +1,124 @@
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="menubar">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .sb{margin-top:64px;width:250px;min-height:100vh;background:linear-gradient(to bottom,#002B39,#003661,#186AEA);padding-top:60px;position:fixed;left:0;top:0;z-index:999}
+        .menu{list-style:none;margin:0;padding:0}
+        .menu>li{position:relative}
+        .link{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;color:#e7f2f7;cursor:pointer}
+        .link:hover{background:#013547}
+        .submenu{display:none;margin:6px 0 10px 8px;border-left:2px solid rgba(255,255,255,.1);padding-left:8px}
+        .submenu a{display:block;padding:8px 10px;border-radius:10px;color:#e7f2f7;text-decoration:none}
+        .submenu a:hover{background:rgba(255,255,255,.08)}
+        .menu>li.open>.submenu{display:block}
+    </style>
 </head>
 <body>
+    <div th:fragment="menubar" class="sb">
+        <ul class="menu" id="sideMenu">
+            <li>
+                <a class="link" th:href="@{/}">🏠 HOME</a>
+            </li>
 
+            <li>
+                <div class="link" data-toggle>👤 마이페이지</div>
+                <div class="submenu">
+                    <a th:href="@{/mypage/profile}">개인정보 조회</a>
+                    <a th:href="@{/mypage/update}">개인정보 수정 요청</a>
+                </div>
+            </li>
+
+            <li>
+                <div class="link" data-toggle>🕒 근태관리</div>
+                <div class="submenu">
+                    <a th:href="@{/attend/main}">근태 메인</a>
+                    <a th:href="@{/attend/vacation}">휴가 신청</a>
+                </div>
+            </li>
+
+            <li>
+                <div class="link" data-toggle>📝 전자결재</div>
+                <div class="submenu">
+                    <a th:href="@{/approval/main}">결재 메인</a>
+                    <a th:href="@{/approval/apply}">신청</a>
+                </div>
+            </li>
+
+            <li>
+                <div class="link" data-toggle>✉️ 쪽지</div>
+                <div class="submenu">
+                    <a th:href="@{/message/inbox}">수신함</a>
+                    <a th:href="@{/message/outbox}">발신함</a>
+                    <a th:href="@{/message/compose}">쪽지 보내기</a>
+                </div>
+            </li>
+
+            <li>
+                <div class="link" data-toggle>🧭 인사관리</div>
+                <div class="submenu">
+                    <a th:href="@{/hr/main}">인사관리 메인</a>
+                    <a th:href="@{/hr/accounts}">사원 계정 생성/수정/삭제</a>
+                    <a th:href="@{/hr/integrated}">인사 통합 관리</a>
+                    <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
+                    <a th:href="@{/hr/cert}">증명서 조회/발급</a>
+                </div>
+            </li>
+
+            <!-- 직책별 노출 예시: 부장 이상일 때만 조직도 -->
+            <li sec:authorize="hasAnyRole('MANAGER','ADMIN')">
+                <a class="link" th:href="@{/org}">🧩 조직도</a>
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        (function () {
+          const menu = document.getElementById('sideMenu');
+          if (!menu) return;
+
+          // 아코디언
+          menu.addEventListener('click', (e) => {
+            const btn = e.target.closest('.link[data-toggle]');
+            if (!btn || !menu.contains(btn)) return;
+
+            const li = btn.closest('li');
+            const isOpen = li.classList.contains('open');
+
+            menu.querySelectorAll(':scope > li.open').forEach((other) => {
+              if (other !== li) {
+                other.classList.remove('open');
+                const hdr = other.querySelector(':scope > .link[data-toggle]');
+                if (hdr) hdr.setAttribute('aria-expanded', 'false');
+              }
+            });
+
+            li.classList.toggle('open', !isOpen);
+            btn.setAttribute('aria-expanded', String(!isOpen));
+          });
+
+          // 접근성
+          menu.querySelectorAll('.link[data-toggle]').forEach((hdr) => {
+            hdr.setAttribute('aria-expanded', 'false');
+            hdr.setAttribute('role', 'button');
+            hdr.setAttribute('tabindex', '0');
+          });
+
+          // 키보드 접근
+          menu.addEventListener('keydown', (e) => {
+            const isActivator = e.target.matches('.link[data-toggle]');
+            if (!isActivator) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.target.click();
+            }
+          });
+        })();
+    </script>
 </body>
 </html>

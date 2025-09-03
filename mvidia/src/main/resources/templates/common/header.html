@@ -31,7 +31,7 @@
 <body>
     <div th:fragment="header (sessionSeconds=3600, logoPath=@{/images/mVIDIA_2-Photoroom.png})" class="tb">
         <div class="logo">
-            <img class="logo-img" th:src="${logoPath}" alt="MVIDIA 로고">
+            <img class="logo-img" th:src="@{/images/MVIDIA_Logo.png}" alt="MVIDIA 로고">
             <div>MVIDIA · ERP</div>
         </div>
 

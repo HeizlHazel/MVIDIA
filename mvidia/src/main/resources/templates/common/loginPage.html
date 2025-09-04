@@ -82,15 +82,15 @@
     </div>
     <p class="sub" align="center">Enterprise Resource Planning</p>
 
-    <form method="post" action="/auth/login" novalidate>
+    <form method="post" action="/login.emp" novalidate>
         <div class="mb-3">
-            <label for="username" class="form-label">아이디(사번)</label>
-            <input id="username" name="username" type="text" class="input" placeholder="사번을 입력하세요 (예: EMP001)" required>
+            <label for="empNo" class="form-label">아이디(사번)</label>
+            <input id="empNo" name="empNo" type="text" class="input" placeholder="사번을 입력하세요 (예: 250800001)" required>
         </div>
         <div class="mb-2">
-            <label for="password" class="form-label">비밀번호</label>
+            <label for="empPwd" class="form-label">비밀번호</label>
             <div class="pw-wrap">
-                <input id="password" name="password" type="password" class="input"
+                <input id="empPwd" name="empPwd" type="password" class="input"
                        placeholder="비밀번호를 입력하세요" required>
 
                 <button type="button" class="pw-toggle"
@@ -128,7 +128,7 @@
 
 <div class="modal fade" id="forgotModal" tabindex="-1" role="dialog" aria-labelledby="forgotTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <form class="modal-content" method="post" action="/auth/forgot-password" id="forgotForm">
+        <form class="modal-content" method="post" action="/forgotPwd.emp" id="forgotForm">
             <div class="modal-header">
                 <h5 class="modal-title" id="forgotTitle">비밀번호 찾기</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -138,7 +138,7 @@
             <div class="modal-body">
                 <p class="text-muted small mb-2">사번을 입력하면 등록된 (구글) 이메일로 비밀번호 변경 링크를 보내드려요.</p>
                 <label for="employeeId" class="form-label">사번</label>
-                <input id="employeeId" name="employeeId" type="text" class="form-control" placeholder="예: EMP001" required>
+                <input id="employeeId" name="employeeId" type="text" class="form-control" placeholder="예: 25080001" required>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">취소</button>

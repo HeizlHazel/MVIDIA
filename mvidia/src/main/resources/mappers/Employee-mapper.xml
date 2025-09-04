@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="employeeMapper">
+    <resultMap id="employeeResultSet" type="Employee">
+        <result column="emp_no" property="empNo"/>
+        <result column="emp_pwd" property="empPwd"/>
+        <result column="email" property="email"/>
+        <result column="emp_lname" property="empLName"/>
+        <result column="emp_name" property="empName"/>
+        <result column="emp_eng_lname" property="empEngLName"/>
+        <result column="emp_eng_name" property="empEngName"/>
+        <result column="birthday" property="birthday"/>
+        <result column="dept_code" property="deptCode"/>
+        <result column="job_code" property="jobCode"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+        <result column="ext_no" property="extNo"/>
+        <result column="emp_status" property="empStatus"/>
+        <result column="create_date" property="createDate"/>
+        <result column="modify_date" property="modifyDate"/>
+        <result column="hire_Date" property="hireDate"/>
+        <result column="retired_date" property="retiredDate"/>
+    </resultMap>
+
+    <select id="loginEmp" resultMap="EmployeeResultSet">
+        select
+          emp_no
+        , emp_pwd
+        , email
+        , emp_lname
+        , emp_name
+        , emp_eng_lname
+        , emp_eng_name
+        , birthday
+        , dept_code
+        , job_code
+        , address
+        , phone
+        , ext_no
+        , emp_status
+        , create_date
+        , modify_date
+        , hire_Date
+        , retired_date
+        from tb_employee
+        where emp_status = 'Y'
+        and emp_no = #{empNo}
+    </select>
+
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="salaryMapper">
+
+    <resultMap id="salaryResultSet" type="Salary">
+        <result column="payDate" property="payDate"/>
+        <result column="empNo" property="empNo"/>
+        <result column="salary" property="salary"/>
+        <result column="ovPrice" property="ovPrice"/>
+        <result column="bonus" property="bonus"/>
+    </resultMap>
+
+    <resultMap id="attendanceResultSet" type="Attendance">
+        <result column="ATT_NO" property="attNo"/>
+        <result column="EMP_NO" property="empNo"/>
+        <result column="ATT_DATE" property="attDate"/>
+        <result column="LEAVING_TIME" property="leavingTime"/>
+    </resultMap>
+    
+    <select id="selectSalaryByMonth" resultMap="salaryResultSet">
+        SELECT TO_CHAR(PAY_DATE, 'YYYYMM') AS payDate,
+               EMP_NO                      AS empNo,
+               SALARY                      AS salary,
+               NVL(OV_PRICE, 0)            AS ovPrice,
+               NVL(BONUS, 0)               AS bonus
+          FROM TB_SALARY
+         WHERE TO_CHAR(PAY_DATE, 'YYYYMM') = #{yearMonth}
+    </select>
+
+    <select id="selectAttendanceByMonth" resultMap="attendanceResultSet">
+        SELECT ATT_NO,
+               EMP_NO,
+               TO_CHAR(ATT_DATE,'YYYYMMDD') AS attDate,
+               TO_CHAR(LEAVING_TIME,'HH24:MI') AS leavingTime
+          FROM TB_ATTENDANCE
+         WHERE TO_CHAR(ATT_DATE,'YYYYMM') = #{yearMonth}
+         ORDER BY EMP_NO, ATT_DATE
+    </select>
+
+    <update id="updateOvPrice">
+        UPDATE TB_SALARY
+           SET OV_PRICE = #{ovPrice}
+         WHERE EMP_NO = #{empNo}
+           AND TO_CHAR(PAY_DATE, 'YYYYMM') = #{yearMonth}
+    </update>
+
+    <update id="upsertSalaryOver">
+         MERGE INTO TB_SALARY_OVER t
+         USING (
+        SELECT #{empNo} AS emp_no,
+               (SELECT MAX(PAY_DATE)
+          FROM TB_SALARY
+         WHERE EMP_NO = #{empNo}
+               AND TO_CHAR(PAY_DATE,'YYYYMM') = #{yearMonth}
+               ) AS pay_date,
+               #{ovCode} AS ov_code,
+               #{amount} AS amount
+          FROM dual
+                ) d
+            ON (t.emp_no = d.emp_no
+           AND t.pay_date = d.pay_date
+           AND t.ov_code = d.ov_code)
+          WHEN MATCHED THEN
+        UPDATE SET t.amount = d.amount
+          WHEN NOT MATCHED THEN
+        INSERT (emp_no, pay_date, ov_code, amount)
+         VALUES (d.emp_no, d.pay_date, d.ov_code, d.amount)
+    </update>
+
+
+</mapper>

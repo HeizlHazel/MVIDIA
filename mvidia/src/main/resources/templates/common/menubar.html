@@ -6,6 +6,7 @@
       th:fragment="menubar">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <title>Title</title>
     <style>
         .sb{width:250px;min-height:100vh;background:linear-gradient(to bottom,#002B39,#003661,#186AEA);padding-top:60px;position:fixed;left:0;top:0;z-index:999}
@@ -17,6 +18,13 @@
         .submenu a{display:block;padding:8px 10px;border-radius:10px;color:#e7f2f7;text-decoration:none}
         .submenu a:hover{background:rgba(255,255,255,.08)}
         .menu>li.open>.submenu{display:block}
+         .material-symbols-outlined {
+             font-variation-settings:
+                     'FILL' 0,
+                     'wght' 400,
+                     'GRAD' 0,
+                     'opsz' 24
+         }
     </style>
 </head>
 <body>
@@ -59,7 +67,7 @@
                 </div>
             </li>
 
-            <li>
+            <li style="display:none">
                 <div class="link" data-toggle>🧭 인사관리</div>
                 <div class="submenu">
                     <a th:href="@{/hr/main}">인사관리 메인</a>
@@ -67,6 +75,19 @@
                     <a th:href="@{/hr/integrated}">인사 통합 관리</a>
                     <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
                     <a th:href="@{/hr/cert}">증명서 조회/발급</a>
+                </div>
+            </li>
+
+            <li>
+                <div class="link" data-toggle>
+                    <span class="material-symbols-outlined">payment_arrow_down</span>
+                    경영관리팀
+                </div>
+                <div class="submenu">
+                    <a th:href="@{/finance/main}">경영관리 메인</a>
+                    <a th:href="@{/finance/payroll}">급여관리</a>
+                    <a th:href="@{/finance//revenue-report}">분기별 수익조회</a>
+                    <a th:href="@{/finance/inventory}">재고현황 조회</a>
                 </div>
             </li>
 

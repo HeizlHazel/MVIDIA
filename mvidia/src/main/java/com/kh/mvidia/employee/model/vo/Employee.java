@@ -20,7 +20,9 @@ public class Employee {
 	private String empEngName;
 	private String birthday;
 	private String deptCode;
+	private String deptName;
 	private String jobCode;
+	private String jobName;
 	private String address;
 	private String phone;
 	private String extNo;

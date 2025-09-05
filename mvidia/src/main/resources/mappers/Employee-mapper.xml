@@ -11,7 +11,9 @@
         <result column="emp_eng_name" property="empEngName"/>
         <result column="birthday" property="birthday"/>
         <result column="dept_code" property="deptCode"/>
+        <result column="dept_name" property="deptName"/>
         <result column="job_code" property="jobCode"/>
+        <result column="job_name" property="jobName"/>
         <result column="address" property="address"/>
         <result column="phone" property="phone"/>
         <result column="ext_no" property="extNo"/>
@@ -22,7 +24,7 @@
         <result column="retired_date" property="retiredDate"/>
     </resultMap>
 
-    <select id="loginEmp" resultMap="EmployeeResultSet">
+    <select id="loginEmp" resultMap="employeeResultSet">
         select
           emp_no
         , emp_pwd
@@ -33,7 +35,9 @@
         , emp_eng_name
         , birthday
         , dept_code
+        , dept_name
         , job_code
+        , job_name
         , address
         , phone
         , ext_no
@@ -43,7 +47,9 @@
         , hire_Date
         , retired_date
         from tb_employee
-        where emp_status = 'Y'
+        join tb_department using (dept_code)
+        join tb_job using (job_code)
+        where emp_status = 'H'
         and emp_no = #{empNo}
     </select>
 

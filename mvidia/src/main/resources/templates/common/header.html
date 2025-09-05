@@ -10,7 +10,7 @@
     <style>
         .tb{height:64px;background:#002B39;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
         .logo-img{width:40px;height:40px;object-fit:contain;margin-right:10px;display:block}
-        .tb .logo{display:flex;align-items:center;gap:10px;font-weight:800}
+        .tb .logo{display:flex;align-items:center;gap:10px;font-weight:800; cursor:pointer;}
         .top-right{display:flex;align-items:center;gap:16px}
         .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 10px;font-variant-numeric:tabular-nums;font-weight:700}
         .session-box{display:flex;align-items:center;gap:8px}
@@ -19,18 +19,111 @@
         .countdown{min-width:78px;padding:6px 10px;font-variant-numeric:tabular-nums;text-align:center;font-weight:800;background-color:#1F4551;border-color:#1F4551;border-radius:999px}
         .logout{border-radius:999px; background:#dc3545; border-color:#dc3545;}
         .extend{border-radius:999px; background-color: #6C757D; border-color: #6C757D;}
-        .icon{position:relative;font-size:20px;padding:8px;border-radius:50%}
+        .icon{position:relative;font-size:20px;padding:8px;border-radius:50%; cursor:pointer;}
         .badge{position:absolute;top:0;right:0;min-width:18px;height:18px;border-radius:9px;background:#ff4444;display:grid;place-items:center;font-size:10px}
-        .profile{display:flex;align-items:center;gap:10px}
+        .tb .profile{display:flex;align-items:center;gap:10px; cursor:pointer;}
         .avatar{width:32px;height:32px;border-radius:50%;background:#e1e9ee}
         .meta{display:flex;flex-direction:column;line-height:1.5}
         .meta .name{font-weight:600;font-size:15px; text-align:center;}
         .meta .dept{font-size:11px;opacity:.9; text-align:center;}
     </style>
+    <!-- JavaScript -->
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css"/>
+    <!-- Default theme -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css"/>
+    <!-- Semantic UI theme -->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/semantic.min.css"/>
 </head>
 <body>
+    <script>
+        alertify.defaults = {
+        // dialogs defaults
+        autoReset:true,
+        basic:false,
+        closable:true,
+        closableByDimmer:true,
+        invokeOnCloseOff:false,
+        frameless:false,
+        defaultFocusOff:false,
+        maintainFocus:true, // <== global default not per instance, applies to all dialogs
+        maximizable:true,
+        modal:true,
+        movable:true,
+        moveBounded:false,
+        overflow:true,
+        padding: true,
+        pinnable:true,
+        pinned:true,
+        preventBodyShift:false, // <== global default not per instance, applies to all dialogs
+        resizable:true,
+        startMaximized:false,
+        transition:'pulse',
+        transitionOff:false,
+        tabbable:'button:not(:disabled):not(.ajs-reset),[href]:not(:disabled):not(.ajs-reset),input:not(:disabled):not(.ajs-reset),select:not(:disabled):not(.ajs-reset),textarea:not(:disabled):not(.ajs-reset),[tabindex]:not([tabindex^="-"]):not(:disabled):not(.ajs-reset)',  // <== global default not per instance, applies to all dialogs
+
+        // notifier defaults
+        notifier:{
+        // auto-dismiss wait time (in seconds)
+            delay:5,
+        // default position
+            position:'bottom-right',
+        // adds a close button to notifier messages
+            closeButton: false,
+        // provides the ability to rename notifier classes
+            classes : {
+                base: 'alertify-notifier',
+                prefix:'ajs-',
+                message: 'ajs-message',
+                top: 'ajs-top',
+                right: 'ajs-right',
+                bottom: 'ajs-bottom',
+                left: 'ajs-left',
+                center: 'ajs-center',
+                visible: 'ajs-visible',
+                hidden: 'ajs-hidden',
+                close: 'ajs-close'
+            }
+        },
+
+        // language resources
+        glossary:{
+            // dialogs default title
+            title:'MVIDIA ALERT',
+            // ok button text
+            ok: 'OK',
+            // cancel button text
+            cancel: 'Cancel'
+        },
+
+        // theme settings
+        theme:{
+            // class name attached to prompt dialog input textbox.
+            input:'ajs-input',
+            // class name attached to ok button
+            ok:'ajs-ok',
+            // class name attached to cancel button
+            cancel:'ajs-cancel'
+        },
+        // global hooks
+        hooks:{
+            // invoked before initializing any dialog
+            preinit:function(instance){},
+            // invoked after initializing any dialog
+            postinit:function(instance){},
+        },
+    };
+    </script>
+    <th:block th:if="${alertMsg != null}">
+        <script th:inline="javascript">
+            alertify.alert([[${alertMsg}]]);
+        </script>
+    </th:block>
+
     <div th:fragment="header (sessionSeconds=3600, logoPath=@{/images/mVIDIA_2-Photoroom.png})" class="tb">
-        <div class="logo">
+        <div class="logo" onclick="clickLogo()">
             <img class="logo-img" th:src="@{/images/MVIDIA_Logo.png}" alt="MVIDIA 로고">
             <div>MVIDIA · ERP</div>
         </div>
@@ -50,7 +143,7 @@
                     <button class="mini-btn" type="submit">연장</button>
                 </form>
 
-                <form id="logoutForm" th:action="@{/logout}" method="post" class="logout">
+                <form id="logoutForm" th:action="@{logout.emp}" method="post" class="logout">
                     <input type="hidden" name="_csrf" th:value="${_csrf?.token}"/>
                     <button class="mini-btn" type="submit">로그아웃</button>
                 </form>
@@ -64,12 +157,20 @@
                      style="background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWQ9IiIgdmlld0JveD0iMCAwIDM1IDM1IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjE3LjUiIGN5PSIxNy41IiByPSIxNy41IiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTE3LjUgMTBDMTMuOSAxMCAxMSAxMi45IDExIDE2LjVTMTMuOSAyMyAxNy41IDIzUzI0IDIwLjEgMjQgMTYuNVMyMS4xIDEwIDE3LjUgMTBaTTE3LjUgMTNDMTkuNDMgMTMgMjEgMTQuNTcgMjEgMTYuNVMxOS40MyAyMCAxNy41IDIwUzE0IDE4LjQzIDE0IDE2LjVTMTUuNTcgMTMgMTcuNSAxM1oiIGZpbGw9IiM5OTkiLz48L3N2Zz4=')">
                 </div>
                 <div class="meta">
-                    <div class="name" id="userName" >김철수</div>
-                    <div class="dept" id="userDept">인사팀</div>
+                    <div class="name" id="userName" th:text="|${session.loginEmp.empLName}${session.loginEmp.empName}|"></div>
+                    <div class="dept" id="userDept" th:text="${session.loginEmp.deptName}"></div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function clickLogo(){
+            location.href = "/mainPage";
+        }
+    </script>
+
+
 
     <!-- 필요한 스크립트들(프로젝트 공통 레이아웃에서 한번만 로드해도 됨) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>

@@ -143,7 +143,7 @@
                     <button class="mini-btn" type="submit">연장</button>
                 </form>
 
-                <form id="logoutForm" th:action="@{logout.emp}" method="post" class="logout">
+                <form id="logoutForm" th:action="@{/logout.emp}" method="post" class="logout">
                     <input type="hidden" name="_csrf" th:value="${_csrf?.token}"/>
                     <button class="mini-btn" type="submit">로그아웃</button>
                 </form>

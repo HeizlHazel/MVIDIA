@@ -26,7 +26,7 @@ public class WebConfig implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(new LoginInterceptor())
-				.addPathPatterns("/mainPage/**") // /main으로 시작하는 모든 요청에 적용
+				.addPathPatterns("/mainPage/**", "/hr/**") // /mainPage으로 시작하는 모든 요청에 적용
 				.excludePathPatterns("/","/loginPage", "/css/**", "/js/**"); // 예외 URL 패턴
 	}
 }

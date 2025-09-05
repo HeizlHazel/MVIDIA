@@ -30,29 +30,32 @@ public class EmployeeController {
     @PostMapping("login.emp")
     public String loginEmp(Employee emp, HttpSession session, RedirectAttributes redirectAttributes){
 		
-		logger.info("User Input - empNo: {}, empPwd: {}", emp.getEmpNo(), emp.getEmpPwd());
-
-		
 		Employee loginEmp =  empService.loginEmp(emp);
-		System.out.println("되나" + loginEmp);
-		
-		logger.info("DB Data - empNo: {}, empPwd: {}", loginEmp.getEmpNo(), loginEmp.getEmpPwd());
-		boolean passwordMatches = bcryptPasswordEncoder.matches(emp.getEmpPwd(), loginEmp.getEmpPwd());
-		logger.info("Password matches: {}", passwordMatches);
 		
 		if(loginEmp != null && bcryptPasswordEncoder.matches(emp.getEmpPwd(), loginEmp.getEmpPwd())) {
 			
-
-			
 			session.setAttribute("loginEmp", loginEmp);
-			return "redirect:/mainPage";
+			
+			// 세션에 저장된 'redirectUrl'을 가져옴
+			String redirectUrl = (String) session.getAttribute("redirectUrl");
+			
+			// 사용 후 세션에서 URL을 제거하여 재사용 방지
+			session.removeAttribute("redirectUrl");
+			
+			// 리다이렉션 URL이 존재하면 해당 URL로 이동
+			if(redirectUrl != null && !redirectUrl.isEmpty()) {
+				return "redirect:" + redirectUrl;
+			} else {
+				// 없으면 기본 메인 페이지로 이동
+				return "redirect:/mainPage";
+			}
 		}else{
 			redirectAttributes.addFlashAttribute("alertMsg", "로그인에 실패하였습니다. 다시 로그인 시도해주세요.");
 			return "redirect:/";
 		}
     }
 	
-	@PostMapping("logout.emp")
+	@PostMapping("/logout.emp")
 	public String logoutEmp(HttpSession session){
 		session.invalidate();
 		return "redirect:/";

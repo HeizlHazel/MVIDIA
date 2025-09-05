@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>계정 권한 관리</title>
+
+    <style>
+        .content {
+            background-color: #f5f5f5;
+            width: calc(100% - 250px);
+            position: absolute;
+            left: 250px;
+            margin: 0;
+            height: 855px;
+        }
+
+        /* 페이지 헤더 */
+        .page-header {
+            margin-bottom: 30px;
+            padding: 30px 30px 0 30px;
+        }
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header h1::before {
+            content: "🏠";
+            font-size: 20px;
+        }
+
+        /* 카드 그리드 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            max-width: 1500px;
+            padding: 30px;
+        }
+
+        /* 개별 카드 스타일 */
+        .innerOuter {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .innerOuter:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            background-color: transparent !important;
+            border-bottom: none !important;
+        }
+
+        .card-button {
+            width: 20%;
+            padding: 12px 20px;
+            background: #1a365d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            float: right;
+        }
+
+        .card-button:hover {
+            background: #2c5282;
+        }
+
+        .toggle-input {
+        display: none;
+        }
+
+        .toggle-label {
+        position: relative;
+        display: block;
+        width: 40px;
+        height: 24px;
+        background-color: #ccc;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        }
+
+        .toggle-label::before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 20px;
+        height: 20px;
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+        }
+
+        /* 토글 ON 스타일 지정*/
+        .toggle-input:checked + .toggle-label {
+        background-color: #4caf50;
+        }
+
+        /* 토글 ON인 경우에 버튼 위치 지정 */
+        .toggle-input:checked + .toggle-label::before {
+        transform: translateX(16px);
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="page-header">
+            <h1>계정 권한 관리</h1>
+        </div>
+        <div class="card-grid">
+            <div class="innerOuter">
+                <!-- 메뉴1 -->
+                <div class="card-header">
+                    <form>
+                        <table width="500px">
+                            <tr>
+                                <th>사용자 검색</th>
+                                <th>부서</th>
+                            </tr>
+                            <tr>
+                                <td><input type="text"></td>
+                                <td>
+                                    <select>
+                                        <option>부서</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                        <button class="card-button" onclick="location.href='#'">검색</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="innerOuter">
+                <!-- 메뉴2 -->
+                <div class="card-header">
+                    <div>검색된 사원명(부서명) - 권한 설정</div>
+                </div>
+                <form>
+                    <table>
+                        <tr>
+                            <td>전자결재 승인 권한</td>
+                            <td>
+                                <input type="checkbox" class="toggle-input" id="toggle">
+                                <label for="toggle" class="toggle-label"></label>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <button class="card-button" type="reset">취소</button>
+                    <button class="card-button" type="submit">권한 저장</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

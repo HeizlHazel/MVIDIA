@@ -12,4 +12,10 @@ public class HrController {
 	public String hrMainPage(){
 		return "hr/hrMainPage";
 	}
+	
+	@GetMapping("empAccount.hr")
+	public String empAccountPage(){
+		return "/hr/empAccountPage";
+	}
+	
 }

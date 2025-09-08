@@ -53,4 +53,36 @@
         and emp_no = #{empNo}
     </select>
 
+    <insert id="insertEmpInfo">
+        insert
+            into tb_employee
+             (
+               emp_lname
+             , emp_name
+             , emp_eng_lname
+             , emp_eng_name
+             , birthday
+             , dept_code
+             , job_code
+             , address
+             , phone
+             , ext_no
+             , hire_Date
+             )
+             value
+             (
+               #{empLName}
+             , #{empName}
+             , #{empEngLName}
+             , #{empEngName}
+             , #{birthday}
+             , #{deptCode}
+             , #{jobCode}
+             , #{address}
+             , #{phone}
+             , #{extNo}
+             , #{hireDate}
+             )
+    </insert>
+
 </mapper>

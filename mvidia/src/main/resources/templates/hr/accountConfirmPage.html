@@ -27,9 +27,12 @@
 <!-- 메인 컨텐츠 -->
 <div class="accountCreate">
     <div class="widget" id="home">
-        <h2 class="page-title">사원 계정 정보 등록</h2>
-        <form id="createForm" class="form" action="insertInfo.emp" method="post" enctype="multipart/form-data">
-            <div class="field full"><label>프로필 사진</label><input name="atchFile" type="file" accept="image/*" /></div>
+        <h2 class="page-title">사원 계정 최종 확인</h2>
+        <form id="createForm" class="form" action="createAccount.hr" method="post" enctype="multipart/form-data">
+            <div class="field full"><label>사번*</label><input name="empNo" readonly /></div>
+            <div class="field full"><label>비밀번호*</label><input name="empPwd" readonly /></div>
+            <div class="field full"><label>이메일*</label><input name="email" type="email" readonly /></div>
+            <div class="field full"><label>프로필 사진</label><input name="photo" type="file" accept="image/*" /></div>
             <div class="field"><label>성*</label><input name="empLName" required /></div>
             <div class="field"><label>이름*</label><input name="empName" required /></div>
             <div class="field"><label>영문 성*</label><input name="empEngLName" required /></div>
@@ -42,61 +45,17 @@
                 </select>
             </div>
             <div class="field"><label>직급*</label>
-                <select name="jobNo" required>
+                <select name="jobCode" required>
                     <option value="">선택</option>
-                    <option value="1">사원</option><option value="2">대리</option><option value="3">과장</option><option value="4">차장</option><option value="5">부장</option>
+                    <option>사원</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option>
                 </select>
             </div>
             <div class="field full"><label>주소</label><input name="address" /></div>
             <div class="field"><label>전화번호</label><input name="phone" placeholder="010-0000-0000" /></div>
             <div class="field"><label>내선번호</label><input name="extNo" placeholder="1234" /></div>
-            <div class="field"><label>입사일*</label><input name="hireDate" type="date"/></div>
-            <input type="hidden" id="jobCode" name="jobCode">
-
-            <script>
-                $(document).ready(function() {
-                    // 부서 또는 직급 선택이 변경될 때마다 함수 실행
-                    $('select[name="deptCode"], select[name="jobNo"]').on('change', function() {
-                        updateJobCode();
-                    });
-
-                    // job_code를 업데이트하는 함수
-                    function updateJobCode() {
-                        const deptCode = $('select[name="deptCode"]').val();
-                        const jobNo = $('select[name="jobNo"]').val();
-
-                        let deptInitial = '';
-
-                        // 부서 코드(D1, D2)를 J코드로 변환
-                        switch(deptCode) {
-                            case 'D1':
-                                deptInitial = 'J1';
-                                break;
-                            case 'D2':
-                                deptInitial = 'J2';
-                                break;
-                            case 'D3':
-                                deptInitial = 'J3';
-                                break;
-                            case 'D4':
-                                deptInitial = 'J4';
-                                break;
-                        }
-
-                        // 두 값이 모두 선택되었을 때만 job_code 조합
-                        if (deptInitial && jobNo) {
-                            const combinedCode = deptInitial + jobNo;
-                            $('#jobCode').val(combinedCode);
-                        } else {
-                            // 하나라도 선택되지 않았다면 값 초기화
-                            $('#combinedJobCode').val('');
-                        }
-                    }
-                });
-            </script>
-
+            <div class="field"><label>입사일*</label><input name="hireDate" type="date" required/></div>
             <div class="actions">
-                <button class="btn" type="submit">등록</button>
+                <button class="btn" type="submit" onclick="insertInfo()">등록</button>
                 <a class="btn ghost" th:href="@{/hr/empAccount.hr}">취소</a>
             </div>
         </form>

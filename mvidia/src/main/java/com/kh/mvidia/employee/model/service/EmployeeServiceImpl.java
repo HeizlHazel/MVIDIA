@@ -1,5 +1,6 @@
 package com.kh.mvidia.employee.model.service;
 
+import com.kh.mvidia.common.model.vo.Attachment;
 import com.kh.mvidia.employee.model.dao.EmployeeDao;
 import com.kh.mvidia.employee.model.vo.Employee;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -21,7 +22,17 @@ public class EmployeeServiceImpl implements EmployeeService{
 	}
 	
 	@Override
-	public int insertEmp(Employee emp) {
+	public int insertFile(Attachment atch){
+		return empDao.insertFile(sqlSession, atch);
+	}
+	
+	@Override
+	public int insertEmpInfo(Employee emp) {
+		return empDao.insertEmpInfo(sqlSession, emp);
+	}
+	
+	@Override
+	public int updateFile(Attachment atch){
 		return 0;
 	}
 	

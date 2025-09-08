@@ -1,6 +1,7 @@
 package com.kh.mvidia.employee.model.service;
 
 
+import com.kh.mvidia.common.model.vo.Attachment;
 import com.kh.mvidia.employee.model.vo.Employee;
 
 public interface EmployeeService {
@@ -9,9 +10,13 @@ public interface EmployeeService {
 	Employee loginEmp(Employee emp);
 	
 	// 사원 생성 서비스
-	int insertEmp(Employee emp);
+	int insertFile(Attachment atch);
+	
+	int insertEmpInfo(Employee emp);
 	
 	// 사원 수정 서비스
+	int updateFile(Attachment atch)
+	
 	int updateEmp(Employee emp);
 	
 	// 사원 삭제 서비스

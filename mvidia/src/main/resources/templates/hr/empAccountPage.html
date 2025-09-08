@@ -95,7 +95,6 @@
             </div>
         </div>
     </div>
-
     <script>
         $(document).ready(function() {
             // 모달이 닫힐 때 내용 초기화
@@ -128,14 +127,12 @@
                         data: { empNo: empNo },
                         success: function(response) {
                             if (response.success) {
-                                // 성공 시 정보 표시
+                                $(infoSelector).show();
                                 $(infoSelector + 'Name').text(response.name);
                                 $(infoSelector + 'Rank').text(response.rank);
                                 $(infoSelector + 'Dept').text(response.dept);
-                                $(infoSelector).show();
                             } else {
-                                // 실패 시 에러 메시지 표시
-                                $(errorSelector).text(response.message).show();
+                                $(errorSelector).text('사번이 올바르지 않습니다.').show();
                             }
                         },
                         error: function() {
@@ -146,7 +143,37 @@
                     $(errorSelector).text('사번이 8자리를 초과했습니다.').show();
                 }
             }
-        });
-    </script>
-</body>
-</html>
+
+            // 수정 확인 버튼 클릭 시
+            $('#btnConfirmUpdate').on('click', function() {
+                const empNo = $('#updateEmpNo').val();
+                location.href = `/hr/accountModifyDetail.hr?empNo=${empNo}`;
+            });
+
+            // 삭제 확인 버튼 클릭 시
+            $('#btnConfirmDelete').on('click', function() {
+                const empNo = $('#deleteEmpNo').val();
+                const empName = $('#deleteEmpName').text();
+                const empRank = $('#deleteEmpRank').text();
+
+                alertify.confirm(`${empName} ${empRank}의 계정을 삭제하시겠습니까?`,
+                    function(e) {
+                        if (e) {
+                            // 확인(OK)을 누르면 삭제 로직 실행
+                            $.ajax({
+                                url: '/hr/accountDelete.hr',
+                                type: 'POST',
+                                data: { empNo: empNo },
+                                success: function(response) {
+                                    if (response.success) {
+                                        alertify.success('계정이 성공적으로 삭제되었습니다.');
+                                        $('#deleteModal').modal('hide');
+                                    } else {
+                                        alertify.error('삭제에 실패했습니다: ' + response.message);
+                                    }
+                                },
+                                error: function() {
+                                    alertify.error('서버 통신 오류로 삭제에 실패했습니다.');
+
+    </body>
+    </html>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="AttachmentMapper">
+    <resultMap id="attachmentResultSet" type="Attachment">
+        <result column="atch_id" property="atchId"/>
+        <result column="ref_type" property="refType"/>
+        <result column="origin_name" property="originName"/>
+        <result column="change_name" property="changeName"/>
+        <result column="upload_date" property="uploadDate"/>
+        <result column="up_emp_no" property="uploadEmpNo"/>
+        <result column="file_status" property="fileStatus"/>
+    </resultMap>
+
+    <insert id="insertFile">
+        insert
+            into tb_attachment
+             (
+               ref_type
+             , origin_name
+             , change_name
+              )
+             values
+             (
+               #{refType}
+             , #{originName}
+             , #{changeName}
+             )
+    </insert>
+
+</mapper>

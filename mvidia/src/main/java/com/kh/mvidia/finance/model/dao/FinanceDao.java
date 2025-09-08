@@ -3,7 +3,6 @@ package com.kh.mvidia.finance.model.dao;
 import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
 import org.apache.ibatis.session.SqlSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -15,6 +14,10 @@ public class FinanceDao {
 
     public List<Salary> selectSalaryByMonth(SqlSession sqlSession, String yearMonth) {
         return sqlSession.selectList("salaryMapper.selectSalaryByMonth", yearMonth);
+    }
+
+    public List<Salary> selectSalaryByCondition(SqlSession sqlSession, Map<String, Object> param) {
+        return sqlSession.selectList("salaryMapper.selectSalaryByCondition", param);
     }
 
     public List<Attendance> selectAttendanceByEmpMonth(SqlSession sqlSession, String empNo, String yearMonth) {
@@ -43,4 +46,28 @@ public class FinanceDao {
         return sqlSession.update("salaryMapper.upsertSalaryOver", param);
     }
 
+    public int upsertSalaryTax(SqlSession sqlSession, String empNo , String yearMonth, String taxCode, int amount) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("empNo", empNo);
+        param.put("yearMonth", yearMonth);
+        param.put("taxCode", taxCode);
+        param.put("amount", amount);
+        return sqlSession.update("salaryMapper.upsertSalaryTax", param);
+    }
+
+    public int selectDeductByEmpMonth(SqlSession sqlSession, String empNo, String yearMonth) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("empNo", empNo);
+        param.put("yearMonth", yearMonth);
+        return sqlSession.selectOne("salaryMapper.selectDeductByEmpMonth", param);
+    }
+
+    public int upsertSalaryTax(SqlSession sqlSession, String empNo, String yearMonth, String taxCode, String amount) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("empNo", empNo);
+        param.put("yearMonth", yearMonth);
+        param.put("taxCode", taxCode);
+        param.put("amount", amount);
+        return sqlSession.update("salaryMapper.upsertSalaryTax", param);
+    }
 }

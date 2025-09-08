@@ -7,28 +7,113 @@
 <head>
     <meta charset="UTF-8">
     <title>급여 명세</title>
-</head>
-<body>
 
-<h2 th:text="${yearMonth} + ' 급여 현황'"></h2>
+    <script th:inline="javascript">
+        const selectedJobCode = /*[[${jobCode}]]*/ '';
+    </script>
+
+    <script>
+        const jobOptions = {
+            D01: [
+                {code: "J11", name: "인사팀부장"},
+                {code: "J12", name: "차장"}
+            ],
+            D02: [
+                {code: "J21", name: "부장"},
+                {code: "J22", name: "차장"}
+            ],
+            D03: [
+                {code: "J31", name: "부장"},
+                {code: "J32", name: "차장"}
+            ],
+            D04: [
+                {code: "J41", name: "부장"},
+                {code: "J42", name: "차장"}
+            ]
+        };
+
+        function updateJobSelect() {
+            const deptSelect = document.getElementById("deptCode");
+            const jobSelect = document.getElementById("jobCode");
+            const dept = deptSelect.value;
+
+            // 직급 select 초기화
+            jobSelect.innerHTML = "<option value=''>전체</option>";
+
+            if (jobOptions[dept]) {
+                jobOptions[dept].forEach(job => {
+                    let opt = document.createElement("option");
+                    opt.value = job.code;
+                    opt.text = job.name;
+                    jobSelect.appendChild(opt);
+                });
+            }
+
+            if (selectedJobCode) {
+                jobSelect.value = selectedJobCode;
+            }
+        }
+    </script>
+</head>
+
+<body onload="updateJobSelect()">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>급여 현황</h2>
+    <a th:href="@{/finance/payroll/export}" class="btn btn-primary btn-print">
+        <i class="bi bi-printer"></i> 급여명세서 출력
+    </a>
+</div>
+
+<form method="get" action="/finance/payroll" style="margin-bottom:20px">
+    지급월:
+    <input type="month" name="yearMonth" th:value="${yearMonth}">
+
+    부서:
+    <select id="deptCode" name="deptCode" onchange="updateJobSelect()">
+        <option value="">전체</option>
+        <option value="D01" th:selected="${deptCode == 'D01'}">인사팀</option>
+        <option value="D02" th:selected="${deptCode == 'D02'}">경영관리팀</option>
+        <option value="D03" th:selected="${deptCode == 'D03'}">생산품질관리팀</option>
+        <option value="D04" th:selected="${deptCode == 'D04'}">기술관리팀</option>
+    </select>
+
+    직급:
+    <select id="jobCode" name="jobCode">
+        <option value="">전체</option>
+    </select>
+
+    사원이름:
+    <input type="text" name="empName" th:value="${empName}"placeholder="사원이름을 적어주세요">
+
+    <button type="submit" class="btn btn-secondary">검색</button>
+</form>
 
 <table class="table table-bordered text-center" style="width:100%; background:white;">
     <thead class="thead-light">
     <tr>
         <th>사번</th>
-        <th>지급월</th>
+        <th>사원명</th>
+        <th>부서</th>
+        <th>직급</th>
         <th>기본급</th>
         <th>추가수당</th>
-        <th>보너스</th>
+        <th>상여</th>
+        <th>공제</th>
+        <th>실지급액</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="s : ${salaryList}">
         <td th:text="${s.empNo}"></td>
-        <td th:text="${s.payDate}"></td>
-        <td th:text="${s.salary}"></td>
-        <td th:text="${s.ovPrice}"></td>
-        <td th:text="${s.bonus}"></td>
+        <td th:text="${s.empName}"></td>
+        <td th:text="${s.deptName}"></td>
+        <td th:text="${s.jobName}"></td>
+        <td th:text="${s.salary != null ? s.salary : 0}"></td>
+        <td th:text="${s.ovPrice != null ? s.ovPrice : 0}"></td>
+        <td th:text="${s.bonusAmt != null ? s.bonusAmt : 0}"></td>
+        <td th:text="${s.deductAmt != null ? s.deductAmt : 0}"></td>
+        <td th:text="${s.netPay != null ? s.netPay : 0}"></td>
     </tr>
     </tbody>
 </table>

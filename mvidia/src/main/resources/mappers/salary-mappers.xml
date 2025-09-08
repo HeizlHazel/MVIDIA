@@ -10,7 +10,15 @@
         <result column="salary" property="salary"/>
         <result column="ovPrice" property="ovPrice"/>
         <result column="bonus" property="bonus"/>
+        <result column="emp_name" property="empName"/>
+        <result column="dept_code" property="deptCode"/>
+        <result column="dept_name" property="deptName"/>
+        <result column="job_code" property="jobCode"/>
+        <result column="job_name" property="jobName"/>
     </resultMap>
+
+
+
 
     <resultMap id="attendanceResultSet" type="Attendance">
         <result column="ATT_NO" property="attNo"/>
@@ -18,16 +26,38 @@
         <result column="ATT_DATE" property="attDate"/>
         <result column="LEAVING_TIME" property="leavingTime"/>
     </resultMap>
-    
-    <select id="selectSalaryByMonth" resultMap="salaryResultSet">
-        SELECT TO_CHAR(PAY_DATE, 'YYYYMM') AS payDate,
-               EMP_NO                      AS empNo,
-               SALARY                      AS salary,
-               NVL(OV_PRICE, 0)            AS ovPrice,
-               NVL(BONUS, 0)               AS bonus
-          FROM TB_SALARY
-         WHERE TO_CHAR(PAY_DATE, 'YYYYMM') = #{yearMonth}
+
+    <select id="selectSalaryByCondition" resultMap="salaryResultSet">
+        SELECT TO_CHAR(s.PAY_DATE, 'YYYYMM') AS payDate,
+        s.EMP_NO                      AS empNo,
+        s.SALARY                      AS salary,
+        NVL(s.OV_PRICE, 0)            AS ovPrice,
+        NVL(s.BONUS, 0)               AS bonus,
+        e.EMP_NAME,
+        e.dept_code,
+        d.dept_name,
+        e.job_code,
+        j.job_name
+        FROM TB_SALARY s
+        JOIN TB_EMPLOYEE e ON s.EMP_NO = e.EMP_NO
+        JOIN TB_DEPARTMENT d ON e.DEPT_CODE = d.DEPT_CODE
+        JOIN TB_JOB j ON e.JOB_CODE = j.JOB_CODE
+        WHERE 1=1
+        <if test="yearMonth != null and yearMonth != ''">
+            AND TO_CHAR(s.PAY_DATE, 'YYYYMM') = #{yearMonth}
+        </if>
+        <if test="deptCode != null and deptCode != ''">
+            AND e.DEPT_CODE = #{deptCode}
+        </if>
+        <if test="jobCode != null and jobCode != ''">
+            AND e.JOB_CODE = #{jobCode}
+        </if>
+        <if test="empName != null and empName != ''">
+            AND e.EMP_NAME LIKE '%' || #{empName} || '%'
+        </if>
+        ORDER BY s.EMP_NO
     </select>
+
 
     <select id="selectAttendanceByMonth" resultMap="attendanceResultSet">
         SELECT ATT_NO,
@@ -37,6 +67,13 @@
           FROM TB_ATTENDANCE
          WHERE TO_CHAR(ATT_DATE,'YYYYMM') = #{yearMonth}
          ORDER BY EMP_NO, ATT_DATE
+    </select>
+
+    <select id="selectDeductByEmpMonth" resultType="int">
+        select nvl(sum(amount), 0)
+          from tb_salary_tax
+         where emp_no = #{empNo}
+           and to_char(pay_date, 'YYYYMM') = #{yearMonth}
     </select>
 
     <update id="updateOvPrice">
@@ -69,5 +106,24 @@
          VALUES (d.emp_no, d.pay_date, d.ov_code, d.amount)
     </update>
 
-
+    <update id="upsertSalaryTax">
+         MERGE INTO TB_SALARY_TAX t
+         USING (
+             SELECT #{empNo} AS emp_no,
+                    (SELECT MAX(PAY_DATE)
+                       FROM TB_SALARY
+                      WHERE EMP_NO = #{empNo}
+                        AND TO_CHAR(PAY_DATE,'YYYYMM') = #{yearMonth}
+                    ) AS pay_date,
+                    #{taxCode} AS tax_code,
+                    #{amount}  AS amount
+             FROM dual
+        ) d
+        ON (t.emp_no = d.emp_no AND t.pay_date = d.pay_date AND t.tax_code = d.tax_code)
+        WHEN MATCHED THEN
+            UPDATE SET t.amount = d.amount
+        WHEN NOT MATCHED THEN
+            INSERT (emp_no, pay_date, tax_code, amount)
+            VALUES (d.emp_no, d.pay_date, d.tax_code, d.amount)
+    </update>
 </mapper>

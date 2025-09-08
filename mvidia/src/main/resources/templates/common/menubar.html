@@ -77,13 +77,14 @@
 
             <!-- 기술지원팀 소속인 경우 노출되는 메뉴 -->
             <li>
-                <div class="link" data-toggle>🧭 관리자 메뉴</div>
+                <a th:href="@{/admin}">
+                    <div class="link" data-toggle>⚙ 시스템 관리</div>
+                </a>
                 <div class="submenu">
-                    <a th:href="@{/admin/main}">관리자 메인</a>
-                    <a th:href="@{/admin/main}">계정 권한 관리</a>
-                    <a th:href="@{/hr/accounts}">사용자 계정 잠금 해제</a>
-                    <a th:href="@{/hr/integrated}">부서 생성/수정/삭제</a>
-                    <a th:href="@{/hr/attendance}">ERP UI 설정</a>
+                    <a th:href="@{/permission}">계정 권한 관리</a>
+                    <a th:href="@{/unlock}">사용자 계정 잠금 해제</a>
+                    <a th:href="@{/dept}">부서 생성/수정/삭제</a>
+                    <a th:href="@{/ui}">ERP UI 설정</a>
                 </div>
             </li>
 

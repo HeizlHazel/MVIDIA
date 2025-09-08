@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2991ad14-1092-4f25-bd7f-bbfabbd67819" name="Changes" comment="" />
+    <list default="true" id="2991ad14-1092-4f25-bd7f-bbfabbd67819" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/admin/controller/adminController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/common/controller/HomeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/common/controller/HomeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvidia/src/main/resources/templates/admin/adminDashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/mvidia/src/main/resources/templates/admin/adminDashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvidia/src/main/resources/templates/admin/grantRevokePermission.html" beforeDir="false" afterPath="$PROJECT_DIR$/mvidia/src/main/resources/templates/admin/grantRevokePermission.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvidia/src/main/resources/templates/common/menubar.html" beforeDir="false" afterPath="$PROJECT_DIR$/mvidia/src/main/resources/templates/common/menubar.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -31,27 +39,28 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="HTML File" />
+        <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 8
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="32Gm7ZArfHEouIqFXWGdogvZoAz" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
-    <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "DefaultHtmlFileTemplate": "HTML File",
+    "Gradle.Download Sources.executor": "Run",
     "Gradle.mvidia [:com.kh.mvidia.MvidiaApplication.main()].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -60,6 +69,9 @@
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/mvidia",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.0",
     "settings.editor.selected.configurable": "File.Encoding"
   }
 }]]></component>

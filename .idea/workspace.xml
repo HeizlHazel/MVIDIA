@@ -4,22 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2991ad14-1092-4f25-bd7f-bbfabbd67819" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/Permission/model/dao/PermissionDao.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/Permission/model/service/PermissionService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/Permission/model/service/PermissionServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/Permission/model/vo/Department.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/Permission/model/vo/EmpPermission.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/Permission/model/vo/Employee.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/Permission/model/vo/Permission.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mvidia/src/main/resources/mappers/permission-mapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/admin/controller/adminController.java" beforeDir="false" afterPath="$PROJECT_DIR$/mvidia/src/main/java/com/kh/mvidia/Permission/controller/PermissionController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvidia/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/mvidia/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvidia/src/main/resources/templates/admin/adminDashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/mvidia/src/main/resources/templates/admin/adminDashboard.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvidia/src/main/resources/templates/admin/grantRevokePermission.html" beforeDir="false" afterPath="$PROJECT_DIR$/mvidia/src/main/resources/templates/admin/grantRevokePermission.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mvidia/src/main/resources/templates/common/header.html" beforeDir="false" afterPath="$PROJECT_DIR$/mvidia/src/main/resources/templates/common/header.html" afterDir="false" />
-    </list>
+    <list default="true" id="2991ad14-1092-4f25-bd7f-bbfabbd67819" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

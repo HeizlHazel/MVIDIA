@@ -13,9 +13,24 @@ public class HrController {
 		return "hr/hrMainPage";
 	}
 	
-	@GetMapping("empAccount.hr")
+	@GetMapping("/empAccount.hr")
 	public String empAccountPage(){
 		return "/hr/empAccountPage";
+	}
+	
+	@GetMapping("/accountCreate.hr")
+	public String accountCreateForm(){
+		return "/hr/accountCreateFormPage";
+	}
+	
+	@GetMapping("/accountModify.hr")
+	public String accountModifyForm(){
+		return "/hr/accountModifyFormPage";
+	}
+	
+	@GetMapping("/accountDelete.hr")
+	public String accountDeleteForm(){
+		return "/hr/accountDeleteFormPage";
 	}
 	
 }

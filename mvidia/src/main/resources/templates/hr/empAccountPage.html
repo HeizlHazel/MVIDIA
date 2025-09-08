@@ -1,12 +1,152 @@
 <!DOCTYPE html>
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        .hrEmpAccount{grid-column:2;grid-row:2; background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);}
+        .hrEmpAccount>.widget{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+        .page-title{font-size:20px;margin:0 0 12px 0}
+        .stack{display:flex;gap:10px;flex-wrap:wrap}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background-color:#0c197f ;color:#fff}
+        .hrEmpAccount .btn:hover{color:#00BDA7;}
+        .btn.alt{background:#0f7a90}
+        .btn.warn{background:var(--warn)}
+        .btn.danger{background:var(--danger)}
+        .btn.ghost{background:transparent;color:#002B39;border:1px solid #002B39}
+        .modal-body .input-group {display: flex; gap: 10px; align-items: center;}
+        .emp-info { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; background-color: #f0f4f7;}
+        .emp-info .name, .emp-info .dept { font-weight: bold;}
+        .error-message { display: none; color: var(--danger); margin-top: 10px;}
+    </style>
 </head>
 <body>
+    <!-- 메인 컨텐츠 -->
+    <div class="hrEmpAccount">
+        <div class="widget" id="home">
+            <h2 class="page-title">사원 계정 · 작업 선택</h2>
+            <div class="stack">
+                <a class="btn" th:href="@{/hr/accountCreate.hr}">생성</a>
+                <a class="btn alt"  data-toggle="modal" data-target="#updateModal">수정</a>
+                <a class="btn danger" data-toggle="modal" data-target="#deleteModal">삭제</a>
+                <a class="btn ghost" th:href="@{/hr/hrMainPage}">
+                    <i class="bi bi-arrow-return-left"></i>
+                    메인으로
+                </a>
+            </div>
+        </div>
+    </div>
 
+    <!-- 수정 모달 -->
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">사원 계정 수정</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <input id="updateEmpNo" class="form-control" type="text" placeholder="사번 입력" maxlength="8" />
+                        <button class="btn" id="btnFindForUpdate">조회</button>
+                    </div>
+                    <div class="emp-info" id="updateEmpInfo">
+                        <p><strong>이름:</strong> <span id="updateEmpName"></span></p>
+                        <p><strong>직급:</strong> <span id="updateEmpRank"></span></p>
+                        <p><strong>부서:</strong> <span id="updateEmpDept"></span></p>
+                        <button class="btn" id="btnConfirmUpdate">수정 진행</button>
+                    </div>
+                    <p class="error-message" id="updateErrorMsg"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 삭제 모달 -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">사원 계정 삭제</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <input id="deleteEmpNo" class="form-control" type="text" placeholder="사번 입력" maxlength="8" />
+                        <button class="btn danger" id="btnFindForDelete">조회</button>
+                    </div>
+                    <div class="emp-info" id="deleteEmpInfo">
+                        <p><strong>이름:</strong> <span id="deleteEmpName"></span></p>
+                        <p><strong>직급:</strong> <span id="deleteEmpRank"></span></p>
+                        <p><strong>부서:</strong> <span id="deleteEmpDept"></span></p>
+                        <button class="btn danger" id="btnConfirmDelete">삭제 진행</button>
+                    </div>
+                    <p class="error-message" id="deleteErrorMsg"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // 모달이 닫힐 때 내용 초기화
+            $('#updateModal, #deleteModal').on('hidden.bs.modal', function() {
+                $(this).find('input').val('');
+                $(this).find('.emp-info').hide();
+                $(this).find('.error-message').hide();
+            });
+
+            // 사번 입력 시 동적 조회 (수정 모달)
+            $('#updateEmpNo').on('input', function() {
+                searchEmployee($(this).val(), '#updateEmpInfo', '#updateErrorMsg');
+            });
+
+            // 사번 입력 시 동적 조회 (삭제 모달)
+            $('#deleteEmpNo').on('input', function() {
+                searchEmployee($(this).val(), '#deleteEmpInfo', '#deleteErrorMsg');
+            });
+
+            // 실제 서버와 통신하는 함수 (AJAX)
+            function searchEmployee(empNo, infoSelector, errorSelector) {
+                $(infoSelector).hide();
+                $(errorSelector).hide();
+
+                if (empNo.length === 8) {
+                    // AJAX 요청 시작
+                    $.ajax({
+                        url: '/hr/checkEmpNo.hr',
+                        type: 'GET',
+                        data: { empNo: empNo },
+                        success: function(response) {
+                            if (response.success) {
+                                // 성공 시 정보 표시
+                                $(infoSelector + 'Name').text(response.name);
+                                $(infoSelector + 'Rank').text(response.rank);
+                                $(infoSelector + 'Dept').text(response.dept);
+                                $(infoSelector).show();
+                            } else {
+                                // 실패 시 에러 메시지 표시
+                                $(errorSelector).text(response.message).show();
+                            }
+                        },
+                        error: function() {
+                            $(errorSelector).text('서버 통신 오류가 발생했습니다.').show();
+                        }
+                    });
+                } else if (empNo.length > 8) {
+                    $(errorSelector).text('사번이 8자리를 초과했습니다.').show();
+                }
+            }
+        });
+    </script>
 </body>
 </html>

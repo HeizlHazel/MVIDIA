@@ -9,41 +9,12 @@
     <title>계정 권한 관리</title>
 
     <style>
-        .content {
-            background-color: #f5f5f5;
-            width: calc(100% - 250px);
-            position: absolute;
-            left: 250px;
-            margin: 0;
-            height: 855px;
-        }
-
-        /* 페이지 헤더 */
-        .page-header {
-            margin-bottom: 30px;
-            padding: 30px 30px 0 30px;
-        }
-        .page-header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .page-header h1::before {
-            content: "🏠";
-            font-size: 20px;
-        }
-
         /* 카드 그리드 */
         .card-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 20px;
-            max-width: 800px;
-            padding: 30px;
+            margin-bottom:20px;
         }
 
         /* 개별 카드 스타일 */
@@ -52,18 +23,22 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
+            /* width: 1200px; */
         }
-
-        .innerOuter:hover {
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            transform: translateY(-2px);
-        }
-
         .card-header {
-            background-color: transparent !important;
-            border-bottom: none !important;
+            all: unset; /* 기존 스타일 무시 */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size:18px;
+            font-weight:700;
+            color:#333
         }
 
         .card-button {
@@ -143,22 +118,17 @@
 <body>
     <div class="content">
         <div class="page-header">
-            <h1>계정 권한 관리</h1>
+            <h3>🔑 계정 권한 관리</h3>
         </div>
         <div class="card-grid">
             <div class="innerOuter">
                 <!-- 메뉴1 -->
                 <div class="card-header">
-                        <table width="500px">
-                            <tr>
-                                <th>사용자 검색</th>
-                            </tr>
-                            <tr>
-                                <td><input type="text" id="empNo" placeholder="사번 입력"></td>
-                            </tr>
-                        </table>
-                        <button class="card-button" type="button" onclick="searchEmp()">검색</button>
+                    <div class="card-title">사용자 검색</div>
                 </div>
+
+                <input type="text" id="empNo" placeholder="사번 입력" width="300px">
+                <button class="card-button" type="button" onclick="searchEmp()">검색</button>
             </div>
 
             <div class="innerOuter">
@@ -173,7 +143,7 @@
                         const empNo = $("#empNo").val();
 
                         $.ajax({
-                            url:"search1.do",
+                            url:"search1.pe",
                             data:{empNo: empNo},
                             success:function(response){
                                 console.log(response);
@@ -187,7 +157,7 @@
                     }
                 </script>
 
-                <form>
+                <form id="postForm" method="post">
                     <div class="permission-row">
                         <span>시스템 관리자 권한</span>
                             <label class="toggle-container">
@@ -225,8 +195,14 @@
                     </div>
 
                     <button class="card-button" type="reset">취소</button>
-                    <button class="card-button" type="submit">권한 저장</button>
+                    <button class="card-button" type="submit" onclick="grantRevoke()">권한 저장</button>
                 </form>
+
+                <script>
+                    function grantRevoke(){
+                        $("#postForm").attr("action", "updatePerm.pe").submit();
+                    }
+                </script>
             </div>
         </div>
     </div>

@@ -42,7 +42,7 @@
         JOIN TB_EMPLOYEE e ON s.EMP_NO = e.EMP_NO
         JOIN TB_DEPARTMENT d ON e.DEPT_CODE = d.DEPT_CODE
         JOIN TB_JOB j ON e.JOB_CODE = j.JOB_CODE
-        WHERE 1=1
+        <where>
         <if test="yearMonth != null and yearMonth != ''">
             AND TO_CHAR(s.PAY_DATE, 'YYYYMM') = #{yearMonth}
         </if>
@@ -55,9 +55,50 @@
         <if test="empName != null and empName != ''">
             AND e.EMP_NAME LIKE '%' || #{empName} || '%'
         </if>
+        </where>
         ORDER BY s.EMP_NO
     </select>
 
+    <select id="selectSalaryByEmpAndMonth" parameterType="map"
+            resultType="Salary">
+        SELECT
+        TO_CHAR(s.PAY_DATE, 'YYYY-MM') AS payDate,
+        s.EMP_NO                      AS empNo,
+        s.SALARY                      AS salary,
+        NVL(s.OV_PRICE, 0)            AS ovPrice,
+        NVL(s.BONUS, 0)               AS bonus,
+        (s.SALARY * NVL(s.BONUS, 0) / 100) AS bonusAmt,
+        NVL(s.DEDUCT_AMT, 0)          AS deductAmt,
+        (s.SALARY + NVL(s.OV_PRICE,0) + NVL(s.BONUS,0) - NVL(s.DEDUCT_AMT,0)) AS netPay,
+        e.EMP_NAME                    AS empName,
+        e.DEPT_CODE                   AS deptCode,
+        d.DEPT_NAME                   AS deptName,
+        e.JOB_CODE                    AS jobCode,
+        j.JOB_NAME                    AS jobName,
+        -- 추가수당
+        NVL((SELECT AMOUNT FROM TB_SALARY_OVER
+            WHERE EMP_NO = s.EMP_NO
+            AND PAY_DATE = s.PAY_DATE
+            AND OV_CODE = 'OV0001'), 0) AS extendOv,
+        NVL((SELECT AMOUNT FROM TB_SALARY_OVER
+            WHERE EMP_NO = s.EMP_NO
+            AND PAY_DATE = s.PAY_DATE
+            AND OV_CODE = 'OV0002'), 0) AS nightOv,
+        NVL((SELECT AMOUNT FROM TB_SALARY_OVER
+            WHERE EMP_NO = s.EMP_NO
+            AND PAY_DATE = s.PAY_DATE
+            AND OV_CODE = 'OV0003'), 0) AS weekendOv,
+        NVL((SELECT AMOUNT FROM TB_SALARY_OVER
+            WHERE EMP_NO = s.EMP_NO
+            AND PAY_DATE = s.PAY_DATE
+            AND OV_CODE = 'OV0004'), 0) AS tripOv
+         FROM TB_SALARY s
+         JOIN TB_EMPLOYEE e ON s.EMP_NO = e.EMP_NO
+         JOIN TB_DEPARTMENT d ON e.DEPT_CODE = d.DEPT_CODE
+         JOIN TB_JOB j ON e.JOB_CODE = j.JOB_CODE
+        WHERE s.EMP_NO = #{empNo}
+          AND TO_CHAR(s.PAY_DATE, 'YYYY-MM') = #{payDate}
+    </select>
 
     <select id="selectAttendanceByMonth" resultMap="attendanceResultSet">
         SELECT ATT_NO,
@@ -126,4 +167,21 @@
             INSERT (emp_no, pay_date, tax_code, amount)
             VALUES (d.emp_no, d.pay_date, d.tax_code, d.amount)
     </update>
+
+    <update id="updateDeductAmt" parameterType="map">
+        UPDATE TB_SALARY
+        SET DEDUCT_AMT = #{deductAmt}
+        WHERE EMP_NO = #{empNo}
+        AND PAY_DATE = #{payDate}
+    </update>
+
+    <select id="selectTaxesByEmpAndMonth" parameterType="map" resultType="Tax">
+        SELECT TAX_CODE    AS taxCode,
+        EMP_NO      AS empNo,
+        TO_CHAR(PAY_DATE, 'YYYY-MM') AS payDate,
+        AMOUNT      AS amount
+        FROM TB_SALARY_TAX
+        WHERE EMP_NO = #{empNo}
+        AND TO_CHAR(PAY_DATE, 'YYYY-MM') = #{yearMonth}
+    </select>
 </mapper>

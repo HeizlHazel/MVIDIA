@@ -2,6 +2,7 @@ package com.kh.mvidia.finance.model.dao;
 
 import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
+import com.kh.mvidia.finance.model.vo.Tax;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
 
@@ -69,5 +70,16 @@ public class FinanceDao {
         param.put("taxCode", taxCode);
         param.put("amount", amount);
         return sqlSession.update("salaryMapper.upsertSalaryTax", param);
+    }
+
+    public Salary selectSalaryByEmpAndMonth(SqlSession sqlSession, Map<String, Object> param) {
+        return sqlSession.selectOne("salaryMapper.selectSalaryByEmpAndMonth", param);
+    }
+
+    public List<Tax> selectTaxesByEmpAndMonth(SqlSession sqlSession, String empNo, String payDate) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("empNo", empNo);
+        param.put("yearMonth", payDate.replace("-", "")); // yyyy-MM → yyyyMM 변환
+        return sqlSession.selectList("salaryMapper.selectTaxesByEmpAndMonth", param);
     }
 }

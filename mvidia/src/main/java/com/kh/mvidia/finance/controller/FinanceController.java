@@ -72,7 +72,7 @@ public class FinanceController {
 
         // 화면에 전달
         model.addAttribute("salaryList", salaryList);
-        model.addAttribute("yearMonth", yearMonth);
+        model.addAttribute("yearMonth", viewYearMonth);
         model.addAttribute("deptCode", deptCode);
         model.addAttribute("jobCode", jobCode);
         model.addAttribute("empName", empName);

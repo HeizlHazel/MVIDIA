@@ -2,11 +2,13 @@ package com.kh.mvidia.finance.model.service;
 import com.kh.mvidia.finance.model.dao.FinanceDao;
 import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
+import com.kh.mvidia.finance.model.vo.Tax;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +20,14 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Autowired
     private FinanceDao financeDao;
+
+    @Override
+    public Salary getSalaryByEmpAndMonth(String empNo, String payDate) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("empNo", empNo);
+        param.put("payDate", payDate);
+        return financeDao.selectSalaryByEmpAndMonth(sqlSession, param);
+    }
 
     @Override
     public List<Salary> getSalaryByCondition(Map<String, Object> param) {
@@ -180,10 +190,8 @@ public class FinanceServiceImpl implements FinanceService {
         return salaryList;
     }
 
-
-
-
-
-
-
+    @Override
+    public List<Tax> getTaxesByEmpAndMonth(String empNo, String payDate) {
+        return financeDao.selectTaxesByEmpAndMonth(sqlSession, empNo, payDate);
+    }
 }

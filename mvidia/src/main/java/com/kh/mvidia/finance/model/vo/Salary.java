@@ -3,6 +3,8 @@ package com.kh.mvidia.finance.model.vo;
 import com.kh.mvidia.employee.model.vo.Employee;
 import lombok.*;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -22,4 +24,8 @@ public class Salary {
     private String deptName;
     private String jobCode;
     private String jobName;
+    private String extendOv;
+    private String nightOv;
+    private String weekendOv;
+    private String tripOv;
 }

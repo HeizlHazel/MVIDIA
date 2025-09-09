@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="defectiveMapper">
+
+    <resultMap id="DefectiveResultSet" type="DefectiveProduction">
+        <result column="def_no" property="defNo" />
+        <result column="prod_code" property="prodCode" />
+        <result column="def_qty" property="defQty" />
+        <result column="def_code" property="defCode" />
+        <result column="occur_date" property="occurDate" />
+        <result column="def_status" property="defStatus" />
+        <result column="remarks" property="remarks" />
+        <result column="prod_name" property="prodName" />
+        <result column="def_type" property="defType" />
+        <result column="status_name" property="statusName" />
+    </resultMap>
+
+    <!-- 불량 제품 리스트 카운트 -->
+    <select id="selectListCount" resultType="int">
+        select
+               count(*)
+        from tb_defective_production
+    </select>
+
+    <!-- 불량 제품 리스트 조회 (불량)-->
+    <select id="selectList" resultMap="DefectiveResultSet">
+        select
+               d.def_no
+             , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
+             , d.prod_code
+             , p.prod_name
+             , t.def_type
+             , d.def_qty
+             , s.status_name
+             , d.remarks
+          from tb_defective_production d
+          join tb_production_quality p on p.prod_code = d.prod_code
+          join tb_defective_type t on t.def_code = d.def_code
+          join tb_status s on s.status_code = d.def_status
+         order
+            by d.occur_date desc
+    </select>
+
+    <!-- 불량 제품 진행량 (1) -->
+    <select id="">
+        select
+        s.sch_no
+        , avg(p.prog_rate) as prog_rate
+        from tb_schedule_registration s
+        join
+        tb_progress_chart p
+        on s.schr_id = p.task_id
+        group
+        by s.sch_no
+    </select>
+
+
+
+    <!-- 불량 제품 등록 -->
+    <insert id="insertDefective">
+        insert
+        into tb_defective_production
+        (
+        def_no
+        , prod_code
+        , def_code
+        , def_qty
+        , occur_date
+        , remarks
+        , def_status
+        )
+        values
+        (
+        seq_def.nextval
+        , #{prodCode}
+        , #{defCode}
+        , #{defQty}
+        , #{occurDate}
+        , #{remarks}
+        , 'W'
+        )
+    </insert>
+
+</mapper>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .accountCreate{grid-column:2; grid-row:2; background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);}
+        .accountCreate>.widget{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+        .form{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px}
+        .form .field{display:flex;flex-direction:column;gap:8px}
+        .form label{font-size:12px;color:var(--muted)}
+        .form input,.form select,.form textarea{padding:10px 12px;border-radius:12px;border:1px solid #dde6ec;background:#fff;outline:none}
+        .form input[readonly]{background:#f1f5f8;color:#6f7c83}
+        .form .full{grid-column:1/-1}
+        .form .actions{grid-column:1/-1;display:flex;gap:8px;margin-top:6px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background-color:#0c197f ;color:#fff}
+        .btn.ghost{background:transparent;color:#002B39;border:1px solid #002B39}
+    </style>
+</head>
+<body>
+
+<!-- 메인 컨텐츠 -->
+<div class="accountCreate">
+    <div class="widget" id="home">
+        <h2 class="page-title">사원 계정 최종 확인</h2>
+        <form th:action="@{/createEmp.emp}" class="form" method="post" enctype="multipart/form-data">
+            <div class="field full"><label>사번*</label><input name="empNo" placeholder=" 자동 생성" readonly /></div>
+            <div class="field full"><label>비밀번호*</label><input name="empPwd" th:value="${emp.empPwd}" readonly /></div>
+            <div class="field full"><label>이메일*</label><input name="email" type="email"  placeholder="사번@gmail.com 자동 생성"  readonly /></div>
+            <div class="field full"><label>프로필 사진</label><input name="atchFile" type="text" th:value="${atch.originName}" readonly th:if="${atch.originName}" placeholder="선택된 파일 없음"/></div>
+            <div class="field"><label>성*</label><input name="empLName" th:value="${emp.empLName}" required readonly/></div>
+            <div class="field"><label>이름*</label><input name="empName" th:value="${emp.empName}" required readonly/></div>
+            <div class="field"><label>영문 성*</label><input name="empEngLName" th:value="${emp.empEngLName}" required readonly/></div>
+            <div class="field"><label>영문 이름*</label><input name="empEngName" th:value="${emp.empEngName}" required readonly/></div>
+            <div class="field"><label>생년월일*</label><input name="birthday" type="date" th:value="${emp.birthday}" required readonly /></div>
+            <div class="field"><label>부서*</label>
+                <!-- 첨부 파일 정보를 다음 페이지로 넘기기 위한 hidden 필드 추가 -->
+                <input type="hidden" name="originName" th:value="${atch.originName}" />
+                <input type="hidden" name="changeName" th:value="${atch.changeName}" />
+                <input type="hidden" name="refType" th:value="${atch.refType}" />
+                <select name="deptCode" required>
+                    <option value="">선택</option>
+                    <option value="D1" th:selected="${emp.deptCode == 'D1'}">인사팀</option>
+                    <option value="D2" th:selected="${emp.deptCode == 'D2'}">경영관리팀</option>
+                    <option value="D3" th:selected="${emp.deptCode == 'D3'}">생산품질관리팀</option>
+                    <option value="D4" th:selected="${emp.deptCode == 'D4'}">기술지원팀</option>
+                </select>
+            </div>
+            <div class="field"><label>직급*</label>
+                <select name="jobNo" required>
+                    <option value="">선택</option>
+                    <option th:selected="${jobNo == '5'}" value="1">사원</option>
+                    <option th:selected="${jobNo == '4'}" value="2">대리</option>
+                    <option th:selected="${jobNo == '3'}" value="3">과장</option>
+                    <option th:selected="${jobNo == '2'}" value="4">차장</option>
+                    <option th:selected="${jobNo == '1'}" value="5">부장</option>
+                </select>
+            </div>
+            <div class="field full"><label>주소*</label><input name="address" th:value="${emp.address}" required /></div>
+            <div class="field"><label>전화번호*</label><input name="phone" placeholder="010-0000-0000" th:value="${emp.phone}" required/></div>
+            <div class="field"><label>내선번호</label><input name="extNo" placeholder="1234" th:value="${emp.extNo}" /></div>
+            <div class="field"><label>입사일*</label><input name="hireDate" type="date" th:value="${emp.hireDate}" required readonly /></div>
+            <input type="hidden" id="jobCode" name="jobCode" th:value="${emp.jobCode}">
+            <div class="actions">
+                <button class="btn" type="submit">계정 생성</button>
+                <a class="btn ghost" th:href="@{/hr/empAccount.hr}">취소</a>
+            </div>
+        </form>
+
+        <script>
+            $(document).ready(function() {
+                // 부서 또는 직급 선택이 변경될 때마다 함수 실행
+                $('select[name="deptCode"], select[name="jobNo"]').on('change', function() {
+                    updateJobCode();
+                });
+
+                // job_code를 업데이트하는 함수
+                function updateJobCode() {
+                    const deptCode = $('select[name="deptCode"]').val();
+                    const jobNo = $('select[name="jobNo"]').val();
+
+                    let deptInitial = "";
+
+                    // 부서 코드(D1, D2)를 J코드로 변환
+                    switch(deptCode) {
+                        case 'D1':
+                            deptInitial = 'J1';
+                            break;
+                        case 'D2':
+                            deptInitial = 'J2';
+                            break;
+                        case 'D3':
+                            deptInitial = 'J3';
+                            break;
+                        case 'D4':
+                            deptInitial = 'J4';
+                            break;
+                    }
+
+                    // 두 값이 모두 선택되었을 때만 job_code 조합
+                    if (deptInitial && jobNo) {
+                        const combinedCode = deptInitial + jobNo;
+                        $("#jobCode").val(combinedCode);
+                    } else {
+                        // 하나라도 선택되지 않았다면 값 초기화
+                        $("#jobCode").val("");
+                    }
+                }
+            });
+        </script>
+
+    </div>
+</div>
+
+<script th:if="${alertMsg}">
+    const alertMsg = '[[${alertMsg}]]';
+    alertify.alert('계정 생성 완료', alertMsg);
+</script>
+
+</body>
+</html>

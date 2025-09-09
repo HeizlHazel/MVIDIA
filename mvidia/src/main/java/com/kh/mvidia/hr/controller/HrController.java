@@ -1,0 +1,36 @@
+package com.kh.mvidia.hr.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@Controller
+@RequestMapping("/hr")
+public class HrController {
+	
+	@GetMapping("/hrMainPage")
+	public String hrMainPage(){
+		return "hr/hrMainPage";
+	}
+	
+	@GetMapping("/empAccount.hr")
+	public String empAccountPage(){
+		return "/hr/empAccountPage";
+	}
+	
+	@GetMapping("/accountCreate.hr")
+	public String accountCreateForm(){
+		return "/hr/accountCreateFormPage";
+	}
+	
+	@GetMapping("/accountModify.hr")
+	public String accountModifyForm(){
+		return "/hr/accountModifyFormPage";
+	}
+	
+	@GetMapping("/accountDelete.hr")
+	public String accountDeleteForm(){
+		return "/hr/accountDeleteFormPage";
+	}
+	
+}

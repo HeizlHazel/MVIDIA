@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="employeeMapper">
+    <resultMap id="employeeResultSet" type="Employee">
+        <result column="emp_no" property="empNo"/>
+        <result column="emp_pwd" property="empPwd"/>
+        <result column="email" property="email"/>
+        <result column="emp_lname" property="empLName"/>
+        <result column="emp_name" property="empName"/>
+        <result column="emp_eng_lname" property="empEngLName"/>
+        <result column="emp_eng_name" property="empEngName"/>
+        <result column="birthday" property="birthday"/>
+        <result column="dept_code" property="deptCode"/>
+        <result column="dept_name" property="deptName"/>
+        <result column="job_code" property="jobCode"/>
+        <result column="job_name" property="jobName"/>
+        <result column="address" property="address"/>
+        <result column="phone" property="phone"/>
+        <result column="ext_no" property="extNo"/>
+        <result column="emp_status" property="empStatus"/>
+        <result column="create_date" property="createDate"/>
+        <result column="modify_date" property="modifyDate"/>
+        <result column="hire_Date" property="hireDate"/>
+        <result column="retired_date" property="retiredDate"/>
+    </resultMap>
+
+    <select id="loginEmp" resultMap="employeeResultSet">
+        select
+          emp_no
+        , emp_pwd
+        , email
+        , emp_lname
+        , emp_name
+        , emp_eng_lname
+        , emp_eng_name
+        , to_char(birthday, 'YYYY-MM-DD') as birthday
+        , dept_code
+        , dept_name
+        , job_code
+        , job_name
+        , address
+        , phone
+        , ext_no
+        , emp_status
+        , to_char(create_date, 'YYYY-MM-DD') as create_date
+        , to_char(modify_date, 'YYYY-MM-DD') as modify_date
+        , to_char(hire_date, 'YYYY-MM-DD') as hire_date
+        , to_char(retired_date, 'YYYY-MM-DD') as retired_date
+        from tb_employee
+        join tb_department using (dept_code)
+        join tb_job using (job_code)
+        where emp_status = 'H'
+        and emp_no = #{empNo}
+    </select>
+
+    <insert id="insertEmpInfo">
+        <!-- 1) EMP_NO를 미리 생성: YYMM || LPAD(SEQ_EMP.NEXTVAL,4,'0') -->
+        <selectKey keyProperty="empNo" resultType="string" order="BEFORE">
+            SELECT TO_CHAR( TO_DATE(#{hireDate}, 'YYYY-MM-DD'), 'YYMM')
+            || LPAD(SEQ_EMP.NEXTVAL, 4, '0')
+            FROM dual
+        </selectKey>
+
+        insert
+            into tb_employee
+             (
+               emp_no
+             , email
+             , emp_Pwd
+             , emp_lname
+             , emp_name
+             , emp_eng_lname
+             , emp_eng_name
+             , birthday
+             , dept_code
+             , job_code
+             , address
+             , phone
+             , ext_no
+             , hire_date
+             )
+             values
+             (
+               #{empNo}
+             , #{empNo} || '@gmail.com'
+             , #{empPwd}
+             , #{empLName}
+             , #{empName}
+             , #{empEngLName}
+             , #{empEngName}
+             , #{birthday}
+             , #{deptCode}
+             , #{jobCode}
+             , #{address}
+             , #{phone}
+             , #{extNo}
+             , #{hireDate}
+             )
+
+    </insert>
+
+</mapper>

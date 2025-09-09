@@ -11,19 +11,23 @@
         .sb{width:250px;min-height:100vh;background:linear-gradient(to bottom,#002B39,#003661,#186AEA);padding-top:60px;position:fixed;left:0;top:0;z-index:999}
         .menu{list-style:none;margin:0;padding:0}
         .menu>li{position:relative}
+        .menu .link{text-decoration:none}
         .link{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;color:#e7f2f7;cursor:pointer}
-        .link:hover{background:#013547}
+        .link:hover{background:#013547; color: #e7f2f7;}
         .submenu{display:none;margin:6px 0 10px 8px;border-left:2px solid rgba(255,255,255,.1);padding-left:8px}
         .submenu a{display:block;padding:8px 10px;border-radius:10px;color:#e7f2f7;text-decoration:none}
         .submenu a:hover{background:rgba(255,255,255,.08)}
         .menu>li.open>.submenu{display:block}
+        .submenu.open {display: block !important;}
+        .submenu a.active {background:rgba(255,255,255,.08)}
+        .menu .link.active{background:rgba(255,255,255,.08); color: #e7f2f7;}
     </style>
 </head>
 <body>
     <div th:fragment="menubar" class="sb">
         <ul class="menu" id="sideMenu">
             <li>
-                <a class="link" th:href="@{/}">🏠 HOME</a>
+                <a class="link" th:href="@{/mainPage}">🏠 HOME</a>
             </li>
 
             <li>
@@ -62,8 +66,8 @@
             <li>
                 <div class="link" data-toggle>🧭 인사관리</div>
                 <div class="submenu">
-                    <a th:href="@{/hr/main}">인사관리 메인</a>
-                    <a th:href="@{/hr/accounts}">사원 계정 생성/수정/삭제</a>
+                    <a th:href="@{/hr/hrMainPage}">인사관리 메인</a>
+                    <a th:href="@{/hr/empAccount.hr}">사원 계정 생성/수정/삭제</a>
                     <a th:href="@{/hr/integrated}">인사 통합 관리</a>
                     <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
                     <a th:href="@{/hr/cert}">증명서 조회/발급</a>
@@ -79,45 +83,78 @@
 
     <script>
         (function () {
-          const menu = document.getElementById('sideMenu');
-          if (!menu) return;
+            const menu = document.getElementById('sideMenu');
+            if (!menu) return;
 
-          // 아코디언
-          menu.addEventListener('click', (e) => {
-            const btn = e.target.closest('.link[data-toggle]');
-            if (!btn || !menu.contains(btn)) return;
+            // **1. 페이지 로드 시 현재 메뉴 활성화**
+            document.addEventListener('DOMContentLoaded', function() {
+                const currentPath = window.location.pathname;
 
-            const li = btn.closest('li');
-            const isOpen = li.classList.contains('open');
+                // 모든 소메뉴 링크를 찾습니다.
+                const submenuLinks = document.querySelectorAll('.submenu a');
 
-            menu.querySelectorAll(':scope > li.open').forEach((other) => {
-              if (other !== li) {
-                other.classList.remove('open');
-                const hdr = other.querySelector(':scope > .link[data-toggle]');
-                if (hdr) hdr.setAttribute('aria-expanded', 'false');
-              }
+                submenuLinks.forEach(link => {
+                    // 링크의 href 속성이 현재 URL 경로를 포함하는지 확인합니다.
+                    if (currentPath.includes(link.getAttribute('href'))) {
+                        // 해당 링크에 'active' 클래스를 추가하여 강조합니다.
+                        link.classList.add('active');
+
+                        // 부모 대메뉴를 찾아 'open' 상태로 만듭니다.
+                        const li = link.closest('li');
+                        if (li) {
+                            li.classList.add('open');
+                            const btn = li.querySelector('.link[data-toggle]');
+                            if (btn) {
+                                btn.setAttribute('aria-expanded', 'true');
+                            }
+                        }
+                    }
+                });
+
+                // HOME 링크 (단독 링크) 처리
+                const homeLink = document.querySelector('.link[href="/mainPage"]');
+                if (homeLink && currentPath.includes(homeLink.getAttribute('href'))) {
+                    homeLink.classList.add('active');
+                }
             });
 
-            li.classList.toggle('open', !isOpen);
-            btn.setAttribute('aria-expanded', String(!isOpen));
-          });
+            // **2. 아코디언 메뉴 동작 (클릭 시)**
+            menu.addEventListener('click', (e) => {
+                const btn = e.target.closest('.link[data-toggle]');
+                if (!btn || !menu.contains(btn)) return;
 
-          // 접근성
-          menu.querySelectorAll('.link[data-toggle]').forEach((hdr) => {
-            hdr.setAttribute('aria-expanded', 'false');
-            hdr.setAttribute('role', 'button');
-            hdr.setAttribute('tabindex', '0');
-          });
+                const li = btn.closest('li');
+                const isOpen = li.classList.contains('open');
 
-          // 키보드 접근
-          menu.addEventListener('keydown', (e) => {
-            const isActivator = e.target.matches('.link[data-toggle]');
-            if (!isActivator) return;
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              e.target.click();
-            }
-          });
+                // 다른 모든 대메뉴 닫기
+                menu.querySelectorAll(':scope > li.open').forEach((other) => {
+                    if (other !== li) {
+                        other.classList.remove('open');
+                        const hdr = other.querySelector(':scope > .link[data-toggle]');
+                        if (hdr) hdr.setAttribute('aria-expanded', 'false');
+                    }
+                });
+
+                // 클릭된 메뉴 토글
+                li.classList.toggle('open', !isOpen);
+                btn.setAttribute('aria-expanded', String(!isOpen));
+            });
+
+            // **3. 접근성 및 키보드 동작**
+            menu.querySelectorAll('.link[data-toggle]').forEach((hdr) => {
+                hdr.setAttribute('aria-expanded', 'false');
+                hdr.setAttribute('role', 'button');
+                hdr.setAttribute('tabindex', '0');
+            });
+
+            menu.addEventListener('keydown', (e) => {
+                const isActivator = e.target.matches('.link[data-toggle]');
+                if (!isActivator) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.target.click();
+                }
+            });
         })();
     </script>
 </body>

@@ -30,10 +30,6 @@ public class DefectiveController {
         ArrayList<DefectiveProduction> list = dService.selectList(dpi);
 
         mv.addObject("dpi", dpi).addObject("list", list).setViewName("product/defectiveListview");
-        System.out.println("listCount = " + listCount);
-        System.out.println("list.size() = " + list.size());
-
-
 
         return mv;
     }

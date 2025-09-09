@@ -36,9 +36,9 @@
              , s.status_name
              , d.remarks
           from tb_defective_production d
-          join tb_production_quality p on p.prod_code = d.prod_code
-          join tb_defective_type t on t.def_code = d.def_code
-          join tb_status s on s.status_code = d.def_status
+          left join tb_production_quality p on p.prod_code = d.prod_code
+          left join tb_defective_type t on t.def_code = d.def_code
+          left join tb_status s on s.status_code = d.def_status
          order
             by d.occur_date desc
     </select>

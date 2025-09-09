@@ -18,12 +18,14 @@
                ref_type
              , origin_name
              , change_name
+             , up_emp_no
               )
              values
              (
                #{refType}
              , #{originName}
              , #{changeName}
+             , #{uploadEmpNo}
              )
     </insert>
 

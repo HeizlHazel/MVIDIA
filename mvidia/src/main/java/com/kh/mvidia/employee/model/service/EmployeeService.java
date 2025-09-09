@@ -15,7 +15,7 @@ public interface EmployeeService {
 	int insertEmpInfo(Employee emp);
 	
 	// 사원 수정 서비스
-	int updateFile(Attachment atch)
+	int updateFile(Attachment atch);
 	
 	int updateEmp(Employee emp);
 	

@@ -14,12 +14,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
 
 
 @Controller
@@ -69,29 +73,64 @@ public class EmployeeController {
 	}
 	
 	@PostMapping("/insertInfo.emp")
-	public String insertInfo(Employee emp, Attachment atch, MultipartFile atchFile, Model model, RedirectAttributes redirectAttributes){
+	public String insertInfo(Employee emp, Attachment atch, MultipartFile atchFile, Model model, @RequestParam("jobNo") String jobNo) {
 		
-		int result1 = 1;
+		// 비밀번호 자동 생성
+		String password = null;
+		try {
+			// String 타입의 birthday를 Date 객체로 변환하여 비밀번호를 생성
+			Date birthdayDate = new SimpleDateFormat("yyyy-MM-dd").parse(emp.getBirthday());
+			password = emp.getEmpEngLName().toLowerCase() + new SimpleDateFormat("yyMMdd").format(birthdayDate);
+		} catch (ParseException e) {
+			// 날짜 변환 실패 시 예외 처리
+			e.printStackTrace();
+			model.addAttribute("errorMsg", "생년월일 형식 오류입니다.");
+			return "common/errorPage";
+		}
+		emp.setEmpPwd(password);
 		
-		if(!atchFile.getOriginalFilename().equals("")){
-			String changeName =saveFile(atchFile);
-			
+		// 파일 정보 처리
+		if (!atchFile.getOriginalFilename().equals("")) {
+			String changeName = saveFile(atchFile);
 			atch.setRefType("F");
 			atch.setOriginName(atchFile.getOriginalFilename());
 			atch.setChangeName(changeName);
-			
-			int result1 = empService.insertFile(atch);
 		}
+		
+		// 최종 확인 페이지에 전달할 데이터들을 Model에 추가
+		model.addAttribute("emp", emp);
+		model.addAttribute("atch", atch);
+		model.addAttribute("jobNo", jobNo);
+		
+		return "/hr/accountConfirmPage";
+	}
+	
+	@PostMapping("/createEmp.emp")
+	public String createEmp(Employee emp, Attachment atch, Model model, RedirectAttributes redirectAttributes){
+		
+		int result1 = 1;
+		
+		// 비밀번호 암호화 후 저장
+		String encPwd = bcryptPasswordEncoder.encode(emp.getEmpPwd());
+		emp.setEmpPwd(encPwd);
 		
 		int result2 = empService.insertEmpInfo(emp);
 		
-		if(result1 * result2 > 0) {
-			return "/hr/accountConfirmPage";
-		} else{
-			model.addAttribute("errorMsg", "사원 등록 실패");
-			return "/common.errorPage";
+		if(atch.getOriginName() != null){
+			atch.setUploadEmpNo(emp.getEmpNo());
+			result1 = empService.insertFile(atch);
 		}
+		
+		if(result1 * result2 > 0) {
+			redirectAttributes.addFlashAttribute("alertMsg", "사원 계정 생성에 성공하였습니다. 해당 사원의 사번은 " + emp.getEmpNo() + " 이고 해당 사원의 이메일은 " + emp.getEmpNo() + "@gmail.com 입니다.");
+			return "redirect:/hr/empAccount.hr";
+		} else{
+			model.addAttribute("errorMsg", "사원 계정 생성에 실패했습니다.");
+			return "common/errorPage";
+		}
+		
 	}
+
 	
 	public String saveFile(MultipartFile atchFile){
 	String originName =atchFile.getOriginalFilename();

@@ -33,7 +33,7 @@
         , emp_name
         , emp_eng_lname
         , emp_eng_name
-        , birthday
+        , to_char(birthday, 'YYYY-MM-DD') as birthday
         , dept_code
         , dept_name
         , job_code
@@ -42,10 +42,10 @@
         , phone
         , ext_no
         , emp_status
-        , create_date
-        , modify_date
-        , hire_Date
-        , retired_date
+        , to_char(create_date, 'YYYY-MM-DD') as create_date
+        , to_char(modify_date, 'YYYY-MM-DD') as modify_date
+        , to_char(hire_date, 'YYYY-MM-DD') as hire_date
+        , to_char(retired_date, 'YYYY-MM-DD') as retired_date
         from tb_employee
         join tb_department using (dept_code)
         join tb_job using (job_code)
@@ -54,10 +54,20 @@
     </select>
 
     <insert id="insertEmpInfo">
+        <!-- 1) EMP_NO를 미리 생성: YYMM || LPAD(SEQ_EMP.NEXTVAL,4,'0') -->
+        <selectKey keyProperty="empNo" resultType="string" order="BEFORE">
+            SELECT TO_CHAR( TO_DATE(#{hireDate}, 'YYYY-MM-DD'), 'YYMM')
+            || LPAD(SEQ_EMP.NEXTVAL, 4, '0')
+            FROM dual
+        </selectKey>
+
         insert
             into tb_employee
              (
-               emp_lname
+               emp_no
+             , email
+             , emp_Pwd
+             , emp_lname
              , emp_name
              , emp_eng_lname
              , emp_eng_name
@@ -67,11 +77,14 @@
              , address
              , phone
              , ext_no
-             , hire_Date
+             , hire_date
              )
-             value
+             values
              (
-               #{empLName}
+               #{empNo}
+             , #{empNo} || '@gmail.com'
+             , #{empPwd}
+             , #{empLName}
              , #{empName}
              , #{empEngLName}
              , #{empEngName}
@@ -83,6 +96,7 @@
              , #{extNo}
              , #{hireDate}
              )
+
     </insert>
 
 </mapper>

@@ -33,8 +33,8 @@
             <li>
                 <div class="link" data-toggle>👤 마이페이지</div>
                 <div class="submenu">
-                    <a th:href="@{/mypage/profile}">개인정보 조회</a>
-                    <a th:href="@{/mypage/update}">개인정보 수정 요청</a>
+                    <a th:href="@{/myPage/profile}">개인정보 조회</a>
+                    <a th:href="@{/myPage/update}">개인정보 수정 요청</a>
                 </div>
             </li>
 
@@ -63,16 +63,57 @@
                 </div>
             </li>
 
-            <li>
-                <div class="link" data-toggle>🧭 인사관리</div>
-                <div class="submenu">
-                    <a th:href="@{/hr/hrMainPage}">인사관리 메인</a>
-                    <a th:href="@{/hr/empAccount.hr}">사원 계정 생성/수정/삭제</a>
-                    <a th:href="@{/hr/integrated}">인사 통합 관리</a>
-                    <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
-                    <a th:href="@{/hr/cert}">증명서 조회/발급</a>
-                </div>
-            </li>
+            <th:block th:if="${session.loginEmp.deptCode == 'D1'}">
+                <li>
+                    <div class="link" data-toggle>🧭 인사관리</div>
+                    <div class="submenu">
+                        <a th:href="@{/hr/hrMainPage}">인사관리 메인</a>
+                        <a th:href="@{/hr/empAccount.hr}">사원 계정 생성/수정/삭제</a>
+                        <a th:href="@{/hr/integrated}">인사 통합 관리</a>
+                        <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
+                        <a th:href="@{/hr/cert}">증명서 조회/발급</a>
+                    </div>
+                </li>
+            </th:block>
+
+            <th:block th:if="${session.loginEmp.deptCode == 'D2'}">
+                <li>
+                    <div class="link" data-toggle>🧭 경영관리팀</div>
+                    <div class="submenu">
+                        <a th:href="@{/hr/hrMainPage}">경영관리팀 메인</a>
+                        <a th:href="@{/hr/empAccount.hr}">사원 계정 생성/수정/삭제</a>
+                        <a th:href="@{/hr/integrated}">인사 통합 관리</a>
+                        <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
+                        <a th:href="@{/hr/cert}">증명서 조회/발급</a>
+                    </div>
+                </li>
+            </th:block>
+
+            <th:block th:if="${session.loginEmp.deptCode == 'D3'}">
+                <li>
+                    <div class="link" data-toggle>🧭 생산품질관리팀</div>
+                    <div class="submenu">
+                        <a th:href="@{/hr/hrMainPage}">생산품질관리팀 메인</a>
+                        <a th:href="@{/hr/empAccount.hr}">사원 계정 생성/수정/삭제</a>
+                        <a th:href="@{/hr/integrated}">인사 통합 관리</a>
+                        <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
+                        <a th:href="@{/hr/cert}">증명서 조회/발급</a>
+                    </div>
+                </li>
+            </th:block>
+
+            <th:block th:if="${session.loginEmp.deptCode == 'D4'}">
+                <li>
+                    <div class="link" data-toggle>🧭 기술지원팀</div>
+                    <div class="submenu">
+                        <a th:href="@{/hr/hrMainPage}">기술지원팀 메인</a>
+                        <a th:href="@{/hr/empAccount.hr}">사원 계정 생성/수정/삭제</a>
+                        <a th:href="@{/hr/integrated}">인사 통합 관리</a>
+                        <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
+                        <a th:href="@{/hr/cert}">증명서 조회/발급</a>
+                    </div>
+                </li>
+            </th:block>
 
             <!-- 직책별 노출 예시: 부장 이상일 때만 조직도 -->
             <li sec:authorize="hasAnyRole('MANAGER','ADMIN')">

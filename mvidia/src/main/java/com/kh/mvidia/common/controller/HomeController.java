@@ -27,11 +27,11 @@ public class HomeController {
 			return "common/loginPage";
 		}
 	}
-	
-	@GetMapping("/mainPage")
+
+	@GetMapping({"/mainPage", "/main"})
 	public String main(Model model) {
 		model.addAttribute("sessionSeconds", 3600);
-		return "common/mainPage";
+		return "/common/mainPage";
 	}
 
 	

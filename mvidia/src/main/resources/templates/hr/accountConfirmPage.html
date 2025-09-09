@@ -28,21 +28,23 @@
 <div class="accountCreate">
     <div class="widget" id="home">
         <h2 class="page-title">사원 계정 최종 확인</h2>
-        <form th:action="@{/createEmp.emp}" class="form" method="post" enctype="multipart/form-data">
+        <form th:action="@{/createEmp.emp}" class="form" method="post">
             <div class="field full"><label>사번*</label><input name="empNo" placeholder=" 자동 생성" readonly /></div>
             <div class="field full"><label>비밀번호*</label><input name="empPwd" th:value="${emp.empPwd}" readonly /></div>
             <div class="field full"><label>이메일*</label><input name="email" type="email"  placeholder="사번@gmail.com 자동 생성"  readonly /></div>
-            <div class="field full"><label>프로필 사진</label><input name="atchFile" type="text" th:value="${atch.originName}" readonly th:if="${atch.originName}" placeholder="선택된 파일 없음"/></div>
+            <div class="field full">
+                <label>프로필 사진</label>
+                <input type="text"
+                       th:value="${atch.originName != null} ? ${atch.originName} : ''"
+                       readonly
+                       th:placeholder="${atch.originName != null} ? '' : '선택된 파일 없음'"/>
+            </div>
             <div class="field"><label>성*</label><input name="empLName" th:value="${emp.empLName}" required readonly/></div>
             <div class="field"><label>이름*</label><input name="empName" th:value="${emp.empName}" required readonly/></div>
             <div class="field"><label>영문 성*</label><input name="empEngLName" th:value="${emp.empEngLName}" required readonly/></div>
             <div class="field"><label>영문 이름*</label><input name="empEngName" th:value="${emp.empEngName}" required readonly/></div>
             <div class="field"><label>생년월일*</label><input name="birthday" type="date" th:value="${emp.birthday}" required readonly /></div>
             <div class="field"><label>부서*</label>
-                <!-- 첨부 파일 정보를 다음 페이지로 넘기기 위한 hidden 필드 추가 -->
-                <input type="hidden" name="originName" th:value="${atch.originName}" />
-                <input type="hidden" name="changeName" th:value="${atch.changeName}" />
-                <input type="hidden" name="refType" th:value="${atch.refType}" />
                 <select name="deptCode" required>
                     <option value="">선택</option>
                     <option value="D1" th:selected="${emp.deptCode == 'D1'}">인사팀</option>
@@ -65,6 +67,10 @@
             <div class="field"><label>전화번호*</label><input name="phone" placeholder="010-0000-0000" th:value="${emp.phone}" required/></div>
             <div class="field"><label>내선번호</label><input name="extNo" placeholder="1234" th:value="${emp.extNo}" /></div>
             <div class="field"><label>입사일*</label><input name="hireDate" type="date" th:value="${emp.hireDate}" required readonly /></div>
+            <!-- 첨부 파일 정보를 다음 페이지로 넘기기 위한 hidden 필드 추가 -->
+            <input type="hidden" name="originName" th:value="${atch.originName}" />
+            <input type="hidden" name="changeName" th:value="${atch.changeName}" />
+            <input type="hidden" name="refType" th:value="${atch.refType}" />
             <input type="hidden" id="jobCode" name="jobCode" th:value="${emp.jobCode}">
             <div class="actions">
                 <button class="btn" type="submit">계정 생성</button>

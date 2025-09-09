@@ -116,7 +116,7 @@ public class EmployeeController {
 		
 		int result2 = empService.insertEmpInfo(emp);
 		
-		if(atch.getOriginName() != null){
+		if(atch.getOriginName() != null && !atch.getOriginName().equals("")){
 			atch.setUploadEmpNo(emp.getEmpNo());
 			result1 = empService.insertFile(atch);
 		}

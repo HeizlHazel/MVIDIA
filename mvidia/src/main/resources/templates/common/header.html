@@ -156,7 +156,7 @@
             <div class="icon" title="쪽지">📧<span class="badge" id="messageCount" th:text="${messageCount?:0}">0</span></div>
             <div class="icon" title="알림">🔔<span class="badge" id="notificationCount" th:text="${notificationCount?:0}">0</span></div>
 
-            <div class="profile">
+            <div class="profile" onclick="clockProf()">
                 <div class="avatar"
                      style="background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWQ9IiIgdmlld0JveD0iMCAwIDM1IDM1IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjE3LjUiIGN5PSIxNy41IiByPSIxNy41IiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTE3LjUgMTBDMTMuOSAxMCAxMSAxMi45IDExIDE2LjVTMTMuOSAyMyAxNy41IDIzUzI0IDIwLjEgMjQgMTYuNVMyMS4xIDEwIDE3LjUgMTBaTTE3LjUgMTNDMTkuNDMgMTMgMjEgMTQuNTcgMjEgMTYuNVMxOS40MyAyMCAxNy41IDIwUzE0IDE4LjQzIDE0IDE2LjVTMTUuNTcgMTMgMTcuNSAxM1oiIGZpbGw9IiM5OTkiLz48L3N2Zz4=')">
                 </div>
@@ -171,6 +171,10 @@
     <script>
         function clickLogo(){
             location.href = "/mainPage";
+        }
+
+        function clickProf(){
+            location.href = "/myPage/profile";
         }
     </script>
 

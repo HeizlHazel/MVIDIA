@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .accountCreate{grid-column:2; grid-row:2; background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);}
+        .accountCreate>.widget{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+        .form{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px}
+        .form .field{display:flex;flex-direction:column;gap:8px}
+        .form label{font-size:12px;color:var(--muted)}
+        .form input,.form select,.form textarea{padding:10px 12px;border-radius:12px;border:1px solid #dde6ec;background:#fff;outline:none}
+        .form input[readonly]{background:#f1f5f8;color:#6f7c83}
+        .form .full{grid-column:1/-1}
+        .form .actions{grid-column:1/-1;display:flex;gap:8px;margin-top:6px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background-color:#0c197f ;color:#fff}
+        .btn.ghost{background:transparent;color:#002B39;border:1px solid #002B39}
+    </style>
+</head>
+<body>
+
+<!-- 메인 컨텐츠 -->
+<div class="accountCreate">
+    <div class="widget" id="home">
+        <h2 class="page-title">사원 계정 최종 확인</h2>
+        <form th:action="@{/createEmp.emp}" class="form" method="post" enctype="multipart/form-data">
+            <div class="field full"><label>사번*</label><input name="empNo" th:value="${session.loginEmp.empNo}" readonly /></div>
+            <div class="field full"><label>비밀번호*</label><input name="empPwd" th:value="${session.loginEmp.empPwd}" readonly /></div>
+            <div class="field full"><label>이메일*</label><input name="email" type="email" th:value="${session.loginEmp.email}" readonly /></div>
+            <div class="field full"><label>프로필 사진</label><input name="atchFile" type="text" th:value="${atch.originName}" readonly th:if="${atch.originName}" placeholder="선택된 파일 없음"/></div>
+            <div class="field"><label>성*</label><input name="empLName" th:value="${session.loginEmp.empLName}" required readonly/></div>
+            <div class="field"><label>이름*</label><input name="empName" th:value="${session.loginEmp.empName}" required readonly/></div>
+            <div class="field"><label>영문 성*</label><input name="empEngLName" th:value="${session.loginEmp.empEngLName}" required readonly/></div>
+            <div class="field"><label>영문 이름*</label><input name="empEngName" th:value="${session.loginEmp.empEngName}" required readonly/></div>
+            <div class="field"><label>생년월일*</label><input name="birthday" type="date" th:value="${session.loginEmp.birthday}" required readonly /></div>
+            <div class="field"><label>부서*</label>
+                <select name="deptCode" required disabled>
+                    <option value="">선택</option>
+                    <option value="D1" th:selected="${session.loginEmp.deptCode == 'D1'}">인사팀</option>
+                    <option value="D2" th:selected="${session.loginEmp.deptCode == 'D2'}">경영관리팀</option>
+                    <option value="D3" th:selected="${session.loginEmp.deptCode == 'D3'}">생산품질관리팀</option>
+                    <option value="D4" th:selected="${session.loginEmp.deptCode == 'D4'}">기술지원팀</option>
+                </select>
+            </div>
+            <div class="field"><label>직급*</label>
+                <select name="jobNo" required disabled>
+                    <option value="">선택</option>
+                    <option th:selected="${session.loginEmp.jobCode.substring(2, 3) == '5'}" value="1">사원</option>
+                    <option th:selected="${session.loginEmp.jobCode.substring(2, 3) == '4'}">대리</option>
+                    <option th:selected="${session.loginEmp.jobCode.substring(2, 3) == '3'}" value="3">과장</option>
+                    <option th:selected="${session.loginEmp.jobCode.substring(2, 3) == '2'}" value="4">차장</option>
+                    <option th:selected="${session.loginEmp.jobCode.substring(2, 3) == '1'}" value="5">부장</option>
+                </select>
+            </div>
+            <div class="field full"><label>주소*</label><input name="address" th:value="${session.loginEmp.address}" required  readonly/></div>
+            <div class="field"><label>전화번호*</label><input name="phone" placeholder="010-0000-0000" th:value="${session.loginEmp.phone}" required readonly/></div>
+            <div class="field"><label>내선번호</label><input name="extNo" placeholder="1234" th:value="${session.loginEmp.extNo}" readonly /></div>
+            <div class="field"><label>입사일*</label><input name="hireDate" type="date" th:value="${session.loginEmp.hireDate}" required readonly /></div>
+            <div class="actions">
+                <a class="btn" th:href="@{"/mypage/update"}">계정 정보 수정 페이지로</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+
+</body>
+</html>

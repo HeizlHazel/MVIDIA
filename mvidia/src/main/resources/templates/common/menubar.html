@@ -8,15 +8,68 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
-        .sb{width:250px;min-height:100vh;background:linear-gradient(to bottom,#002B39,#003661,#186AEA);padding-top:60px;position:fixed;left:0;top:0;z-index:999}
-        .menu{list-style:none;margin:0;padding:0}
-        .menu>li{position:relative}
-        .link{display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;color:#e7f2f7;cursor:pointer}
-        .link:hover{background:#013547}
-        .submenu{display:none;margin:6px 0 10px 8px;border-left:2px solid rgba(255,255,255,.1);padding-left:8px}
-        .submenu a{display:block;padding:8px 10px;border-radius:10px;color:#e7f2f7;text-decoration:none}
-        .submenu a:hover{background:rgba(255,255,255,.08)}
-        .menu>li.open>.submenu{display:block}
+        .sb {
+            width:250px;
+            min-height:100vh;
+            background:linear-gradient(to bottom,#002B39,#003661,#186AEA);
+            padding-top:60px;
+            position:fixed;
+            left:0;
+            top:0;
+            z-index:999
+        }
+
+        .menu {
+            list-style:none;
+            margin:0;
+            padding:0
+        }
+
+        .menu>li {position:relative}
+
+        .link {
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding:12px;
+            border-radius:12px;
+            color:#e7f2f7;
+            cursor:pointer
+        }
+
+        .link:hover {background:#013547}
+
+        .submenu {
+            display:none;
+            margin:6px 0 10px 8px;
+            border-left:2px solid rgba(255,255,255,.1);
+            padding-left:8px
+        }
+
+        .submenu a {
+            display:block;
+            padding:8px 10px;
+            border-radius:10px;
+            color:#e7f2f7;
+            text-decoration:none
+        }
+
+        .submenu a:hover {background:rgba(255,255,255,.08)}
+
+        /* 열린 상태의 서브메뉴 표시 */
+        .menu>li.open>.submenu {
+            display:block;
+            animation: slideDown 0.3s ease;
+        }
+
+        /* 활성 메뉴 강조 */
+        .menu a.active,
+        .menu .link.active,
+        .menu .submenu a.active {
+            background: rgba(255,255,255,0.25) !important;
+            color: #fff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
@@ -43,11 +96,7 @@
             </li>
 
             <li>
-                <div class="link" data-toggle>📝 전자결재</div>
-                <div class="submenu">
-                    <a th:href="@{/approval/main}">결재 메인</a>
-                    <a th:href="@{/approval/apply}">신청</a>
-                </div>
+                <a class="link" th:href="@{/approval}">📝 전자결재</a>
             </li>
 
             <li>
@@ -77,33 +126,128 @@
 
             <!-- 기술지원팀 소속인 경우 노출되는 메뉴 -->
             <li>
-                <a th:href="@{/admin}">
-                    <div class="link" data-toggle>⚙ 시스템 관리</div>
-                </a>
+                <div class="link" data-toggle>⚙ 시스템 관리</div>
                 <div class="submenu">
+                    <a th:href="@{/admin}">시스템 관리 대시보드</a>
                     <a th:href="@{/permission}">계정 권한 관리</a>
                     <a th:href="@{/unlock}">사용자 계정 잠금 해제</a>
                     <a th:href="@{/dept}">부서 생성/수정/삭제</a>
                     <a th:href="@{/ui}">ERP UI 설정</a>
                 </div>
             </li>
-
         </ul>
     </div>
 
-    <script>
+
+    <script th:inline="javascript">
         (function () {
           const menu = document.getElementById('sideMenu');
           if (!menu) return;
 
-          // 아코디언
+          // 현재 URL 기반으로 활성 메뉴 설정 및 서브메뉴 자동 열기
+          function setActiveMenu() {
+            const currentPath = window.location.pathname;
+            console.log('현재 경로:', currentPath);
+
+            // 모든 active 클래스 및 open 상태 제거 (활성 메뉴 제외)
+            menu.querySelectorAll('.active, .has-active-child').forEach(el => {
+              el.classList.remove('active', 'has-active-child');
+            });
+
+            // 먼저 모든 메뉴를 닫음
+            menu.querySelectorAll('li.open').forEach(li => {
+              li.classList.remove('open');
+              const toggle = li.querySelector(':scope > .link[data-toggle]');
+              if (toggle) {
+                toggle.setAttribute('aria-expanded', 'false');
+              }
+            });
+
+            // 모든 링크 검사
+            const allLinks = menu.querySelectorAll('a[href]');
+            let foundActive = false;
+
+            allLinks.forEach(link => {
+              const href = link.getAttribute('href');
+              if (!href) return;
+
+              // Thymeleaf가 렌더링한 실제 경로 가져오기
+              // th:href는 렌더링 후 href 속성이 됨
+              const linkPath = href;
+
+              // 디버깅: 모든 링크 경로 출력
+              console.log('링크 경로:', linkPath, '텍스트:', link.textContent.trim());
+
+              // 경로 비교 (쿼리 파라미터 제외)
+              const currentPathWithoutQuery = currentPath.split('?')[0];
+              const linkPathWithoutQuery = linkPath.split('?')[0];
+
+              // 정확한 경로 매칭 또는 현재 경로가 링크 경로로 시작하는 경우
+              if (currentPathWithoutQuery === linkPathWithoutQuery ||
+                  (linkPathWithoutQuery !== '/' && currentPathWithoutQuery.startsWith(linkPathWithoutQuery))) {
+
+                // 링크에 active 클래스 추가
+                link.classList.add('active');
+                foundActive = true;
+
+                // 서브메뉴 항목인 경우 부모 메뉴 처리
+                const submenu = link.closest('.submenu');
+                if (submenu) {
+                  const parentLi = submenu.closest('li');
+                  if (parentLi) {
+                    // 부모 메뉴를 열린 상태로 유지
+                    parentLi.classList.add('has-active-child', 'open');
+
+                    const parentToggle = parentLi.querySelector(':scope > .link[data-toggle]');
+                    if (parentToggle) {
+                      parentToggle.setAttribute('aria-expanded', 'true');
+                    }
+
+                    console.log('활성 서브메뉴의 부모 메뉴 열기:', parentToggle?.textContent.trim());
+                  }
+                }
+
+                console.log('활성 메뉴 설정:', link.textContent.trim(), 'Path:', linkPath);
+              }
+            });
+
+            // 활성 메뉴를 찾지 못한 경우 부분 매칭 시도
+            if (!foundActive) {
+              // URL 세그먼트로 부분 매칭
+              const pathSegments = currentPath.split('/').filter(s => s);
+              if (pathSegments.length > 0) {
+                const primarySegment = '/' + pathSegments[0];
+
+                allLinks.forEach(link => {
+                  const href = link.getAttribute('href');
+                  if (href && href.startsWith(primarySegment)) {
+                    const submenu = link.closest('.submenu');
+                    if (submenu) {
+                      const parentLi = submenu.closest('li');
+                      if (parentLi && !parentLi.classList.contains('open')) {
+                        parentLi.classList.add('open');
+                        const parentToggle = parentLi.querySelector(':scope > .link[data-toggle]');
+                        if (parentToggle) {
+                          parentToggle.setAttribute('aria-expanded', 'true');
+                        }
+                      }
+                    }
+                  }
+                });
+              }
+            }
+          }
+
+          // 아코디언 기능
           menu.addEventListener('click', (e) => {
             const btn = e.target.closest('.link[data-toggle]');
             if (!btn || !menu.contains(btn)) return;
 
+            e.preventDefault();
             const li = btn.closest('li');
             const isOpen = li.classList.contains('open');
 
+            // 다른 모든 메뉴 닫기 (활성 서브메뉴가 있어도 닫음)
             menu.querySelectorAll(':scope > li.open').forEach((other) => {
               if (other !== li) {
                 other.classList.remove('open');
@@ -112,18 +256,19 @@
               }
             });
 
+            // 현재 클릭한 메뉴 토글
             li.classList.toggle('open', !isOpen);
             btn.setAttribute('aria-expanded', String(!isOpen));
           });
 
-          // 접근성
+          // 접근성 설정
           menu.querySelectorAll('.link[data-toggle]').forEach((hdr) => {
             hdr.setAttribute('aria-expanded', 'false');
             hdr.setAttribute('role', 'button');
             hdr.setAttribute('tabindex', '0');
           });
 
-          // 키보드 접근
+          // 키보드 접근성
           menu.addEventListener('keydown', (e) => {
             const isActivator = e.target.matches('.link[data-toggle]');
             if (!isActivator) return;
@@ -132,6 +277,15 @@
               e.target.click();
             }
           });
+
+          // 페이지 로드 시 활성 메뉴 설정
+          setActiveMenu();
+
+          // 브라우저 뒤로가기/앞으로가기 시에도 활성 메뉴 업데이트
+          window.addEventListener('popstate', setActiveMenu);
+
+          // Thymeleaf 페이지 전환 후에도 동작하도록
+          document.addEventListener('DOMContentLoaded', setActiveMenu);
         })();
     </script>
 </body>

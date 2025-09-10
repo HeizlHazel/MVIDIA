@@ -44,6 +44,7 @@
     </select>
 
     <!-- 불량 제품 진행량 (1) -->
+    <!--
     <select id="">
         select
         s.sch_no
@@ -55,7 +56,7 @@
         group
         by s.sch_no
     </select>
-
+    -->
 
 
     <!-- 불량 제품 등록 -->

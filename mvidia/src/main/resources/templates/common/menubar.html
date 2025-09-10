@@ -32,7 +32,6 @@
             align-items:center;
             gap:10px;
             padding:12px;
-            border-radius:12px;
             color:#e7f2f7;
             cursor:pointer
         }
@@ -76,7 +75,7 @@
     <div th:fragment="menubar" class="sb">
         <ul class="menu" id="sideMenu">
             <li>
-                <a class="link" th:href="@{/}">🏠 HOME</a>
+                <a class="link" th:href="@{/main}">🏠 HOME</a>
             </li>
 
             <li>
@@ -96,7 +95,11 @@
             </li>
 
             <li>
-                <a class="link" th:href="@{/approval}">📝 전자결재</a>
+                <div class="link" data-toggle>📝 전자결재</div>
+                <div class="submenu">
+                    <a th:href="@{/approvalform}">전자결재 신청</a>
+                    <a th:href="@{/approvalbox}">문서함</a>
+                </div>
             </li>
 
             <li>
@@ -128,7 +131,6 @@
             <li>
                 <div class="link" data-toggle>⚙ 시스템 관리</div>
                 <div class="submenu">
-                    <a th:href="@{/admin}">시스템 관리 대시보드</a>
                     <a th:href="@{/permission}">계정 권한 관리</a>
                     <a th:href="@{/unlock}">사용자 계정 잠금 해제</a>
                     <a th:href="@{/dept}">부서 생성/수정/삭제</a>

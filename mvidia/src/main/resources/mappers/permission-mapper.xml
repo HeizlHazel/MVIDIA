@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="permissionMapper">
+
+    <resultMap type="com.kh.mvidia.Permission.model.vo.Employee" id="employeeResultSet">
+        <result column="emp_no" property="empNo" />
+        <result column="emp_lname" property="empLName" />
+        <result column="emp_name" property="empName" />
+        <result column="dept_name" property="deptName" />
+    </resultMap>
+
+    <select id="selectEmp" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_lname
+             , emp_name
+             , dept_name
+          from tb_employee
+          join tb_department using(dept_code)
+         where emp_no = #{empNo}
+    </select>
+</mapper>

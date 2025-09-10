@@ -49,8 +49,8 @@
             <li>
                 <div class="link" data-toggle>📝 전자결재</div>
                 <div class="submenu">
-                    <a th:href="@{/approval/main}">결재 메인</a>
-                    <a th:href="@{/approval/apply}">신청</a>
+                    <a th:href="@{/approvalform}">전자결재 신청</a>
+                    <a th:href="@{/approvalbox}">문서함</a>
                 </div>
             </li>
 
@@ -61,6 +61,11 @@
                     <a th:href="@{/message/outbox}">발신함</a>
                     <a th:href="@{/message/compose}">쪽지 보내기</a>
                 </div>
+            </li>
+
+            <!-- 직책별 노출 예시: 부장 이상일 때만 조직도 -->
+            <li sec:authorize="hasAnyRole('MANAGER','ADMIN')">
+                <a class="link" th:href="@{/org}">🧩 조직도</a>
             </li>
 
             <th:block th:if="${session.loginEmp.deptCode == 'D1'}">
@@ -104,21 +109,15 @@
 
             <th:block th:if="${session.loginEmp.deptCode == 'D4'}">
                 <li>
-                    <div class="link" data-toggle>🧭 기술지원팀</div>
+                    <div class="link" data-toggle>⚙ 시스템 관리</div>
                     <div class="submenu">
-                        <a th:href="@{/hr/hrMainPage}">기술지원팀 메인</a>
-                        <a th:href="@{/hr/empAccount.hr}">사원 계정 생성/수정/삭제</a>
-                        <a th:href="@{/hr/integrated}">인사 통합 관리</a>
-                        <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
-                        <a th:href="@{/hr/cert}">증명서 조회/발급</a>
+                        <a th:href="@{/permission}">계정 권한 관리</a>
+                        <a th:href="@{/unlock}">사용자 계정 잠금 해제</a>
+                        <a th:href="@{/dept}">부서 생성/수정/삭제</a>
+                        <a th:href="@{/ui}">ERP UI 설정</a>
                     </div>
                 </li>
             </th:block>
-
-            <!-- 직책별 노출 예시: 부장 이상일 때만 조직도 -->
-            <li sec:authorize="hasAnyRole('MANAGER','ADMIN')">
-                <a class="link" th:href="@{/org}">🧩 조직도</a>
-            </li>
         </ul>
     </div>
 

@@ -2,7 +2,9 @@ package com.kh.mvidia.finance.model.dao;
 
 import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
+import com.kh.mvidia.finance.model.vo.Sales;
 import com.kh.mvidia.finance.model.vo.Tax;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
 
@@ -47,15 +49,6 @@ public class FinanceDao {
         return sqlSession.update("salaryMapper.upsertSalaryOver", param);
     }
 
-    public int upsertSalaryTax(SqlSession sqlSession, String empNo , String yearMonth, String taxCode, int amount) {
-        Map<String, Object> param = new HashMap<>();
-        param.put("empNo", empNo);
-        param.put("yearMonth", yearMonth);
-        param.put("taxCode", taxCode);
-        param.put("amount", amount);
-        return sqlSession.update("salaryMapper.upsertSalaryTax", param);
-    }
-
     public int selectDeductByEmpMonth(SqlSession sqlSession, String empNo, String yearMonth) {
         Map<String, Object> param = new HashMap<>();
         param.put("empNo", empNo);
@@ -63,7 +56,7 @@ public class FinanceDao {
         return sqlSession.selectOne("salaryMapper.selectDeductByEmpMonth", param);
     }
 
-    public int upsertSalaryTax(SqlSession sqlSession, String empNo, String yearMonth, String taxCode, String amount) {
+    public int upsertSalaryTax(SqlSession sqlSession, String empNo, String yearMonth, String taxCode, int amount) {
         Map<String, Object> param = new HashMap<>();
         param.put("empNo", empNo);
         param.put("yearMonth", yearMonth);
@@ -81,5 +74,9 @@ public class FinanceDao {
         param.put("empNo", empNo);
         param.put("yearMonth", payDate.replace("-", "")); // yyyy-MM → yyyyMM 변환
         return sqlSession.selectList("salaryMapper.selectTaxesByEmpAndMonth", param);
+    }
+
+    public List<Sales> selectQuarterlySales(SqlSession sqlSession, String year) {
+        return sqlSession.selectList("salaryMapper.selectQuarterlySales", year);
     }
 }

@@ -1,6 +1,7 @@
 package com.kh.mvidia.finance.model.service;
 
 import com.kh.mvidia.finance.model.vo.Salary;
+import com.kh.mvidia.finance.model.vo.Sales;
 import com.kh.mvidia.finance.model.vo.Tax;
 
 import java.util.List;
@@ -14,4 +15,6 @@ public interface FinanceService {
     Salary getSalaryByEmpAndMonth(String empNo, String payDate);
 
     List<Tax> getTaxesByEmpAndMonth(String empNo, String payDate);
+
+    List<Sales> getQuarterlySales(String year);
 }

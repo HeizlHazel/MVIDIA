@@ -3,6 +3,7 @@ package com.kh.mvidia.finance.controller;
 import com.kh.mvidia.finance.model.service.FinanceService;
 import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
+import com.kh.mvidia.finance.model.vo.Sales;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -116,6 +117,18 @@ public class FinanceController {
         }
 
         return ovPrice;
+    }
+
+    @GetMapping("/revenue-report")
+    public String revenueReport(
+            @RequestParam(defaultValue = "2025") String year,
+            Model model) {
+
+        List<Sales> profitList = financeService.getQuarterlySales(year);
+
+        model.addAttribute("profitList", profitList);
+        model.addAttribute("year", year);
+        return "finance/revenue-report";
     }
 
 }

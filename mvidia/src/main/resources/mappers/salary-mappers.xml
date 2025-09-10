@@ -177,11 +177,26 @@
 
     <select id="selectTaxesByEmpAndMonth" parameterType="map" resultType="Tax">
         SELECT TAX_CODE    AS taxCode,
-        EMP_NO      AS empNo,
-        TO_CHAR(PAY_DATE, 'YYYY-MM') AS payDate,
-        AMOUNT      AS amount
-        FROM TB_SALARY_TAX
-        WHERE EMP_NO = #{empNo}
-        AND TO_CHAR(PAY_DATE, 'YYYY-MM') = #{yearMonth}
+               EMP_NO      AS empNo,
+               TO_CHAR(PAY_DATE, 'YYYY-MM') AS payDate,
+               AMOUNT      AS amount
+          FROM TB_SALARY_TAX
+         WHERE EMP_NO = #{empNo}
+           AND TO_CHAR(PAY_DATE, 'YYYY-MM') = #{PayDate}
     </select>
+
+    <select id="selectQuarterlySales" resultType="com.kh.mvidia.finance.model.vo.Sales">
+        SELECT p.PROD_NAME AS prodName,
+               EXTRACT(YEAR FROM s.PERIOD_ST) AS year,
+               TO_NUMBER(TO_CHAR(s.PERIOD_ST, 'Q')) AS quarter,
+               SUM(s.TOTAL_SALES) AS totalSales,
+               SUM(s.OP_PROFIT) AS opProfit
+          FROM TB_SALES s
+          JOIN TB_PRODUCTION_QUALITY p
+            ON s.PROD_CODE = p.PROD_CODE
+         WHERE EXTRACT(YEAR FROM s.PERIOD_ST) = #{year}
+         GROUP BY p.PROD_NAME, EXTRACT(YEAR FROM s.PERIOD_ST), TO_CHAR(s.PERIOD_ST, 'Q')
+         ORDER BY p.PROD_NAME, quarter
+    </select>
+
 </mapper>

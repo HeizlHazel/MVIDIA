@@ -2,6 +2,7 @@ package com.kh.mvidia.finance.model.service;
 import com.kh.mvidia.finance.model.dao.FinanceDao;
 import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
+import com.kh.mvidia.finance.model.vo.Sales;
 import com.kh.mvidia.finance.model.vo.Tax;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -193,5 +194,10 @@ public class FinanceServiceImpl implements FinanceService {
     @Override
     public List<Tax> getTaxesByEmpAndMonth(String empNo, String payDate) {
         return financeDao.selectTaxesByEmpAndMonth(sqlSession, empNo, payDate);
+    }
+
+    @Override
+    public List<Sales> getQuarterlySales(String year) {
+        return financeDao.selectQuarterlySales(sqlSession, year);
     }
 }

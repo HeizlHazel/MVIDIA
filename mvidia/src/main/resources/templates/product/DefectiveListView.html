@@ -156,11 +156,11 @@ textarea {
                 <label for="defectType">불량유형</label>
                 <select id="defectType">
                     <option value="">전체</option>
-                    <option value="unk">미분류</option>
-                    <option value="rnd">랜덤 불량</option>
-                    <option value="rpt">반복 불량</option>
-                    <option value="comb">복합 불량</option>
-                    <option value="sys">시스템 불량</option>
+                    <option value="DEF_UNK">미분류</option>
+                    <option value="DEF_RND">랜덤 불량</option>
+                    <option value="DEF_RPT">반복 불량</option>
+                    <option value="DEF_COMB">복합 불량</option>
+                    <option value="DEF_SYS">시스템 불량</option>
                 </select>
             </div>
             <div class="search-row">
@@ -187,7 +187,7 @@ textarea {
 
         <div class='modal-background'>
             <div class='modal-content'>
-                <form th:action="@{/insert.bo}" method="post">
+                <form id="defectiveForm" th:action="@{/insert.bo}" method="post">
                     <button id="closeModalBtn" style="align-items: right, inherit;">X</button>
                     <br><br>
 
@@ -226,11 +226,11 @@ textarea {
                     <div class="form-row">
                         <label style="text-align: right;">불량유형&nbsp;&nbsp;&nbsp;</label>
                         <select class="form-input" name="defCode" id="">
-                            <option value="unk">미분류</option>
-                            <option value="rnd">랜덤 불량</option>
-                            <option value="rpt">반복 불량</option>
-                            <option value="comb">복합 불량</option>
-                            <option value="sys">시스템 불량</option>
+                            <option value="DEF_UNK">미분류</option>
+                            <option value="DEF_RND">랜덤 불량</option>
+                            <option value="DEF_RPT">반복 불량</option>
+                            <option value="DEF_COMB">복합 불량</option>
+                            <option value="DEF_SYS">시스템 불량</option>
                         </select>
                     </div>
                     <br>
@@ -332,10 +332,10 @@ textarea {
             $(function(){
               // 모달 내부 등록 버튼 클릭
               $(".modal-content .btn-search").on("click", function(){
-                const productCode = $("#numbers1").val().trim();
-                const productName = $("#numbers2").val().trim();
-                const defectType = $(".modal-content select").val();
-                const date = $(".modal-content input[type='date']").val();
+                const prodCode = $("#numbers1").val().trim();
+                const prodName = $("#numbers2").val().trim();
+                const defType = $(".modal-content select").val();
+                const occurDate = $(".modal-content input[type='date']").val();
                 const remarks = $(".modal-content textarea").val().trim();
 
                 // 필수값 체크
@@ -345,27 +345,45 @@ textarea {
                 }
 
                 // 불량유형 한글 변환
-                let defectText = "";
-                switch(defectType){
-                  case "unk": defectText = "미분류"; break;
-                  case "rnd": defectText = "랜덤 불량"; break;
-                  case "rpt": defectText = "반복 불량"; break;
-                  case "comb": defectText = "복합 불량"; break;
-                  case "sys": defectText = "시스템 불량"; break;
-                  default: defectText = "";
+                let defText = "";
+                switch(defType){
+                  case "DEF_UNK": defText = "미분류"; break;
+                  case "DEF_RND": defText = "랜덤 불량"; break;
+                  case "DEF_RPT": defText = "반복 불량"; break;
+                  case "DEF_COMB": defText = "복합 불량"; break;
+                  case "DEF_SYS": defText = "시스템 불량"; break;
                 }
 
                 // 테이블에 row 추가
                 $("table tbody").append(`
                   <tr>
-                    <td>${productCode}</td>
-                    <td>${productName}</td>
-                    <td>${defectText}</td>
-                    <td>${date}</td>
+                    <td>${prodCode}</td>
+                    <td>${prodName}</td>
+                    <td>${defText}</td>
+                    <td>${occurDate}</td>
                     <td>대기</td>
                     <td>${remarks}</td>
                   </tr>
                 `);
+
+                // 서버로 데이터 전송 ajax 사용
+                $.ajax({
+                    url: "/insert.bo",
+                    type: "POST",
+                    data: {
+                        prodCode: prodCode,
+                        prodName: prodName,
+                        defType: defType,
+                        occurDate: occurDate,
+                        remarks: remarks
+                    },
+                    success: function(response){
+                        console.log("서버 저장 성공", response);
+                    }, error: function(xhr, status, error){
+                        console.error("서버 저장 실패", error);
+                        alert("서버 저장 중 오류가 발생했습니다!");
+                    }
+                });
 
                 // 모달 input 초기화
                 $(".modal-content .form-input, .modal-content select, .modal-content textarea").val("");

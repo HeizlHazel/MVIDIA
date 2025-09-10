@@ -1,7 +1,7 @@
 package com.kh.mvidia.Permission.model.service;
 
 import com.kh.mvidia.Permission.model.dao.PermissionDao;
-import com.kh.mvidia.Permission.model.vo.Employee;
+import com.kh.mvidia.employee.model.vo.Employee;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

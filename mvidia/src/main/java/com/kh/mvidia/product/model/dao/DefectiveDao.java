@@ -24,7 +24,13 @@ public class DefectiveDao {
 
         RowBounds rowBounds = new RowBounds(offset, limit);
 
-        return (ArrayList)sqlSession.selectList("defectiveMapper.selectList", null, rowBounds);
+        //return (ArrayList)sqlSession.selectList("defectiveMapper.selectList", null, rowBounds);
+        return new ArrayList<>(sqlSession.selectList("defectiveMapper.selectList", null, rowBounds));
+    }
+
+    // 불량 제품 등록
+    public int insertList(SqlSessionTemplate sqlSession, DefectiveProduction dp){
+        return sqlSession.insert("defectiveMapper.insertDefective", dp);
     }
 
 }

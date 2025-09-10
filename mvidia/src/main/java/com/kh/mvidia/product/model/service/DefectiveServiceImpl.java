@@ -18,6 +18,7 @@ public class DefectiveServiceImpl implements DefectiveService{
     @Autowired
     private SqlSessionTemplate sqlSession;
 
+
     @Override
     public int selectListCount(){
         return dDao.selectListCount(sqlSession);
@@ -27,4 +28,7 @@ public class DefectiveServiceImpl implements DefectiveService{
     public ArrayList<DefectiveProduction> selectList(DefPageInfo dpi){
         return dDao.selectList(sqlSession, dpi);
     }
+
+    @Override
+    public int insertDefective(DefectiveProduction dp){ return dDao.insertList(sqlSession, dp);}
 }

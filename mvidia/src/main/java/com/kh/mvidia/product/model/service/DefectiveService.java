@@ -7,9 +7,11 @@ import java.util.ArrayList;
 
 public interface DefectiveService {
 
-    // 게시판 리스트 페이징 서비스
+    // 불량제품 리스트 페이징 서비스
     int selectListCount();
     ArrayList<DefectiveProduction> selectList(DefPageInfo dpi);
 
+    // 불량제품 등록
+    int insertDefective(DefectiveProduction dp);
 
 }

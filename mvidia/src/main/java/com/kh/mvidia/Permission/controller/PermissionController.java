@@ -27,6 +27,12 @@ public class PermissionController {
         return "admin/grantRevokePermission";
     }
 
+    /* 권한 변경 이력 */
+    @GetMapping("permlog")
+    public String permLog(Model model) {
+        model.addAttribute("sessionSeconds", 3600);
+        return "admin/permissionLog";
+    }
     /* 사용자 검색 기능 */
     @GetMapping("search1.pe")
     @ResponseBody

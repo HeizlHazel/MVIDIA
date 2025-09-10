@@ -7,119 +7,405 @@
 <head>
     <meta charset="UTF-8">
     <title>DefectiveListView</title>
+    <style>
+        .search-box {
+          border: 1px solid #ccc;
+          padding: 15px;
+          margin-bottom: 20px;
+          border-radius: 8px;
+          background: #f9f9f9;
+        }
+        .search-row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+        .search-row label{
+          width: 100px;
+          display: flex;
+          text-align: right;
+          margin-top: 10px;
+        }
+
+        label {
+          display: inline-block;
+          width: 100px;
+          font-weight: bold;
+        }
+        input, select {
+          padding: 5px;
+          width: 200px;
+        }
+
+        .btn{background:#0c197f;color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;margin:5px;transition:.2s}
+            .btn-secondary{background:#6c757d}
+            .btn-secondary:hover{background:#545b62}
+            .btn-icon{display:inline-flex;align-items:center;gap:6px}
+
+        /* 활성화된 버튼만 호버 주기 */
+        .btn:enabled:hover{background:#0050be; color: #fff;}
+
+
+        .btn-reset {
+        background-color: #6c757d;
+        /* color 제거 */
+        }
+
+        /* 비활성화 */
+        .btn-reset:disabled {
+        background-color: #6c757d;
+        color: #ddd; /* 희미한 글자색 */
+        cursor: not-allowed;
+        }
+
+        /* 활성화 */
+        .btn-reset:enabled {
+        background-color: #0c197f; /* 원하는 활성 색상 */
+        color: #fff;
+        }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border:none;
+      padding: 8px;
+      text-align: center;
+    }
+.modal-background {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  display: none; /* 초기 상태 숨김 */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+    width: 25%;       /* 화면 너비 80% */
+    max-width: 800px; /* 최대 800px */
+    height: auto;     /* 내용에 맞게 높이 자동 */
+    max-height: 90vh; /* 화면 높이의 90% */
+    overflow-y: auto; /* 내용이 많으면 세로 스크롤 */
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative; /* 버튼 절대 위치 기준 */
+}
+
+#closeModalBtn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    color: black;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.form-input {
+    width: 300px; /* 원하는 길이로 통일 */
+     flex: 0 0 300px;
+    box-sizing: border-box; /* 패딩 포함 width 계산 */
+}
+
+textarea {
+    min-height: 200px; /* 높이 지정 */
+    box-sizing: border-box;
+    resize: none;
+    align-items: center;
+}
+
+.form-row {
+    display: flex;
+    align-items: flex-start; /* 위쪽 정렬 */
+    margin-bottom: 10px;
+}
+
+.form-row label {
+    width: 100px;
+    font-weight: bold;
+}
+.textarea-form{
+  position: relative;
+}
+.textLimit{
+  text-align: right;
+}
+
+    </style>
 </head>
 <body>
     <div class="content">
         <h2>불량 제품 등록·조회 </h2>
     </div>
-    <div class='modal-background'>
-        <div class='modal-content'>
-            <div></div>
-        </div>
-    </div>
 
     <div class="innerOuter">
-        <div class="modal-background">
-            <div class="modal-content">
-                <table>
-                    <thead>
-                    <tr>
-                        <th style="text-align: left;">제품코드</th>
-                        <th style="text-align: left;">제품명</th>
-                        <th style="text-align: left;">불량유형</th>
-                        <th style="text-align: left;">발생일</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td style="text-align: left;">
-                            <div class=""> <!-- 제품코드 검색 창 -->
-                                <input type="text" list="list1" id="numbers1" placeholder="제품코드" align="left"/>
-                                <datalist id ="list1">
-                                    <option value="P1001"></option>
-                                    <option value="P1002"></option>
-                                    <option value="P1003"></option>
-                                    <option value="P1004"></option>
-                                    <option value="P1005"></option>
-                                </datalist>
-                            </div>
-                        </td>
-
-                        <td style="text-align: left;">
-                            <div class=""> <!-- 제품명 -->
-                                <input type="text" list="list2" id="numbers2" placeholder="제품명"/>
-                                <datalist id ="list2">
-                                    <option value="DDR5_16GB"></option>
-                                    <option value="LPDDR5X_8GB"></option>
-                                    <option value="HBM3_80GB"></option>
-                                    <option value="SSD_1TB_NVMe"></option>
-                                    <option value="eMMC_128GB"></option>
-                                </datalist>
-                            </div>
-                        </td>
-
-                        <td style="text-align: left;">
-                            <div class=""> <!-- 불량 유형 -->
-                                <select name="" id="">
-                                    <option value="unk">미분류</option>
-                                    <option value="rnd">랜덤 불량</option>
-                                    <option value="rpt">반복 불량</option>
-                                    <option value="comb">복합 불량</option>
-                                    <option value="sys">시스템 불량</option>
-                                </select>
-                            </div>
-                        </td>
-
-                        <td style="text-align: left;">
-
-                            <div class=""> <!-- 발생일 -->
-                                <input type="date">
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <table text-align="left">
-                    <thead>
-                    <tr><th style="text-align: left; width: 970px;">비고</th></tr>
-                    </thead>
-                    <tbody><tr><td style="text-align: left;"><textarea name="" id=""></textarea></td></tr></tbody>
-                </table>
-
-                <div class="search-row1" align="right">
-                    <button class="btn btn-search">등록</button>
-                    <button class="btn btn-reset" disabled>초기화</button>
-                </div>
+        <h4>불량 목록 검색</h4>
+        <div class="search-box" align="left">
+            <div class="search-row">
+                <label for="keyword">제품 검색&nbsp;&nbsp;</label>
+                <input type="text" onchange="" id="keyword" placeholder="제품코드 또는 제품명 입력하시오">
+            </div>
+            <div class="search-row">
+                <label for="defectType">불량유형</label>
+                <select id="defectType">
+                    <option value="">전체</option>
+                    <option value="unk">미분류</option>
+                    <option value="rnd">랜덤 불량</option>
+                    <option value="rpt">반복 불량</option>
+                    <option value="comb">복합 불량</option>
+                    <option value="sys">시스템 불량</option>
+                </select>
+            </div>
+            <div class="search-row">
+                <label for="date">발생일</label>
+                <input type="date" id="startDate">
+                <input type="date" id="endDate">
+            </div>
+            <div class="search-row">
+                <label for="status">처리상태</label>
+                <select id="status">
+                    <option value="">전체</option>
+                    <option value="pending">대기</option>
+                    <option value="pending">접수</option>
+                    <option value="progress">처리 중</option>
+                    <option value="done">처리 완료</option>
+                </select>
+            </div>
+            <div class="search-row2" align="right">
+                <button class="btn btn-search">검색</button>
+                <button class="btn btn-insert" id="openModalBtn">등록</button>
+                <button class="btn btn-reset" disabled="disabled" value="">초기화</button>
             </div>
         </div>
 
+        <div class='modal-background'>
+            <div class='modal-content'>
+                <form th:action="@{/insert.bo}" method="post">
+                    <button id="closeModalBtn" style="align-items: right, inherit;">X</button>
+                    <br><br>
+
+                    <div class="form-row">
+                        <label style="text-align: right;">발생일&nbsp;&nbsp;&nbsp;</label>
+                        <input type="date" class="form-input" name="occurDate" required>
+                    </div>
+                    <br>
+
+                    <div class="form-row">
+                        <label style="text-align: right;">제품코드&nbsp;&nbsp;&nbsp;</label>
+                        <input type="text" class="form-input" name="prodCode" list="list1" id="numbers1" placeholder="제품코드" align="left"/>
+                        <datalist id ="list1">
+                            <option value="P1001"></option>
+                            <option value="P1002"></option>
+                            <option value="P1003"></option>
+                            <option value="P1004"></option>
+                            <option value="P1005"></option>
+                        </datalist>
+                    </div>
+                    <br>
+
+                    <div class="form-row">
+                        <label style="text-align: right;">제품명&nbsp;&nbsp;&nbsp;</label>
+                        <input type="text" class="form-input" name="prodName" list="list2" id="numbers2" placeholder="제품명"/>
+                        <datalist id ="list2">
+                            <option value="DDR5_16GB"></option>
+                            <option value="LPDDR5X_8GB"></option>
+                            <option value="HBM3_80GB"></option>
+                            <option value="SSD_1TB_NVMe"></option>
+                            <option value="eMMC_128GB"></option>
+                        </datalist>
+                    </div>
+                    <br>
+
+                    <div class="form-row">
+                        <label style="text-align: right;">불량유형&nbsp;&nbsp;&nbsp;</label>
+                        <select class="form-input" name="defCode" id="">
+                            <option value="unk">미분류</option>
+                            <option value="rnd">랜덤 불량</option>
+                            <option value="rpt">반복 불량</option>
+                            <option value="comb">복합 불량</option>
+                            <option value="sys">시스템 불량</option>
+                        </select>
+                    </div>
+                    <br>
+
+                    <div class="form-row">
+                        <label style="text-align: right;">수량&nbsp;&nbsp;&nbsp;</label>
+                        <input type="number" style="type=text" class="form-input" name="defQty" required>
+                    </div>
+
+                    <div class="textarea-form">
+                        <label style="text-align: right;">비고&nbsp;&nbsp;&nbsp;</label>
+                        <textarea class="form-input" name="remarks" maxlength="1200"></textarea>
+                        <div class="textLimit">
+                            <p class="textCount" style="color: gray;">0자</p>
+                            <p class="textTotal" style="color: gray;">1200자</p>
+                        </div>
+                    </div>
+
+                    <br>
+                    <br>
+                    <br>
+
+                    <div class="search-row1" align="right">
+                        <button type="submit" class="btn btn-search">등록</button>
+                        <button type="reset" class="btn btn-reset" disabled="disabled" value="">초기화</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+        <!-- 모달 등록 스크립트 -->
+        <script>
+            const modalBg = document.querySelector('.modal-background');
+            const openModalBtn = document.getElementById('openModalBtn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            // 등록 버튼 클릭 → 모달 열기
+            openModalBtn.addEventListener('click', () => {
+              modalBg.style.display = 'flex';
+            });
+            // x 클릭 -> 모달 닫기
+            closeModalBtn.addEventListener('click', () => {
+              modalBg.style.display = 'none';
+            });
+        </script>
+
+        <script>
+            $('#textBox').keyup(function (e) {
+              let content = $(this).val();
+
+            // 글자수 세기
+            if (content.length == 0 || content == '') {
+                $('.textCount').text('0자');
+            } else {
+                $('.textCount').text(content.length + '자');
+            }
+
+            // 글자수 제한
+            if (content.length > 200) {
+                // 1200자 부터는 타이핑 되지 않도록
+                $(this).val($(this).val().substring(0, 1200));
+                // 1200자 넘으면 알림창 뜨도록
+                    alert('글자수는 1200자까지 입력 가능합니다.');
+                };
+            });
+        </script>
+
+        <script>
+            const resetBtn = document.querySelector('.btn-reset');
+            const inputs = document.querySelectorAll('.form-input, select');
+
+            function toggleReset(){
+              const inValue = Array.from(inputs).some(input => {
+                if(input.tagName === 'TEXTAREA' || input.type === 'text' || input.type === 'date'){
+                  return input.value.trim() !== '';
+                }else if(input.tagName === 'SELECT'){
+                  return input.value !== '';
+                }
+
+            });
+            resetBtn.disabled = !inValue;
+          }
+
+            inputs.forEach(input => {
+              input.addEventListener('input', toggleReset);
+              input.addEventListener('change', toggleReset);
+              input.addEventListener('keyup', toggleReset);
+            toggleReset();
+            });
+        </script>
+
+        <script>
+            $(function(){
+              // 모달 내부 등록 버튼 클릭
+              $(".modal-content .btn-search").on("click", function(){
+                const productCode = $("#numbers1").val().trim();
+                const productName = $("#numbers2").val().trim();
+                const defectType = $(".modal-content select").val();
+                const date = $(".modal-content input[type='date']").val();
+                const remarks = $(".modal-content textarea").val().trim();
+
+                // 필수값 체크
+                if(!productCode || !productName){
+                  alert("제품코드와 제품명은 필수입니다.");
+                  return;
+                }
+
+                // 불량유형 한글 변환
+                let defectText = "";
+                switch(defectType){
+                  case "unk": defectText = "미분류"; break;
+                  case "rnd": defectText = "랜덤 불량"; break;
+                  case "rpt": defectText = "반복 불량"; break;
+                  case "comb": defectText = "복합 불량"; break;
+                  case "sys": defectText = "시스템 불량"; break;
+                  default: defectText = "";
+                }
+
+                // 테이블에 row 추가
+                $("table tbody").append(`
+                  <tr>
+                    <td>${productCode}</td>
+                    <td>${productName}</td>
+                    <td>${defectText}</td>
+                    <td>${date}</td>
+                    <td>대기</td>
+                    <td>${remarks}</td>
+                  </tr>
+                `);
+
+                // 모달 input 초기화
+                $(".modal-content .form-input, .modal-content select, .modal-content textarea").val("");
+
+                // 초기화 버튼 상태 갱신
+                toggleReset();
+
+                // 모달 닫기
+                $(".modal-background").hide();
+              });
+            });
+        </script>
         <br>
+
         <div class="DefList">
             <table align="left">
                 <thead>
-                <tr>
-                    <th>불량등록번호</th>
-                    <th>발생일</th>
-                    <th>제품코드</th>
-                    <th>제품명</th>
-                    <th>불량유형</th>
-                    <th>수량</th>
-                    <th>처리 상태</th>
-                    <th>비고</th>
-                </tr>
+                    <tr>
+                        <th>불량등록번호</th>
+                        <th>발생일</th>
+                        <th>제품코드</th>
+                        <th>제품명</th>
+                        <th>불량유형</th>
+                        <th>수량</th>
+                        <th>처리 상태</th>
+                        <th>비고</th>
+                    </tr>
                 </thead>
 
                 <tbody>
-                <tr th:each="d : ${list}">
-                    <td class="defNo" th:text="${d.defNo}"></td>
-                    <td th:text="${d.occurDate}"></td>
-                    <td th:text="${d.prodCode}"></td>
-                    <td th:text="${d.prodName}"></td>
-                    <td th:text="${d.defType}"></td>
-                    <td th:text="${d.defQty}"></td>
-                    <td th:text="${d.defStatus}"></td>
-                    <td th:text="${d.remarks}"></td>
-                </tr>
+                    <tr th:each="d : ${list}">
+                        <td class="defNo" th:text="${d.defNo}"></td>
+                        <td th:text="${d.occurDate}"></td>
+                        <td th:text="${d.prodCode}"></td>
+                        <td th:text="${d.prodName}"></td>
+                        <td th:text="${d.defType}"></td>
+                        <td th:text="${d.defQty}"></td>
+                        <td th:text="${d.defStatus}"></td>
+                        <td th:text="${d.remarks}"></td>
+                    </tr>
                 </tbody>
             </table>
         </div>

@@ -3,7 +3,8 @@ package com.kh.mvidia.product.model.vo;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.sql.Date;
+import java.time.LocalDate;
+
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +18,7 @@ public class DefectiveProduction {  // 제품불량등록 테이블
     private Integer defQty;        // 불량 수량
     private String defCode;    // 불량 코드 (불량유형 테이블의 defCode 참조)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private Date occurDate;    // 발생일
+    private LocalDate occurDate;    // 발생일
     private String defStatus;  // 상태 (상태 테이블의 status)
     private String remarks;    // 비고
     private String prodName;   // 제품명 (제품 테이블의 prodName join으로 가져오기)

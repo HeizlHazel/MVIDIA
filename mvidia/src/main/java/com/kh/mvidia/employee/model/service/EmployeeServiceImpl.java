@@ -42,6 +42,11 @@ public class EmployeeServiceImpl implements EmployeeService{
 	}
 	
 	@Override
+	public Attachment selectProfile(String empNo) {
+		return empDao.selectProfile(sqlSession, empNo);
+	}
+	
+	@Override
 	public int deleteEmp(String empNo) {
 		return 0;
 	}

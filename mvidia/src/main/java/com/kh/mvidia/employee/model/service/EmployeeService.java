@@ -19,6 +19,8 @@ public interface EmployeeService {
 	
 	int updateEmp(Employee emp);
 	
+	Attachment selectProfile(String empNo);
+	
 	// 사원 삭제 서비스
 	int deleteEmp(String empNo);
 	

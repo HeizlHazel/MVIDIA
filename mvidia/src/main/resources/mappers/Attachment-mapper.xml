@@ -29,4 +29,18 @@
              )
     </insert>
 
+    <select id="selectProfile" resultMap="attachmentResultSet">
+        select
+               ref_type
+             , origin_name
+             , change_name
+             , upload_date
+             , up_emp_no
+             , file_status
+          from tb_attachment
+         where up_emp_no = #{empNo}
+           and ref_type = 'F'
+
+    </select>
+
 </mapper>

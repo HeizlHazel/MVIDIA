@@ -18,5 +18,8 @@ public class EmployeeDao {
 	public int insertEmpInfo(SqlSessionTemplate sqlSession, Employee emp) {
 		return sqlSession.insert("employeeMapper.insertEmpInfo", emp);
 	}
-
+	
+	public Attachment selectProfile(SqlSessionTemplate sqlSession, String empNo) {
+		return sqlSession.selectOne("AttachmentMapper.selectProfile", empNo);
+	}
 }

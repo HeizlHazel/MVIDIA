@@ -81,8 +81,7 @@
 
         <!-- HOME -->
         <div class="page active" id="home">
-            <h3>👋 안녕하세요, 사용자 이름님</h3>
-            <!-- <h3>⚙ 안녕하세요, <h3 id="login">[사용자]</h3>님</h3> -->
+            <h3 th:text="'👋 안녕하세요, ' + ${session.loginEmp.empLName} + ${session.loginEmp.empName} + '님'"></h3>
             <div class="dashboard-grid">
                 <div class="widget">
                     <div class="widget-header">
@@ -121,7 +120,7 @@
                 <div class="widget">
                     <div class="widget-header"><div class="widget-title">⚡ 빠른 작업</div></div>
                     <!-- 기술지원팀 로그인 시 보이는 메뉴 -->
-                    <button class="btn btn2" th:onclick="|location.href='@{/ui}'|">권한 변경 이력</button>
+                    <button class="btn btn2" th:onclick="|location.href='@{/permlog}'|">권한 변경 이력</button>
                     <button class="btn" th:onclick="|location.href='@{/permission}'|">계정 권한 관리</button><br>
                     <button class="btn btn4" th:onclick="|location.href='@{/unlock}'|">사용자 계정 잠금 해제</button>
                     <button class="btn btn3" th:onclick="|location.href='@{/dept}'|">부서 생성/수정/삭제</button>

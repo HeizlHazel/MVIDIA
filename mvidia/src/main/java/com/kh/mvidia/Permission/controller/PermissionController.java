@@ -20,13 +20,6 @@ public class PermissionController {
     @Autowired
     private PermissionServiceImpl pService;
 
-    /* 관리자 대시보드 */
-    @GetMapping("admin")
-    public String adminDashboard(Model model) {
-        model.addAttribute("sessionSeconds", 3600);
-        return "admin/adminDashboard";
-    }
-
     /* 계정 권한 관리 */
     @GetMapping("permission")
     public String grantRevoke(Model model) {

@@ -55,8 +55,9 @@ public class NotionController {
 
         // 1~4분기 다 채우기 (없는 분기는 매출/이익 0)
         for (int q = 1; q <= 4; q++) {
+            int finalQ = q;
             boolean exists = profitList.stream()
-                    .anyMatch(s -> s.getQuarter().equals(String.valueOf(q)));
+                    .anyMatch(s -> s.getQuarter().equals(String.valueOf(finalQ)));
 
             if (!exists) {
                 Sales zeroData = new Sales(

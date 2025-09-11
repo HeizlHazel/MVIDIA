@@ -124,10 +124,39 @@ public class FinanceController {
             @RequestParam(defaultValue = "2025") String year,
             Model model) {
 
-        List<Sales> profitList = financeService.getQuarterlySales(year);
+        List<Sales> salesList = financeService.getQuarterlySales(year);
 
-        model.addAttribute("profitList", profitList);
+        Map<String, long[]> productQuarterMap = new HashMap<>();
+
+        Map<String, Object> productSumMap = new HashMap<>();
+
+        long[] totalSales = new long[4];
+        long[] totalProfits = new long[4];
+
+        for(Sales s : salesList) {
+            int qIndex = Integer.parseInt(s.getQuarter()) - 1;
+
+            long sales = Long.valueOf(s.getTotalSales());
+            long profit = Long.valueOf(s.getOpProfit());
+
+            productQuarterMap.putIfAbsent(s.getProdName(), new long[4]);
+            productQuarterMap.get(s.getProdName())[qIndex] += sales;
+
+            productSumMap.put(s.getProdName(),
+                    ((long) productSumMap.getOrDefault(s.getProdName(), 0L)) + sales);
+
+
+            totalSales[qIndex] += sales;
+            totalProfits[qIndex] += profit;
+        }
+
+        model.addAttribute("profitList", salesList);
+        model.addAttribute("productQuarterMap", productQuarterMap);
+        model.addAttribute("productSumMap", productSumMap);
+        model.addAttribute("totalSales", totalSales);
+        model.addAttribute("totalProfits", totalProfits);
         model.addAttribute("year", year);
+
         return "finance/revenue-report";
     }
 

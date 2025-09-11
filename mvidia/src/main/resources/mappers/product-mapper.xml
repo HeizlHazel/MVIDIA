@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="productMapper">
+
+    <resultMap id="ProductResultSet" type="ProductQuality">
+        <result column="prod_code" property="prodCode" />
+        <result column="prod_name" property="prodName" />
+        <result column="price" property="price" />
+        <result column="local_code" property="localCode" />
+        <result column="prod_status" property="prodStatus" />
+        <result column="stock" property="stock" />
+        <result column="status_name" property="statusName" />
+    </resultMap>
+
+    <!-- 생산 제품 리스트 카운트 -->
+    <select id="selectListCount" resultType="_int">
+        select
+               count(*)
+          from tb_production_Quality
+    </select>
+
+    <!-- 생산 제품 리스트 조회 -->
+    <select id="selectList" resultMap="ProductResultSet">
+        select
+               q.prod_code
+             , q.prod_name
+             , q.price
+             , p.stock
+             , s.status_name
+          from tb_production_quality q
+          left join tb_product_store p on p.local_code = q.local_code
+          left join tb_status s on s.status_code = q.prod_status
+    </select>
+
+</mapper>

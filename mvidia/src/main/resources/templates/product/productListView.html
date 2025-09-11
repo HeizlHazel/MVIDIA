@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>productListView</title>
+</head>
+<body>
+
+    <div class="content">
+        <h2>생산 제품 조회 </h2>
+    </div>
+
+    <div class="innerOuter">
+        <input type="text" placeholder="제품코드 또는 제품명을 입력하시오.">
+    </div>
+
+    <div class="prodList">
+        <table>
+            <thead>
+                <tr>
+                    <th>제품코드</th>
+                    <th>제품명</th>
+                    <th>단가</th>
+                    <th>재고수량</th>
+                    <th>재고상태</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td th:text="${prodCode}"></td>
+                    <td th:text="${prodName}"></td>
+                    <td th:text="${price}"></td>
+                    <td th:text="${stock}"></td>
+                    <td th:text="${prodStatus}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

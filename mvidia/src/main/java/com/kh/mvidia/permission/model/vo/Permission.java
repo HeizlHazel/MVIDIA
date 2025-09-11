@@ -1,4 +1,4 @@
-package com.kh.mvidia.Permission.model.vo;
+package com.kh.mvidia.permission.model.vo;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,9 +9,9 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Department {
+public class Permission {
 
-    private String deptCode;
-    private String deptName;
+    private String permCode;
+    private String permName;
 
 }

@@ -1,4 +1,4 @@
-package com.kh.mvidia.Permission.model.vo;
+package com.kh.mvidia.permission.model.vo;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

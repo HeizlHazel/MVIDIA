@@ -2,14 +2,20 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
 <mapper namespace="permissionMapper">
 
-    <resultMap type="Employee" id="employeeResultSet">
+    <resultMap id="employeeResultSet" type="Employee">
         <result column="emp_no" property="empNo" />
         <result column="emp_lname" property="empLName" />
         <result column="emp_name" property="empName" />
         <result column="dept_name" property="deptName" />
     </resultMap>
 
-    <select id="selectEmp" resultMap="employeeResultSet">
+    <resultMap id="permissionResultSet" type="Permission">
+        <result column="perm_name" property="permName" />
+        <result column="perm_code" property="permCode" />
+        <result column="is_granted" property="isGranted" />
+    </resultMap>
+
+    <select id="selectEmployee" resultMap="employeeResultSet">
         select
                emp_no
              , emp_lname
@@ -17,6 +23,38 @@
              , dept_name
           from tb_employee
           join tb_department using(dept_code)
-         where emp_no = #{empNo}
+         where emp_no = #{ empNo }
     </select>
+
+    <select id="selectPermissionList" resultMap="permissionResultSet">
+        select
+               p.perm_name
+             , p.perm_code
+             , nvl(ep.is_granted, 'N') as is_granted
+          from tb_permission p
+     left join tb_emp_permission ep
+            on p.perm_code = ep.perm_code
+           and ep.user_id = #{ empNo }
+    </select>
+
+    <insert id="insertEmpPermission">
+        insert
+          into tb_emp_permission
+          (
+            user_id
+          , perm_code
+          )
+          values
+          (
+            #{userId}
+          , #{permCode}
+          )
+    </insert>
+
+    <delete id="deleteEmpPermission">
+        delete
+          from tb_emp_permission
+         where user_id = #{userId}
+    </delete>
+
 </mapper>

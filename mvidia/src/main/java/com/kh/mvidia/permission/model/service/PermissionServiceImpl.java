@@ -21,20 +21,32 @@ public class PermissionServiceImpl implements PermissionService {
 
     // 사용자 검색
     @Override
-    public Employee selectEmp(String empNo) {
-        return pDao.selectEmp(sqlSession, empNo);
+    public Employee selectEmployee(String empNo) {
+        return pDao.selectEmployee(sqlSession, empNo);
     }
 
-    // 전체 권한 목록 조회
+    // 전체 권한 목록 + 사용자 기존 권한 조회
     @Override
-    public List<Permission> selectPermList() { return pDao.selectPermList(sqlSession); }
+    public List<Permission> selectPermissionList(String empNo) {
+        return pDao.selectPermList(sqlSession, empNo);
+    }
 
-    // 사용자 기존 권한 조회
-    @Override
-    public List<EmpPermission> selectEmpPermList(String empNo) { return pDao.selectEmpPermList(sqlSession, empNo); }
+//    // 권한 update
+//    @Override
+//    public void updatePermission(String userId, List<String> list) {
+//    }
 
-    // 권한 업데이트
-    // @Override
-    // public void updatePermission(String userId, String permCode, String isGranted) {}
+//    // 권한 부여
+//    @Override
+//    public int grantPermission(EmpPermission ep) {
+//        return pDao.insertEmpPermission(sqlSession, ep);
+//    }
+//
+//    // 권한 회수
+//    @Override
+//    public int revokePermission(EmpPermission ep) {
+//        return pDao.deleteEmpPermission(sqlSession, ep);
+//    }
+
 
 }

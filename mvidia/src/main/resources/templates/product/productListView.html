@@ -14,9 +14,24 @@
         <h2>생산 제품 조회 </h2>
     </div>
 
-    <div class="innerOuter">
-        <input type="text" placeholder="제품코드 또는 제품명을 입력하시오.">
-    </div>
+    <input type="text" id="searchBox" placeholder="제품코드 또는 제품명을 검색하시오.">
+
+    <datalist id="productList"></datalist>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const products = /*[[${productList}]]*/ [];
+        const dataList = document.getElementById('productList');
+
+        products.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.prodCode + " | " + p.prodName;
+            dataList.appendChild(option);
+        });
+
+        document.getElementById('searchBox').setAttribute('list', 'productList');
+        /*]]>*/
+    </script>
 
     <div class="prodList">
         <table>
@@ -31,12 +46,12 @@
             </thead>
 
             <tbody>
-                <tr>
-                    <td th:text="${prodCode}"></td>
-                    <td th:text="${prodName}"></td>
-                    <td th:text="${price}"></td>
-                    <td th:text="${stock}"></td>
-                    <td th:text="${prodStatus}"></td>
+                <tr th:each="p : ${list}">
+                    <td th:text="${p.prodCode}"></td>
+                    <td th:text="${p.prodName}"></td>
+                    <td th:text="${p.price}"></td>
+                    <td th:text="${p.stock}"></td>
+                    <td th:text="${p.statusName}"></td>
                 </tr>
             </tbody>
         </table>

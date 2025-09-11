@@ -30,10 +30,10 @@
                d.def_no
              , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
              , d.prod_code
-             , p.prod_name
-             , t.def_type
+             , p.prod_name as prod_name
+             , t.def_type as def_type
              , d.def_qty
-             , s.status_name
+             , s.status_name as status_name
              , d.remarks
           from tb_defective_production d
           left join tb_production_quality p on p.prod_code = d.prod_code

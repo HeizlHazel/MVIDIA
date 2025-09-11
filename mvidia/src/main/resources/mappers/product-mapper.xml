@@ -28,10 +28,12 @@
              , q.prod_name
              , q.price
              , p.stock
-             , s.status_name
+             , s.status_name as status_name
           from tb_production_quality q
           left join tb_product_store p on p.local_code = q.local_code
           left join tb_status s on s.status_code = q.prod_status
+         order
+            by q.prod_code
     </select>
 
 </mapper>

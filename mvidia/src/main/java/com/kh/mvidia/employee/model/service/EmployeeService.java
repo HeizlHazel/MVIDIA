@@ -2,7 +2,10 @@ package com.kh.mvidia.employee.model.service;
 
 
 import com.kh.mvidia.common.model.vo.Attachment;
+import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.vo.Employee;
+
+import java.util.List;
 
 public interface EmployeeService {
 
@@ -15,6 +18,10 @@ public interface EmployeeService {
 	int insertEmpInfo(Employee emp);
 	
 	// 사원 수정 서비스
+	Employee selectEmpNo(String empNo);
+	
+	int insertEmpModifyRequests(List<EmpModifyReq> reqList);
+	
 	int updateFile(Attachment atch);
 	
 	int updateEmp(Employee emp);
@@ -26,5 +33,6 @@ public interface EmployeeService {
 	
 	// 사번 확인 서비스
 	Employee checkEmpNo(String empNo);
+	
 	
 }

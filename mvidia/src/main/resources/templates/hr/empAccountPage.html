@@ -127,10 +127,9 @@
                         type: 'GET',
                         data: { empNo: empNo },
                         success: function(response) {
-                            // 변경된 부분: response가 null인지 확인
+
                             if (response) {
                                 $(infoSelector).show();
-                                // 변경된 부분: 올바른 ID 선택자 사용
                                 $(`#${type}EmpName`).text(response.empName);
                                 $(`#${type}EmpRank`).text(response.jobName);
                                 $(`#${type}EmpDept`).text(response.deptName);

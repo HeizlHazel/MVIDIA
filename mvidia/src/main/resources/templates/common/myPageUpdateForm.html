@@ -33,12 +33,12 @@
 
             <!-- 프로필 사진 섹션 -->
             <div class="profile-section">
-                <div th:if="${atch == null}">
-                    <img class="profile-pic" th:src="@{/images/default_profile.png}" alt="기본 프로필">
-                </div>
-                <div th:unless="${atch == null}">
-                    <img th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="profile-pic">
-                </div>
+                <th:block th:unless="${atch != null && atch.fileStatus == 'U'}">
+                    <img id="profile-preview" class="profile-pic" th:src="@{/images/default_profile.png}" alt="기본 프로필">
+                </th:block>
+                <th:block th:if="${atch != null && atch.fileStatus == 'U'}">
+                    <img id="profile-preview" th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="profile-pic">
+                </th:block>
                 <div class="file-input-group">
                     <label style="margin-right:10px;" th:text="${atch != null ? atch.originName : '프로필 사진 미 첨부'}"></label>
                     <br>
@@ -71,6 +71,10 @@
             <div class="form-group"><label>주소</label><input name="address" th:value="${session.loginEmp.address}" type="text" placeholder="변경할 주소"></div>
             <div class="form-group"><label>전화번호</label><input name="phone" th:value="${session.loginEmp.phone}" type="tel" placeholder="변경할 전화번호"></div>
             <div class="form-group"><label>내선번호</label><input name="extNo" th:value="${session.loginEmp.extNo}" type="tel" placeholder="변경할 내선번호"></div>
+
+            <input type="hidden" name="originAtchNo" th:value="${atch?.atchId}" />
+            <input type="hidden" name="oldValue" th:value="${atch != null ? atch.originName : ''}" />
+            <input type="hidden" name="empNo" th:value="${session.loginEmp.empNo}" />
 
             <button type="button" class="btn" id="submitBtn" onclick="submitProfileEditRequest()">수정 요청 제출</button>
             <button type="button" class="btn btn-secondary" onclick="window.location.href = '/myPage/profile'">취소</button>

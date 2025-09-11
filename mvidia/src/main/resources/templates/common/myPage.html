@@ -33,10 +33,10 @@
     <h2 class="page-title">👤 마이페이지 개인정보 조회</h2>
     <div class="widget" id="home">
         <div class="controls-row">
-            <th:block th:if="${atch.originName == null}">
+            <th:block th:unless="${atch.originName != null  && atch.fileStatus == 'U'}">
                 <img class="profile-pic" th:src="@{/images/default_profile.png}" alt="기본 프로필">
             </th:block>
-            <th:block th:unless="${atch.originName == null}">
+            <th:block th:if="${atch.originName != null && atch.fileStatus == 'U'}">
                 <img th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="profile-pic">
             </th:block>
 

@@ -98,6 +98,35 @@
              )
 
     </insert>
+
+    <select id="selectEmpNo" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_pwd
+             , email
+             , emp_lname
+             , emp_name
+             , emp_eng_lname
+             , emp_eng_name
+             , to_char(birthday, 'YYYY-MM-DD') as birthday
+             , dept_code
+             , dept_name
+             , job_code
+             , job_name
+             , address
+             , phone
+             , ext_no
+             , emp_status
+             , to_char(create_date, 'YYYY-MM-DD') as create_date
+             , to_char(modify_date, 'YYYY-MM-DD') as modify_date
+             , to_char(hire_date, 'YYYY-MM-DD') as hire_date
+             , to_char(retired_date, 'YYYY-MM-DD') as retired_date
+          from tb_employee
+          join tb_department using (dept_code)
+          join tb_job using (job_code)
+         where emp_status = 'H'
+           and emp_no = #{empNo}
+    </select>
     
     <select id="checkEmpNo" resultMap="employeeResultSet">
         select

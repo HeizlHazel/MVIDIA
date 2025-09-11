@@ -1,11 +1,16 @@
 package com.kh.mvidia.employee.model.service;
 
 import com.kh.mvidia.common.model.vo.Attachment;
+import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.dao.EmployeeDao;
 import com.kh.mvidia.employee.model.vo.Employee;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService{
@@ -29,6 +34,17 @@ public class EmployeeServiceImpl implements EmployeeService{
 	@Override
 	public int insertEmpInfo(Employee emp) {
 		return empDao.insertEmpInfo(sqlSession, emp);
+	}
+	
+	@Override
+	public Employee selectEmpNo(String empNo) {
+		return empDao.selectEmpNo(sqlSession,empNo);
+	}
+	
+	@Override
+	@Transactional
+	public int insertEmpModifyRequests(List<EmpModifyReq> reqList){
+			return empDao.insertEmpModifyRequests(sqlSession, reqList);
 	}
 	
 	@Override

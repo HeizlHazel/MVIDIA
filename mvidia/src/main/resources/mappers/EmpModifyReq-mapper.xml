@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="empModifyReqMapper">
+
+    <resultMap id="empModifyReqResultSet" type="EmpModifyReq">
+        <result column="REQ_ID" property="reqId"/>
+        <result column="EMP_NO" property="empNo"/>
+        <result column="FIELD_NAME" property="fieldName"/>
+        <result column="OLD_VALUE" property="oldValue"/>
+        <result column="NEW_VALUE" property="newValue"/>
+        <result column="OLD_ATCH_ID" property="oldAtchId"/>
+        <result column="NEW_ATCH_ID" property="newAtchId"/>
+        <result column="REQ_DATE" property="reqDate"/>
+        <result column="REQ_STATUS" property="reqStatus"/>
+        <result column="MANAGER_ID" property="managerId"/>
+        <result column="APPROVE_DATE" property="approveDate"/>
+        <result column="REJECT_REASON" property="rejectReason"/>
+    </resultMap>
+
+    <insert id="insertEmpModifyRequests" parameterType="java.util.List">
+        insert all
+        <foreach collection="list" item="item">
+            into tb_emp_modify_req (
+                   emp_no
+                 , field_name
+                 , old_value
+                 , new_value
+                 , old_atch_id
+                 , new_atch_id
+                 , req_date
+                 )
+                 values (
+                   #{item.empNo}
+                 , #{item.fieldName}
+                 , #{item.oldValue}
+                 , #{item.newValue}
+                 , #{item.oldAtchId}
+                 , #{item.newAtchId}
+                 , sysdate
+                 )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+</mapper>

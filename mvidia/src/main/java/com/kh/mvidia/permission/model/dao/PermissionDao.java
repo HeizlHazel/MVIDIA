@@ -12,18 +12,22 @@ import java.util.List;
 public class PermissionDao {
 
     // 사용자 검색
-    public Employee selectEmp(SqlSessionTemplate sqlSession, String empNo) {
-        return sqlSession.selectOne("permissionMapper.selectEmp", empNo);
+    public Employee selectEmployee(SqlSessionTemplate sqlSession, String empNo) {
+        return sqlSession.selectOne("permissionMapper.selectEmployee", empNo);
     }
 
-    // 전체 권한 목록 조회
-    public List<Permission> selectPermList(SqlSessionTemplate sqlSession) {
-        return sqlSession.selectList("permissionMapper.selectPermList");
+    // 전체 권한 목록 + 사용자 기존 권한 조회
+    public List<Permission> selectPermList(SqlSessionTemplate sqlSession, String empNo) {
+        return sqlSession.selectList("permissionMapper.selectPermissionList", empNo);
     }
 
-    // 사용자 기존 권한 조회
-    public List<EmpPermission> selectEmpPermList(SqlSessionTemplate sqlSession, String empNo) {
-        return sqlSession.selectList("permissionMapper.selectEmpPermList", empNo);
-    }
-
+//    // 권한 부여
+//    public int insertEmpPermission(SqlSessionTemplate sqlSession, EmpPermission ep) {
+//        return sqlSession.insert("permissionMapper.insertEmpPermission", ep);
+//    }
+//
+//    // 권한 회수
+//    public int deleteEmpPermission(SqlSessionTemplate sqlSession, String userId) {
+//        return sqlSession.delete("permissionMapper.deleteEmpPermission", userId);
+//    }
 }

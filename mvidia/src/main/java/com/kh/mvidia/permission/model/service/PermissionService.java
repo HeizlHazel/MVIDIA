@@ -9,15 +9,19 @@ import java.util.List;
 public interface PermissionService {
 
     // 사용자 검색
-    Employee selectEmp(String empNo);
+    Employee selectEmployee(String empNo);
 
-    // 전체 권한 목록 조회
-    List<Permission> selectPermList();
+    // 전체 권한 목록 + 사용자 기존 권한 조회
+    List<Permission> selectPermissionList(String empNo);
 
-    // 사용자 기존 권한 조회
-    List<EmpPermission> selectEmpPermList(String empNo);
+//    // 권한 update
+//    void updatePermission(String empNo, List<String> list);
 
-    // 권한 업데이트
-    // void updatePermission(String userId, String permCode, String isGranted);
+//    // 권한 부여
+//    int grantPermission(EmpPermission ep);
+//
+//    // 권한 회수
+//    int revokePermission(EmpPermission ep);
+
 
 }

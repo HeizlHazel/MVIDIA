@@ -1,17 +1,16 @@
 package com.kh.mvidia.product.controller;
 
-import com.kh.mvidia.common.model.vo.DefPageInfo;
-import com.kh.mvidia.common.template.DefPagination;
+import com.kh.mvidia.common.model.vo.PageInfo;
+import com.kh.mvidia.common.template.Pagination;
 import com.kh.mvidia.product.model.service.DefectiveServiceImpl;
 import com.kh.mvidia.product.model.vo.DefectiveProduction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -29,10 +28,10 @@ public class DefectiveController {
 
         int listCount = dService.selectListCount();
 
-        DefPageInfo dpi = DefPagination.getDefPageInfo(listCount, currentPage, 10, 5);
-        ArrayList<DefectiveProduction> list = dService.selectList(dpi);
+        PageInfo pi = Pagination.getPageInfo(listCount, currentPage, 10, 5);
+        ArrayList<DefectiveProduction> list = dService.selectList(pi);
 
-        mv.addObject("dpi", dpi).addObject("list", list).setViewName("product/defectiveListview");
+        mv.addObject("pi", pi).addObject("list", list).setViewName("product/defectiveListview");
 
         return mv;
     }
@@ -56,6 +55,28 @@ public class DefectiveController {
             return "common/errorPage";
         }
     }
+
+    // 등록된 불량 제품 삭제 기능 (체크박스로 다중 선택 가능)
+    /*
+    @PostMapping("delete.bo")
+    @ResponseBody
+    public String deleteDefective(@RequestParam("dno") ArrayList<String> defNoList){
+
+        int result = dService.deleteDefective(defNoList);
+
+        if(result > 0){ // 성공
+
+            redirectAttributes.addFlashAttribute("alertMsg", "선택한 항목이 삭제되었습니다.");
+            return "redirect:dlist.bo";
+        }else{ // 실패
+
+            model.addAttribute("errorMsg", "선택한 항목을 삭제할 수 없습니다. 잠시 후 다시 시도해주세요.");
+            return "common/errorPage";
+        }
+
+    }
+
+     */
 
 
 

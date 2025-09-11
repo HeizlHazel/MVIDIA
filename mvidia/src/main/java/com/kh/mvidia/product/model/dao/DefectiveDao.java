@@ -1,6 +1,6 @@
 package com.kh.mvidia.product.model.dao;
 
-import com.kh.mvidia.common.model.vo.DefPageInfo;
+import com.kh.mvidia.common.model.vo.PageInfo;
 import com.kh.mvidia.product.model.vo.DefectiveProduction;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -17,7 +17,7 @@ public class DefectiveDao {
     }
 
     // 리스트 조회
-    public ArrayList<DefectiveProduction> selectList(SqlSessionTemplate sqlSession, DefPageInfo dpi){
+    public ArrayList<DefectiveProduction> selectList(SqlSessionTemplate sqlSession, PageInfo dpi){
 
         int offset = (dpi.getCurrentPage() -1) * dpi.getBoardLimit();
         int limit = dpi.getBoardLimit();
@@ -31,6 +31,11 @@ public class DefectiveDao {
     // 불량 제품 등록
     public int insertList(SqlSessionTemplate sqlSession, DefectiveProduction dp){
         return sqlSession.insert("defectiveMapper.insertDefective", dp);
+    }
+
+    // 불량 제품 삭제
+    public int deletelist(SqlSessionTemplate sqlSession, ArrayList<String> defNoList){
+        return sqlSession.update("defectiveMapper.deleteDefective", defNoList);
     }
 
 }

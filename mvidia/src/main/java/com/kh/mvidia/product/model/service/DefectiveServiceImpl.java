@@ -1,6 +1,6 @@
 package com.kh.mvidia.product.model.service;
 
-import com.kh.mvidia.common.model.vo.DefPageInfo;
+import com.kh.mvidia.common.model.vo.PageInfo;
 import com.kh.mvidia.product.model.dao.DefectiveDao;
 import com.kh.mvidia.product.model.vo.DefectiveProduction;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -25,10 +25,13 @@ public class DefectiveServiceImpl implements DefectiveService{
     }
 
     @Override
-    public ArrayList<DefectiveProduction> selectList(DefPageInfo dpi){
-        return dDao.selectList(sqlSession, dpi);
+    public ArrayList<DefectiveProduction> selectList(PageInfo pi){
+        return dDao.selectList(sqlSession, pi);
     }
 
     @Override
     public int insertDefective(DefectiveProduction dp){ return dDao.insertList(sqlSession, dp);}
+
+    @Override
+    public int deleteDefective(ArrayList<String> defNoList){ return dDao.deletelist(sqlSession, defNoList);}
 }

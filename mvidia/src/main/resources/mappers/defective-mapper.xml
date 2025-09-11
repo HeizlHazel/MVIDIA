@@ -43,6 +43,40 @@
             by d.occur_date desc
     </select>
 
+    <!-- 불량 제품 등록 -->
+    <insert id="insertDefective">
+        insert
+        into tb_defective_production
+        (
+          prod_code
+        , def_code
+        , def_qty
+        , occur_date
+        , remarks
+        , def_status
+        )
+        values
+        (
+          #{prodCode}
+        , #{defCode}
+        , #{defQty}
+        , #{occurDate}
+        , #{remarks}
+        , 'W'
+        )
+    </insert>
+
+
+    <!-- 불량 제품 리스트 삭제(체크박스를 통해 다중 선택) -->
+    <update id="deleteDefective">
+        update tb_defective_production
+        set def_status = 'R'
+        where def_no IN
+        <foreach collection="list" item="defNo"
+                 open="(" close=")" separator=",">
+            #{defNo}
+        </foreach>
+    </update>
     <!-- 불량 제품 진행량 (1) -->
     <!--
     <select id="">
@@ -57,31 +91,4 @@
         by s.sch_no
     </select>
     -->
-
-
-    <!-- 불량 제품 등록 -->
-    <insert id="insertDefective">
-        insert
-        into tb_defective_production
-        (
-        def_no
-        , prod_code
-        , def_code
-        , def_qty
-        , occur_date
-        , remarks
-        , def_status
-        )
-        values
-        (
-        seq_def.nextval
-        , #{prodCode}
-        , #{defCode}
-        , #{defQty}
-        , #{occurDate}
-        , #{remarks}
-        , 'W'
-        )
-    </insert>
-
 </mapper>

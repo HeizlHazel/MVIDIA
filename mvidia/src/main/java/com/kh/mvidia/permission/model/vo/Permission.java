@@ -13,5 +13,6 @@ public class Permission {
 
     private String permCode;
     private String permName;
+    private String isGranted;
 
 }

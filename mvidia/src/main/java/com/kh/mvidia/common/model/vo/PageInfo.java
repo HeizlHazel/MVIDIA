@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class DefPageInfo {
+public class PageInfo {
 
     private int listCount;
     private int currentPage;

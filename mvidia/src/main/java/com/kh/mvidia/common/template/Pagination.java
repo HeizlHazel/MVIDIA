@@ -1,10 +1,10 @@
 package com.kh.mvidia.common.template;
 
-import com.kh.mvidia.common.model.vo.DefPageInfo;
+import com.kh.mvidia.common.model.vo.PageInfo;
 
-public class DefPagination {
+public class Pagination {
 
-    public static DefPageInfo getDefPageInfo(int listCount, int currentPage, int pageLimit, int boardLimit){
+    public static PageInfo getPageInfo(int listCount, int currentPage, int pageLimit, int boardLimit){
 
         int maxPage = (int)Math.ceil((double)listCount/boardLimit);
         int startPage = (currentPage -1) / pageLimit * pageLimit + 1;
@@ -12,6 +12,6 @@ public class DefPagination {
         if(endPage > maxPage){
             endPage = maxPage;
         }
-        return new DefPageInfo(listCount, currentPage, pageLimit, boardLimit, maxPage, startPage, endPage);
+        return new PageInfo(listCount, currentPage, pageLimit, boardLimit, maxPage, startPage, endPage);
     }
 }

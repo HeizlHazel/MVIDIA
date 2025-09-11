@@ -12,7 +12,7 @@ import lombok.ToString;
 public class EmpPermission {
 
     private String userId;
-    private String perm_code;
+    private String permCode;
     private String isGranted;
 
 }

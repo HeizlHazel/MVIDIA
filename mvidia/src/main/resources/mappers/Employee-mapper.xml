@@ -98,5 +98,18 @@
              )
 
     </insert>
+    
+    <select id="checkEmpNo" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_lname || emp_name as "emp_name"
+             , dept_name
+             , substr(job_name, -2) as "job_name"
+          from tb_employee
+          join tb_department using (dept_code)
+          join tb_job using(job_code)
+         where emp_no = #{empNo}
+           and emp_status = 'H'
+    </select>
 
 </mapper>

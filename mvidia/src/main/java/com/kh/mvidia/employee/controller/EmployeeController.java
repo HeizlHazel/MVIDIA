@@ -130,6 +130,22 @@ public class EmployeeController {
 		}
 		
 	}
+	
+	@PostMapping("/updateInfo.emp")
+	public String updateEmp(Employee emp, Attachment atch, MultipartFile atchFile, Model model){
+		
+		if (!atchFile.getOriginalFilename().equals("")) {
+			String changeName = saveFile(atchFile);
+			atch.setRefType("F");
+			atch.setOriginName(atchFile.getOriginalFilename());
+			atch.setChangeName(changeName);
+		}
+		
+		model.addAttribute("modifiedEmp", emp);
+		model.addAttribute("modifiedAtch", atch);
+		return "/hr/updateEmpForm";
+	}
+	
 
 	
 	public String saveFile(MultipartFile atchFile){

@@ -17,13 +17,21 @@ public class myPageController {
 	
 	@GetMapping({"/myPage", "/myPage/profile"})
 	public String myPage(HttpSession session, Model model){
-		Attachment att = empService.selectProfile(((Employee)session.getAttribute("loginEmp")).getEmpNo());
+		Attachment atch = empService.selectProfile(((Employee)session.getAttribute("loginEmp")).getEmpNo());
 		
-		if(att == null){
-			att = new Attachment();
+		if(atch == null){
+			atch = new Attachment();
 		}
-		model.addAttribute("att", att);
+		model.addAttribute("atch", atch);
 		return "/common/myPage";
+	}
+	
+	@GetMapping("/myPage/update")
+	public String updateProfile(HttpSession session, Model model){
+		Attachment atch = empService.selectProfile(((Employee)session.getAttribute("loginEmp")).getEmpNo());
+		
+		model.addAttribute("atch", atch);
+		return "/common/myPageUpdateForm";
 	}
 	
 	

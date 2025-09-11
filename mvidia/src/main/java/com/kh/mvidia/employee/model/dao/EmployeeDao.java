@@ -22,4 +22,8 @@ public class EmployeeDao {
 	public Attachment selectProfile(SqlSessionTemplate sqlSession, String empNo) {
 		return sqlSession.selectOne("AttachmentMapper.selectProfile", empNo);
 	}
+	
+	public Employee checkEmpNo(SqlSessionTemplate sqlSession, String empNo) {
+		return sqlSession.selectOne("employeeMapper.checkEmpNo", empNo);
+	}
 }

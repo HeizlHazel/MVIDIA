@@ -55,7 +55,6 @@
                 <div class="modal-body">
                     <div class="input-group">
                         <input id="updateEmpNo" class="form-control" type="text" placeholder="사번 입력" maxlength="8" />
-                        <button class="btn" id="btnFindForUpdate">조회</button>
                     </div>
                     <div class="emp-info" id="updateEmpInfo">
                         <p><strong>이름:</strong> <span id="updateEmpName"></span></p>
@@ -82,7 +81,6 @@
                 <div class="modal-body">
                     <div class="input-group">
                         <input id="deleteEmpNo" class="form-control" type="text" placeholder="사번 입력" maxlength="8" />
-                        <button class="btn danger" id="btnFindForDelete">조회</button>
                     </div>
                     <div class="emp-info" id="deleteEmpInfo">
                         <p><strong>이름:</strong> <span id="deleteEmpName"></span></p>
@@ -106,16 +104,19 @@
 
             // 사번 입력 시 동적 조회 (수정 모달)
             $('#updateEmpNo').on('input', function() {
-                searchEmployee($(this).val(), '#updateEmpInfo', '#updateErrorMsg');
+                searchEmployee($(this).val(), 'update');
             });
 
             // 사번 입력 시 동적 조회 (삭제 모달)
             $('#deleteEmpNo').on('input', function() {
-                searchEmployee($(this).val(), '#deleteEmpInfo', '#deleteErrorMsg');
+                searchEmployee($(this).val(), 'delete');
             });
 
             // 실제 서버와 통신하는 함수 (AJAX)
-            function searchEmployee(empNo, infoSelector, errorSelector) {
+            function searchEmployee(empNo, type) {
+                const infoSelector = `#${type}EmpInfo`;
+                const errorSelector = `#${type}ErrorMsg`;
+
                 $(infoSelector).hide();
                 $(errorSelector).hide();
 
@@ -126,11 +127,13 @@
                         type: 'GET',
                         data: { empNo: empNo },
                         success: function(response) {
-                            if (response.success) {
+                            // 변경된 부분: response가 null인지 확인
+                            if (response) {
                                 $(infoSelector).show();
-                                $(infoSelector + 'Name').text(response.name);
-                                $(infoSelector + 'Rank').text(response.rank);
-                                $(infoSelector + 'Dept').text(response.dept);
+                                // 변경된 부분: 올바른 ID 선택자 사용
+                                $(`#${type}EmpName`).text(response.empName);
+                                $(`#${type}EmpRank`).text(response.jobName);
+                                $(`#${type}EmpDept`).text(response.deptName);
                             } else {
                                 $(errorSelector).text('사번이 올바르지 않습니다.').show();
                             }
@@ -174,6 +177,16 @@
                                 },
                                 error: function() {
                                     alertify.error('서버 통신 오류로 삭제에 실패했습니다.');
-
-    </body>
-    </html>
+                                }
+                            });
+                        }
+                    },
+                    function() {
+                        alertify.error('삭제가 취소되었습니다.');
+                    }
+                );
+            });
+        });
+    </script>
+</body>
+</html>

@@ -25,6 +25,6 @@ public interface EmployeeService {
 	int deleteEmp(String empNo);
 	
 	// 사번 확인 서비스
-	int EmpNoCheck(String employeeId);
+	Employee checkEmpNo(String empNo);
 	
 }

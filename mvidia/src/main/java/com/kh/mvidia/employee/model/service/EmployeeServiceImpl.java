@@ -52,7 +52,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 	}
 	
 	@Override
-	public int EmpNoCheck(String employeeId) {
-		return 0;
+	public Employee checkEmpNo(String empNo) {
+		return empDao.checkEmpNo(sqlSession, empNo);
 	}
 }

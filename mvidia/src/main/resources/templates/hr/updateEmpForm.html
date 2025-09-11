@@ -38,21 +38,29 @@
                 <div th:unless="${atch == null}">
                     <img th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="profile-pic">
                 </div>
-            <div class="field full"><label>사번*</label><input name="empNo" placeholder=" 자동 생성" readonly /></div>
-            <div class="field full"><label>비밀번호*</label><input name="empPwd" th:value="${emp.empPwd}" readonly /></div>
-            <div class="field full"><label>이메일*</label><input name="email" type="email"  placeholder="사번@gmail.com 자동 생성"  readonly /></div>
-            <div class="field full">
-                <label>프로필 사진</label>
-                <input type="text"
-                       th:value="${atch.originName != null} ? ${atch.originName} : ''"
-                       readonly
-                       th:placeholder="${atch.originName != null} ? '' : '선택된 파일 없음'"/>
             </div>
-            <div class="field"><label>성*</label><input name="empLName" th:value="${emp.empLName}" required readonly/></div>
-            <div class="field"><label>이름*</label><input name="empName" th:value="${emp.empName}" required readonly/></div>
-            <div class="field"><label>영문 성*</label><input name="empEngLName" th:value="${emp.empEngLName}" required readonly/></div>
-            <div class="field"><label>영문 이름*</label><input name="empEngName" th:value="${emp.empEngName}" required readonly/></div>
-            <div class="field"><label>생년월일*</label><input name="birthday" type="date" th:value="${emp.birthday}" required readonly /></div>
+            <div class="field full"><label>사번*</label><input name="empNo" th:value="${emp.empNo}" placeholder=" 자동 생성" readonly /></div>
+            <div class="field full"><label>이메일*</label><input name="email" type="email" th:value="${emp.email}"  placeholder="사번@gmail.com 자동 생성" readonly/></div>
+                <div class="profile-section">
+                    <th:block th:unless="${atch != null && atch.fileStatus == 'U'}">
+                        <img id="profile-preview" class="profile-pic" th:src="@{/images/default_profile.png}" alt="기본 프로필">
+                    </th:block>
+                    <th:block th:if="${atch != null && atch.fileStatus == 'U'}">
+                        <img id="profile-preview" th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="profile-pic">
+                    </th:block>
+                    <div class="file-input-group">
+                        <label style="margin-right:10px;" th:text="${atch != null ? atch.originName : '프로필 사진 미 첨부'}"></label>
+                        <br>
+                        <span>변경할 프로필 사진 : </span>
+                        <input name="atchFile" type="file" accept="image/*" onchange="previewProfilePic(event)">
+
+                    </div>
+                </div>
+            <div class="field"><label>성*</label><input name="empLName" th:value="${emp.empLName}" required /></div>
+            <div class="field"><label>이름*</label><input name="empName" th:value="${emp.empName}" required /></div>
+            <div class="field"><label>영문 성*</label><input name="empEngLName" th:value="${emp.empEngLName}" required /></div>
+            <div class="field"><label>영문 이름*</label><input name="empEngName" th:value="${emp.empEngName}" required /></div>
+            <div class="field"><label>생년월일*</label><input name="birthday" type="date" th:value="${emp.birthday}" required  /></div>
             <div class="field"><label>부서*</label>
                 <select name="deptCode" required>
                     <option value="">선택</option>

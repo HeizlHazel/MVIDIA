@@ -1,5 +1,6 @@
 package com.kh.mvidia.hr.controller;
 
+import com.kh.mvidia.common.model.vo.Attachment;
 import com.kh.mvidia.employee.model.service.EmployeeService;
 import com.kh.mvidia.employee.model.vo.Employee;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,11 @@ public class HrController {
 	
 	@GetMapping("/accountModifyDetail.hr")
 	public String updateEmp(Model model, String empNo){
-		model.addAttribute("empNo", empNo);
-		return "/hr/accountModifyFormPage";
+		Employee emp = empService.selectEmpNo(empNo);
+		Attachment atch = empService.selectProfile(empNo);
+		model.addAttribute("emp", emp);
+		model.addAttribute("atch", atch);
+		return "/hr/updateEmpForm";
 	}
 	
 	@GetMapping("/accountDelete.hr")

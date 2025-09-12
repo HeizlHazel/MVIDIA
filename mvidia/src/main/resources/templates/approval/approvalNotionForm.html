@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>전자결재 신청폼</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+<div class="container mt-5 mb-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">전자결재 신청폼</h4>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/approval/submit}" method="post" enctype="multipart/form-data">
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">신청자 *</label>
+                        <input type="text" name="applicant" class="form-control" placeholder="홍길동" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">부서 *</label>
+                        <input type="text" name="department" class="form-control" placeholder="개발팀" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">직급</label>
+                        <input type="text" name="position" class="form-control" placeholder="사원 / 대리">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">신청일</label>
+                        <input type="date" name="applyDate" class="form-control" th:value="${#dates.format(#dates.createNow(),'yyyy-MM-dd')}">
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">제목 *</label>
+                        <input type="text" name="title" class="form-control" placeholder="예: 사무용품 구매 신청" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">결재유형</label>
+                        <select name="type" class="form-select">
+                            <option value="휴가">휴가</option>
+                            <option value="구매">구매</option>
+                            <option value="경비">경비</option>
+                            <option value="인사">인사</option>
+                            <option value="계약">계약</option>
+                            <option value="기타" selected>기타</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">금액 (선택)</label>
+                        <input type="number" name="amount" class="form-control" placeholder="원 단위">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">첨부파일</label>
+                        <input type="file" name="files" class="form-control" multiple>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">결재 라인 *</label>
+                    <input type="text" name="approvers" class="form-control mb-2" placeholder="결재자 이름 또는 사번" required>
+                    <small class="text-muted">※ 여러명 지정 시 콤마(,)로 구분</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">상세 내용 *</label>
+                    <textarea name="content" class="form-control" rows="6" placeholder="신청 사유 및 상세 내역을 입력하세요." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <button type="reset" class="btn btn-secondary">초기화</button>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary">제출</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+
+
+
+
+
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>📃 전자 결재 신청</title>-->
+<!--    <style>-->
+<!--        .accountCreate{grid-column:2; grid-row:2; background:var(&#45;&#45;card);border-radius:var(&#45;&#45;radius);box-shadow:var(&#45;&#45;shadow);}-->
+<!--        .accountCreate>.widget{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}-->
+<!--        .form{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px}-->
+<!--        .form .field{display:flex;flex-direction:column;gap:8px}-->
+<!--        .form label{font-size:16px;color:var(&#45;&#45;muted)}-->
+<!--        .form input,.form select,.form textarea{padding:10px 12px;border-radius:12px;border:1px solid #dde6ec;background:#fff;outline:none}-->
+<!--        .form input[readonly]{background:#f1f5f8;color:#6f7c83}-->
+<!--        .form .full{grid-column:1/-1}-->
+<!--        .form .actions{grid-column:1/-1;display:flex;gap:8px;margin-top:6px}-->
+<!--        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background-color:#0c197f ;color:#fff}-->
+<!--        .btn.ghost{background:transparent;color:#002B39;border:1px solid #002B39}-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+
+<!--&lt;!&ndash; 메인 컨텐츠 &ndash;&gt;-->
+<!--<div class="accountCreate">-->
+<!--    <div class="widget" id="home">-->
+<!--        <h3 class="page-title">전자 결재 신청</h3>-->
+<!--        <h4>기본 정보</h4>-->
+<!--        <form id="createForm" class="form" action="/insertInfo.emp" method="post" enctype="multipart/form-data">-->
+<!--            <div class="field"><label>문서 유형 *</label>-->
+<!--                <select name="deptCode" required>-->
+<!--                    <option value="">선택</option>-->
+<!--                    <option value="D1">지출결의서</option>-->
+<!--                    <option value="D2">구매신청서</option>-->
+<!--                    <option value="D3">휴가신청서</option>-->
+<!--                    <option value="D4">재직증명서 요청</option>-->
+<!--                </select>-->
+<!--            </div>-->
+<!--            <div class="field"><label>신청일 *</label><input name="hireDate" type="date" required/></div>-->
+<!--            <h4>결재 내용</h4>-->
+<!--            <div class="field full"><label>제목 *</label><input name="address"/></div>-->
+<!--            <div class="field full"><label>내용 *</label><textarea name="address" required></textarea></div>-->
+<!--            <div class="field full"><label>사용 목적</label><input name="address"/></div>-->
+<!--            <div class="actions">-->
+<!--                <button class="btn" type="submit">결재 신청</button>-->
+<!--                <a class="btn ghost" th:href="@{/hr/empAccount.hr}">취소</a>-->
+<!--            </div>-->
+<!--        </form>-->
+<!--    </div>-->
+<!--</div>-->
+<!--</body>-->
+<!--</html>-->

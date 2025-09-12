@@ -14,10 +14,6 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
 
     <style>
-        .table-wrapper {
-            margin: 20px auto;
-            width: 95%;
-        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -64,26 +60,25 @@
     </style>
 </head>
 <body>
-    <div class="container">
-
+    <h2 class="mb-0 fw-bold">
+        <span class="material-symbols-outlined"
+            style="font-size: 35px; color: #212121;">add_chart</span>
+            분기별 수익조회
+    </h2>
+    <div class="container-fluid">
         <div class="card custom p-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0 fw-bold">
-                    <span class="material-symbols-outlined"
-                          style="font-size: 35px; color: #212121;">add_chart</span>
-                    분기별 수익조회
-                </h2>
-
-                <select id="yearSelect" class="form-select-sm w-auto" onchange="changeYear(this.value)">
-                    <option value="2025" selected>2025</option>
-                    <option value="2024">2024</option>
-                    <option value="2023">2023</option>
-                    <option value="2022">2022</option>
-                </select>
-            </div>
-
+            <select id="yearSelect"
+                    class="form-select form-select-sm"
+                    style="width: 80px; font-size:17px; margin-left: auto;"
+                    onchange="changeYear(this.value)">
+                <option value="2025" th:selected="${year eq '2025'}">2025</option>
+                <option value="2024" th:selected="${year eq '2024'}">2024</option>
+                <option value="2023" th:selected="${year eq '2023'}">2023</option>
+                <option value="2022" th:selected="${year eq '2022'}">2022</option>
+            </select>
             <div class="card shadow-sm p-3 mt-3">
-                <h5 class="fw-bold mb-3 border-bottom pb-2 mb-3">2025년 성과 요약</h5>
+                <h5 class="fw-bold mb-3 border-bottom pb-2 mb-3"
+                    th:text="|${year}년 성과 요약|"></h5>
                 <div class="row text-center">
 
                     <div class="flex-fill border-end">
@@ -99,6 +94,16 @@
                     <div class="flex-fill">
                         <h5 class="fw-bold text-primary" th:text="|${profitRate}%|"></h5>
                         <small class="text-muted">영업이익률</small>
+                    </div>
+
+                    <div class="flex-fill border-end">
+                        <h5 class="fw-bold text-primary" th:text="${maxSales}"></h5>
+                        <small class="text-muted">최대 매출 분기</small>
+                    </div>
+
+                    <div class="flex-fill border-end">
+                        <h5 class="fw-bold text-danger" th:text="${minSales}"></h5>
+                        <small class="text-muted">최소 매출 분기</small>
                     </div>
                 </div>
             </div>
@@ -141,7 +146,6 @@
                 </div>
             </div>
         </div>
-    </div>
 
     <script th:inline="javascript">
         const totalSales = /*[[${totalSales}]]*/ [];
@@ -187,7 +191,7 @@
                                 return value / 100000000 + '억';
                             }
                         },
-                        max: 40000000000
+                        max: 400000000000
                     },
 
                     y1: {
@@ -199,11 +203,52 @@
                                 return value / 100000000 + '억';
                             }
                         },
-                        max: 20000000000
+                        max: 200000000000
                     }
                 }
             }
         });
     </script>
+        <script>
+            function  changeYear(year) {
+                window.location.href="/finance/revenue-report?year=" + year;
+            }
+        </script>
+            <div class="header"> 분기별 총매출 & 영업이익 (단위: 억원)
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center table-hover">
+                    <thead class="table-primary">
+                    <tr>
+                        <th>분기</th>
+                        <th>총매출</th>
+                        <th>영업이익</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>1분기</td>
+                        <td th:text="${#numbers.formatDecimal(totalSales[0] / 100000000.0, 1, 1) + '억'}"></td>
+                        <td th:text="${#numbers.formatDecimal(totalProfits[0] / 100000000.0, 1, 1) + '억'}"></td>
+                    </tr>
+                    <tr>
+                        <td>2분기</td>
+                        <td th:text="${#numbers.formatDecimal(totalSales[1] / 100000000.0, 1, 1) + '억'}"></td>
+                        <td th:text="${#numbers.formatDecimal(totalProfits[1] / 100000000.0, 1, 1) + '억'}"></td>
+                    </tr>
+                    <tr>
+                        <td>3분기</td>
+                        <td th:text="${#numbers.formatDecimal(totalSales[2] / 100000000.0, 1, 1) + '억'}"></td>
+                        <td th:text="${#numbers.formatDecimal(totalProfits[2] / 100000000.0, 1, 1) + '억'}"></td>
+                    </tr>
+                    <tr>
+                        <td>4분기</td>
+                        <td th:text="${#numbers.formatDecimal(totalSales[3] / 100000000.0, 1, 1) + '억'}"></td>
+                        <td th:text="${#numbers.formatDecimal(totalProfits[3] / 100000000.0, 1, 1) + '억'}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 </body>
 </html>

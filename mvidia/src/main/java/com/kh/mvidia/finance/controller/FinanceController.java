@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,6 +125,10 @@ public class FinanceController {
             @RequestParam(defaultValue = "2025") String year,
             Model model) {
 
+        financeService.mergeQuarterlySales(year);
+
+        List<String> yearList = Arrays.asList("2025", "2024", "2023", "2022");
+
         List<Sales> salesList = financeService.getQuarterlySales(year);
 
         Map<String, long[]> productQuarterMap = new HashMap<>();
@@ -132,6 +137,9 @@ public class FinanceController {
 
         long[] totalSales = new long[4];
         long[] totalProfits = new long[4];
+
+        long sumSales = 0;
+        long sumProfit = 0;
 
         for(Sales s : salesList) {
             int qIndex = Integer.parseInt(s.getQuarter()) - 1;
@@ -145,20 +153,52 @@ public class FinanceController {
             productSumMap.put(s.getProdName(),
                     ((long) productSumMap.getOrDefault(s.getProdName(), 0L)) + sales);
 
-
             totalSales[qIndex] += sales;
             totalProfits[qIndex] += profit;
+
+            sumSales += sales;
+            sumProfit += profit;
         }
+
+        long ytd = sumSales;
+
+        long prevYearSales = financeService.getYearlySales(String.valueOf(Integer.parseInt(year) - 1));
+        double yoy = (prevYearSales > 0)
+                ? ((double) (ytd - prevYearSales) / prevYearSales) * 100
+                : 0.0;
+
+        double profitRate = (ytd > 0) ? ((double) sumProfit / ytd) * 100 : 0.0;
+
+        int maxSalesQ = 0, minSalesQ = 0;
+        long maxSalesVal = totalSales[0], minSalesVal = totalSales[0];
+
+        for (int i = 1; i < 4; i++) {
+            if (totalSales[i] > maxSalesVal) {
+                maxSalesVal = totalSales[i];
+                maxSalesQ = i;
+            }
+            if (totalSales[i] < minSalesVal) {
+                minSalesVal = totalSales[i];
+                minSalesQ = i;
+            }
+        }
+
+        model.addAttribute("maxSales", String.format("%d분기 : %,d억", maxSalesQ + 1, maxSalesVal / 100000000));
+        model.addAttribute("minSales", String.format("%d분기 : %,d억", minSalesQ + 1, minSalesVal / 100000000));
+
+        model.addAttribute("ytd", ytd / 100000000); // 억 단위 변환
+        model.addAttribute("yoy", String.format("%.1f", yoy));
+        model.addAttribute("profitRate", String.format("%.1f", profitRate));
 
         model.addAttribute("profitList", salesList);
         model.addAttribute("productQuarterMap", productQuarterMap);
         model.addAttribute("productSumMap", productSumMap);
         model.addAttribute("totalSales", totalSales);
         model.addAttribute("totalProfits", totalProfits);
+        model.addAttribute("yearList", yearList);
         model.addAttribute("year", year);
 
         return "finance/revenue-report";
     }
-
 }
 

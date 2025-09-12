@@ -16,7 +16,7 @@ import java.util.List;
 @Service
 public class NotionServiceImpl implements NotionService {
 
-    @Value("${notion.api-token}")   // application.properties 맞춤
+    @Value("${notion.api-token}")
     private String notionToken;
 
     @Value("${notion.database-id}")
@@ -32,7 +32,6 @@ public class NotionServiceImpl implements NotionService {
             headers.set("Notion-Version", "2022-06-28");
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // === JSON Body ===
             JSONObject body = new JSONObject();
             JSONObject parent = new JSONObject();
             parent.put("database_id", databaseId);
@@ -40,62 +39,23 @@ public class NotionServiceImpl implements NotionService {
 
             JSONObject properties = new JSONObject();
 
-            // 명세서 이름 (title 타입)
-            JSONObject titleObject = new JSONObject();
-            JSONObject titleText = new JSONObject();
-            titleText.put("content", String.format("%s_%s 급여명세서", salary.getEmpNo(), salary.getPayDate()));
-            titleObject.put("text", titleText);
+            // 스크린샷에서 보이는 정확한 속성명 사용
+
+            // 명세서 이름 (title) - 스크린샷에서 첫 번째 컬럼명 사용
             JSONArray titleArray = new JSONArray();
-            titleArray.put(titleObject);
-            properties.put("명세서 이름", new JSONObject().put("title", titleArray));
+            titleArray.put(new JSONObject().put("text", new JSONObject()
+                    .put("content", salary.getEmpNo() + "_" + salary.getPayDate() + " 급여명세서")));
+            properties.put("속성명", new JSONObject().put("title", titleArray)); // 첫 번째 타이틀 컬럼
 
-            // 사번 (rich_text 타입)
-            JSONObject richTextObject = new JSONObject();
-            JSONObject richTextContent = new JSONObject();
-            richTextContent.put("content", salary.getEmpNo());
-            richTextObject.put("text", richTextContent);
-            JSONArray richTextArray = new JSONArray();
-            richTextArray.put(richTextObject);
-            properties.put("사번", new JSONObject().put("rich_text", richTextArray));
+            // 구분, 사번, 이름 등 - 실제 데이터베이스에 있는 속성명만 사용
+            // 먼저 몇 개 속성만 테스트해보세요
 
-            // 이름 (rich_text 타입)
-            JSONObject richTextNameObject = new JSONObject();
-            JSONObject richTextNameContent = new JSONObject();
-            richTextNameContent.put("content", salary.getEmpName());
-            richTextNameObject.put("text", richTextNameContent);
-            JSONArray richTextNameArray = new JSONArray();
-            richTextNameArray.put(richTextNameObject);
-            properties.put("이름", new JSONObject().put("rich_text", richTextNameArray));
+            // 구분 - Select 타입으로 수정
+            properties.put("구분", new JSONObject().put("select", new JSONObject().put("name", "급여")));
 
-            // 부서 (select 타입)
-            JSONObject selectDept = new JSONObject();
-            selectDept.put("name", salary.getDeptName());
-            properties.put("부서", new JSONObject().put("select", selectDept));
-
-            // 직위 (select 타입)
-            JSONObject selectJob = new JSONObject();
-            selectJob.put("name", salary.getJobName());
-            properties.put("직위", new JSONObject().put("select", selectJob));
-
-            // 지급월 (date 타입)
-            JSONObject dateObject = new JSONObject();
-            dateObject.put("start", salary.getPayDate() + "-01");
-            properties.put("지급월", new JSONObject().put("date", dateObject));
-
-            // number 타입 속성들
-            properties.put("기본급", new JSONObject().put("number", parseInt(salary.getSalary())));
-            properties.put("연장근무수당", new JSONObject().put("number", parseInt(salary.getExtendOv())));
-            properties.put("야간수당", new JSONObject().put("number", parseInt(salary.getNightOv())));
-            properties.put("휴일근무수당", new JSONObject().put("number", parseInt(salary.getWeekendOv())));
-            properties.put("출장수당", new JSONObject().put("number", parseInt(salary.getTripOv())));
-            properties.put("보너스", new JSONObject().put("number", parseInt(salary.getBonusAmt())));
-
-            // 세금 항목
-            properties.put("국민연금", new JSONObject().put("number", getTaxAmount(taxList, "TAX001")));
-            properties.put("건강보험", new JSONObject().put("number", getTaxAmount(taxList, "TAX002")));
-            properties.put("고용보험", new JSONObject().put("number", getTaxAmount(taxList, "TAX003")));
-            properties.put("소득세", new JSONObject().put("number", getTaxAmount(taxList, "TAX004")));
-            properties.put("지방소득세", new JSONObject().put("number", getTaxAmount(taxList, "TAX005")));
+            // 다른 속성들은 실제 데이터베이스에 존재하는지 확인 후 추가
+            // properties.put("사번", new JSONObject().put("rich_text", ...));
+            // properties.put("이름", new JSONObject().put("rich_text", ...));
 
             body.put("properties", properties);
 

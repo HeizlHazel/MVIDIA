@@ -186,7 +186,7 @@
     </select>
 
     <select id="selectQuarterlySales" resultType="com.kh.mvidia.finance.model.vo.Sales">
-        SELECT p.PROD_NAME AS prodName,
+        select p.PROD_NAME AS prodName,
                EXTRACT(YEAR FROM s.PERIOD_ST) AS year,
                TO_NUMBER(TO_CHAR(s.PERIOD_ST, 'Q')) AS quarter,
                SUM(s.TOTAL_SALES) AS totalSales,
@@ -198,5 +198,52 @@
          GROUP BY p.PROD_NAME, EXTRACT(YEAR FROM s.PERIOD_ST), TO_CHAR(s.PERIOD_ST, 'Q')
          ORDER BY p.PROD_NAME, quarter
     </select>
+
+    <insert id="mergeQuarterlySales" parameterType="string">
+         merge
+               into tb_sales s
+         using
+             (
+             select h.prod_code
+                  , trunc(h.sale_date, 'Q') AS period_st
+                  , last_day(add_months(trunc(h.sale_date, 'Q'), 2)) AS period_fn
+                  , sum(h.qty * p.price) AS total_sales
+                  , round(sum(h.qty * p.price *
+                    (h.profit_rate / 100)), 0) AS op_profit
+        from tb_sales_history h
+               join tb_production_quality p
+                 on h.prod_code = p.prod_code
+              where to_char(h.sale_date, 'YYYY') = #{year}
+              group by h.prod_code
+                     , trunc(h.sale_date, 'Q')
+                     , last_day(add_months(trunc(h.sale_date, 'Q'), 2))
+             ) src
+            on
+             (
+               s.prod_code = src.prod_code
+               and s.period_st = src.period_st
+               and s.period_fn = src.period_fn
+             )
+          when matched then
+        update set s.total_sales = src.total_sales
+             , s.op_profit = src.op_profit
+          when not matched then
+        insert
+             (
+               prod_code
+             , period_st
+             , period_fn
+             , total_sales
+             , op_profit)
+        values
+             (
+               src.prod_code
+             , src.period_st
+             , src.period_fn
+             , src.total_sales
+             , src.op_profit
+             )
+    </insert>
+
 
 </mapper>

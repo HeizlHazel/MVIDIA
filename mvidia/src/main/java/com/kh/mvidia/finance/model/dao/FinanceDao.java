@@ -4,7 +4,7 @@ import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.kh.mvidia.finance.model.vo.Sales;
 import com.kh.mvidia.finance.model.vo.Tax;
-import org.apache.ibatis.annotations.Param;
+import jakarta.websocket.Session;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
 
@@ -78,5 +78,14 @@ public class FinanceDao {
 
     public List<Sales> selectQuarterlySales(SqlSession sqlSession, String year) {
         return sqlSession.selectList("salaryMapper.selectQuarterlySales", year);
+    }
+
+    public int mergeQuarterlySales(SqlSession sqlSession, String year) {
+        return sqlSession.insert("salaryMapper.mergeQuarterlySales", year);
+    }
+
+    public long selectYearlySales(SqlSession sqlSession ,String year) {
+        Long result = sqlSession.selectOne("salaryMapper.selectYearlySales", year);
+        return (result != null) ? result : 0;
     }
 }

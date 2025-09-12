@@ -200,4 +200,20 @@ public class FinanceServiceImpl implements FinanceService {
     public List<Sales> getQuarterlySales(String year) {
         return financeDao.selectQuarterlySales(sqlSession, year);
     }
+
+    @Override
+    public long getYearlySales(String year) {
+        List<Sales> list = getQuarterlySales(year); // 이미 있는 쿼터별 조회 활용
+        long sum = 0;
+        for (Sales s : list) {
+            sum += Long.parseLong(s.getTotalSales());
+        }
+        return sum;
+    }
+
+    @Override
+    public int mergeQuarterlySales(String year) {
+        return financeDao.mergeQuarterlySales(sqlSession, year);
+    }
+
 }

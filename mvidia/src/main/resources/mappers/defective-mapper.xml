@@ -21,7 +21,8 @@
     <select id="selectListCount" resultType="int">
         select
                count(*)
-        from tb_defective_production
+          from tb_defective_production
+         where def_status != 'R'
     </select>
 
     <!-- 불량 제품 리스트 조회 (불량)-->
@@ -30,15 +31,16 @@
                d.def_no
              , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
              , d.prod_code
-             , p.prod_name as prod_name
-             , t.def_type as def_type
+             , p.prod_name as "prod_name"
+             , t.def_type as "def_type"
              , d.def_qty
-             , s.status_name as status_name
+             , s.status_name as "status_name"
              , d.remarks
           from tb_defective_production d
           left join tb_production_quality p on p.prod_code = d.prod_code
           left join tb_defective_type t on t.def_code = d.def_code
           left join tb_status s on s.status_code = d.def_status
+         where d.def_status != 'R'
          order
             by d.occur_date desc
     </select>

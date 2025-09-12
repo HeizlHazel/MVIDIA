@@ -36,4 +36,27 @@
             by q.prod_code
     </select>
 
+    <!-- 키워드 검색 -->
+    <select id="searchList" resultMap="ProductResultSet">
+        select
+               q.prod_code
+             , q.prod_name
+             , q.price
+             , p.stock
+             , s.status_name
+          from tb_production_quality q
+          left join tb_product_store p on q.local_code = p.local_code
+          left join tb_status s on q.prod_status = s.status_code
+         where prod_code like '%' || :keyword || '%'
+            or prod_name like '%' || :keyword || '%'
+         order
+            by prod_code
+    </select>
+    <!-- 불량 등록용 생산 제품 리스트 조회 -->
+    <select id="selectAllList" resultMap="ProductResultSet">
+        select
+               prod_code
+             , prod_name
+          from tb_production_quality
+    </select>
 </mapper>

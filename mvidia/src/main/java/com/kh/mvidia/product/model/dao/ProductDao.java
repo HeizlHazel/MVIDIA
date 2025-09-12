@@ -6,7 +6,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Repository
 public class ProductDao {
@@ -18,14 +18,19 @@ public class ProductDao {
     }
 
     // 리스트 조회
-    public ArrayList<ProductQuality> selectList(SqlSessionTemplate sqlSession, PageInfo dpi){
+    public List<ProductQuality> selectList(SqlSessionTemplate sqlSession, PageInfo dpi){
 
         int offset = (dpi.getCurrentPage() -1) * dpi.getBoardLimit();
         int limit = dpi.getBoardLimit();
 
         RowBounds rowBounds = new RowBounds(offset, limit);
 
-        return new ArrayList<>(sqlSession.selectList("productMapper.selectList", null, rowBounds));
+        return sqlSession.selectList("productMapper.selectList", null, rowBounds);
+    }
+
+    // 불량 등록용 리스트 조회?
+    public List<ProductQuality> selectAllList(SqlSessionTemplate sqlSession){
+        return sqlSession.selectList("productMapper.selectAllList");
     }
 
 

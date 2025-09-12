@@ -7,7 +7,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService{
@@ -22,5 +22,9 @@ public class ProductServiceImpl implements ProductService{
     public int selectListCount() { return pDao.selectListCount(sqlSession); }
 
     @Override
-    public ArrayList<ProductQuality> selectList(PageInfo pi) { return pDao.selectList(sqlSession, pi);}
+    public List<ProductQuality> selectList(PageInfo pi) { return pDao.selectList(sqlSession, pi);}
+
+    @Override
+    public List<ProductQuality> selectAllList(){ return pDao.selectAllList(sqlSession); }
+
 }

@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class ProductController {
@@ -25,10 +26,17 @@ public class ProductController {
         int listCount = pService.selectListCount();
 
         PageInfo pi = Pagination.getPageInfo(listCount, currentPage, 10, 5);
-        ArrayList<ProductQuality> list = pService.selectList(pi);
+        List<ProductQuality> list = pService.selectList(pi);
 
         mv.addObject("pi", pi).addObject("list", list).setViewName("product/productListView");
 
         return mv;
+    }
+
+    // 불량 등록용 제품 조회 (AJAX에서 호출)
+    @GetMapping("allprod.bo")
+    @ResponseBody
+    public List<ProductQuality> getAllProduct(){
+        return pService.selectAllList();
     }
 }

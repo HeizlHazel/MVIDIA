@@ -18,7 +18,6 @@ public class DefectiveServiceImpl implements DefectiveService{
     @Autowired
     private SqlSessionTemplate sqlSession;
 
-
     @Override
     public int selectListCount(){
         return dDao.selectListCount(sqlSession);

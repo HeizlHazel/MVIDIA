@@ -115,7 +115,8 @@
     }
 
     textarea {
-        min-height: 200px; /* 높이 지정 */
+        min-height: 300px; /* 높이 지정 */
+        width: 300px;
         box-sizing: border-box;
         resize: none;
         align-items: center;
@@ -211,8 +212,6 @@
             </div>
         </div>
 
-
-
         <div class='modal-background'>
             <div class='modal-content'>
                 <form id="defectiveForm" th:action="@{/insert.bo}" method="post">
@@ -229,11 +228,7 @@
                         <label style="text-align: right;">제품코드&nbsp;&nbsp;&nbsp;</label>
                         <input type="text" class="form-input" name="prodCode" list="list1" id="numbers1" placeholder="제품코드" align="left"/>
                         <datalist id ="list1">
-                            <option value="P1001"></option>
-                            <option value="P1002"></option>
-                            <option value="P1003"></option>
-                            <option value="P1004"></option>
-                            <option value="P1005"></option>
+                            <option th:each="p : ${prodcutList}" th:value="${p.prodCode}"></option>
                         </datalist>
                     </div>
                     <br>
@@ -242,14 +237,104 @@
                         <label style="text-align: right;">제품명&nbsp;&nbsp;&nbsp;</label>
                         <input type="text" class="form-input" name="prodName" list="list2" id="numbers2" placeholder="제품명"/>
                         <datalist id ="list2">
-                            <option value="DDR5_16GB"></option>
-                            <option value="LPDDR5X_8GB"></option>
-                            <option value="HBM3_80GB"></option>
-                            <option value="SSD_1TB_NVMe"></option>
-                            <option value="eMMC_128GB"></option>
+                            <option th:each="p : ${prodcutList}" th:value="${p.prdodName}"></option>
                         </datalist>
                     </div>
                     <br>
+                    <script th:inline="javascript">
+                        /*<![CDATA[*/
+                        const productMap = {};
+
+                        /* 서버에서 전달된 productList를 JS 객체로 변환 */
+                        /* productList: List<ProductQuality> */
+                        /* 각 ProductQuality: prodCode, prodName */
+                        [[${productList}]].forEach(function(p) {
+                            productMap[p.prodCode] = p.prodName;
+                        });
+
+                        const codeInput = document.getElementById('numbers1');
+                        const nameInput = document.getElementById('numbers2');
+
+                        // 제품코드 선택 시 제품명 자동 입력
+                        codeInput.addEventListener('input', () => {
+                            const code = codeInput.value;
+                            if(productMap[code]) {
+                                nameInput.value = productMap[code];
+                            } else {
+                                nameInput.value = "";
+                            }
+                        });
+
+                        // 제품명 선택 시 제품코드 자동 입력
+                        nameInput.addEventListener('input', () => {
+                            const name = nameInput.value;
+                            const code = Object.keys(productMap).find(key => productMap[key] === name);
+                            if(code) {
+                                codeInput.value = code;
+                            } else {
+                                codeInput.value = "";
+                            }
+                        });
+                        /*]]>*/
+                    </script>
+                    <script>
+                        const modalBg = document.querySelector('.modal-background');
+                        const openModalBtn = document.getElementById('openModalBtn');
+                        const closeModalBtn = document.getElementById('closeModalBtn');
+                        const prodCodeList = document.getElementById('list1');
+                        const prodNameList = document.getElementById('list2');
+
+                        let productMap = {}; // 제품코드 ↔ 제품명 매핑
+
+                        // 모달 열기
+                        openModalBtn.addEventListener('click', () => {
+                            modalBg.style.display = 'flex';
+
+                            // AJAX로 제품 리스트 가져오기
+                            fetch('/getProductList')
+                                .then(response => response.json())
+                                .then(data => {
+                                    // 기존 옵션 초기화
+                                    prodCodeList.innerHTML = '';
+                                    prodNameList.innerHTML = '';
+                                    productMap = {};
+
+                                    data.forEach(item => {
+                                        // datalist에 옵션 추가
+                                        const optionCode = document.createElement('option');
+                                        optionCode.value = item.prodCode;
+                                        prodCodeList.appendChild(optionCode);
+
+                                        const optionName = document.createElement('option');
+                                        optionName.value = item.prodName;
+                                        prodNameList.appendChild(optionName);
+
+                                        // 맵에 저장
+                                        productMap[item.prodCode] = item.prodName;
+                                        productMap[item.prodName] = item.prodCode;
+                                    });
+                                })
+                                .catch(err => console.error('제품 리스트 로딩 실패:', err));
+                        });
+
+                        // 모달 닫기
+                        closeModalBtn.addEventListener('click', () => modalBg.style.display = 'none');
+
+                        // 1:1 연동 (제품코드 입력하면 제품명 자동, 반대도 가능)
+                        document.getElementById('numbers1').addEventListener('input', function() {
+                            const code = this.value;
+                            if(productMap[code]) {
+                                document.getElementById('numbers2').value = productMap[code];
+                            }
+                        });
+
+                        document.getElementById('numbers2').addEventListener('input', function() {
+                            const name = this.value;
+                            if(productMap[name]) {
+                                document.getElementById('numbers1').value = productMap[name];
+                            }
+                        });
+                    </script>
 
                     <div class="form-row">
                         <label style="text-align: right;">불량유형&nbsp;&nbsp;&nbsp;</label>
@@ -269,14 +354,21 @@
                     </div>
 
                     <div class="textarea-form">
-                        <label style="text-align: right;">비고&nbsp;&nbsp;&nbsp;</label>
-                        <textarea class="form-input" name="remarks" maxlength="1200"></textarea>
-                        <div class="textLimit">
-                            <p class="textCount" style="color: gray;">0자</p>
-                            <p class="textTotal" style="color: gray;">1200자</p>
+                        <div>
+                            <span><b>비고</b></span>
+                        </div>
+                        <!-- <label style="text-align: right;">비고&nbsp;&nbsp;&nbsp;</label> -->
+                        <textarea class="text_box" name="remarks" maxlength="1200"
+                                  placeholder="불량 원인이나 특이사항을 입력하세요.&#10;예: 외관 손상, 전원 불량, 부품 결함 등&#10;상세 내역을 간략히 작성해주세요 (최대 1200자)"></textarea>
+
+                        <div class="text_length" style="text-align: right">
+                            <span class="start-text" id="comment_start"></span>
+                            <span class="length" style="color: gray">
+                                <span class="comment_length" style="color: gray">0</span>
+                                / 1200
+                            </span>
                         </div>
                     </div>
-
                     <br>
                     <br>
                     <br>
@@ -312,21 +404,21 @@
         </script>
 
         <script>
-            $('#textBox').keyup(function (e) {
+            $('.text_box').keyup(function (e) {
               let content = $(this).val();
 
             // 글자수 세기
             if (content.length == 0 || content == '') {
-                $('.textCount').text('0자');
+                $(".comment_length").text('0');
             } else {
-                $('.textCount').text(content.length + '자');
+                $(".comment_length").text(content.length);
             }
 
             // 글자수 제한
-            if (content.length > 200) {
-                // 1200자 부터는 타이핑 되지 않도록
+            if (content.length > 1200) {
+                // 1200자 부터는 타이핑 되지 않도록 만들기
                 $(this).val($(this).val().substring(0, 1200));
-                // 1200자 넘으면 알림창 뜨도록
+                // 1200자 넘으면 알림창
                     alert('글자수는 1200자까지 입력 가능합니다.');
                 };
             });
@@ -427,7 +519,7 @@
         <br>
 
         <div class="DefList">
-            <form action="delete.bo" method="POST">
+            <form id="deleteForm" action="delete.bo" method="POST">
                 <table id="defTable" align="left">
                     <thead>
                         <tr>
@@ -444,7 +536,7 @@
                     </thead>
 
                     <tbody>
-                        <tr th:each="d : ${list}" th:attr="data-defno=#{d.defNo}">
+                        <tr th:each="d : ${list}" th:data-defno="#{d.defNo}">
                             <td><input type="checkbox" class="chk" name="dno" th:value="${d.defNo}"></td>
                             <td class="defNo" th:text="${d.defNo}"></td>
                             <td th:text="${d.occurDate}"></td>
@@ -460,12 +552,15 @@
             </div>
             <br clear="both"><br>
             <div>
-            <button type="submit" id="btnDelete" class="btn btn-delete" align="left">삭제</button>
+            <button type="button" id="btnDelete" class="btn btn-delete" align="left">삭제</button>
             </div>
         </form>
 
         <script>
-            $("#btnDelete").click(function(){
+            // 최종 삭제 버튼 클릭 이벤트
+            $("#btnDelete").click(function(e){
+                e.preventDefault(); // 폼 기본 제출 방지
+
                 let defNoList = [];
                 $(".chk:checked").each(function(){
                     defNoList.push($(this).val());
@@ -476,8 +571,9 @@
                     return;
                 }
 
-                if(!confirm("선택한 제품을 삭제하시겠습니까?"))
-                return;
+                if(!confirm("선택한 제품을 삭제하시겠습니까?")) {
+                    return;
+                }
 
                 $.ajax({
                     url: "/delete.bo",
@@ -485,29 +581,25 @@
                     traditional: true,
                     data: { dno: defNoList },
                     success: function(response){
-                         // response.result, response.deleted, response.notFound 를 가정
-                        if(response.result === "success" || response.result === "partial"){
-                            alert("삭제를 완료했습니다.");
+                        console.log("서버 응답:", response);
 
-                            // 삭제 성공/이미 DB에 없는 항목 모두 화면에서 제거
-                            let allRemoved = (response.deleted || []).concat(response.notFound || []);
-                            allRemoved.forEach(function(defNo){
-                                $("#defTable tbody tr[data-defno='" + defNo + "']").remove();
+                        if(response.result === "success"){
+                            alert(response.message);
+
+                            // 삭제된 행들을 화면에서 제거
+                            response.deletedItems.forEach(function(defNo){
+                                $("tr[data-defno='" + defNo + "']").remove();
                             });
 
-                            let rows = $("#defTable tbody tr").get();
-                            rows.sort(function(a, b){
-                                let dateA = new Date($(a).find("td:nth-child(3)").text());
-                                let dateB = new Date($(b).find("td:nth-child(3)").text());
-                                return dateB - dateA;
-                            });
-                            $.each(rows, function(index, row){
-                                $("#defTable tbody").append(row);
-                            });
-                        }else{
-                            alert("삭제가 실패됐습니다.");
+                            // 체크박스 해제 (남은 행들의)
+                            $(".chk").prop("checked", false);
+
+                        } else {
+                            alert(response.message || "삭제가 실패됐습니다.");
                         }
-                    }, error: function(){
+                    },
+                    error: function(xhr, status, error){
+                        console.error("Ajax 오류:", error);
                         alert("서버와 통신 중 오류가 발생했습니다.");
                     }
                 });

@@ -39,28 +39,6 @@
             by p.perm_code
     </select>
 
-<!--    <delete id="deleteEmpPermission">-->
-<!--        delete-->
-<!--        from tb_emp_permission-->
-<!--        where user_id = #{userId}-->
-<!--    </delete>-->
-
-<!--    <insert id="insertEmpPermission">-->
-<!--        insert-->
-<!--          into tb_emp_permission-->
-<!--          (-->
-<!--            user_id-->
-<!--          , perm_code-->
-<!--          , is_granted-->
-<!--          )-->
-<!--          values-->
-<!--          (-->
-<!--            #{userId}-->
-<!--          , #{permCode}-->
-<!--          , #{isGranted}-->
-<!--          )-->
-<!--    </insert>-->
-
     <update id="updateEmpPermission">
         update tb_emp_permission
            set is_granted = #{isGranted}

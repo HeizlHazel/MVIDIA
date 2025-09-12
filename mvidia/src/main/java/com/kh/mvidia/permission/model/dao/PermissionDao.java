@@ -21,11 +21,6 @@ public class PermissionDao {
         return sqlSession.selectList("permissionMapper.selectPermissionList", empNo);
     }
 
-    // 권한 삭제
-//    public int deleteEmpPermission(SqlSessionTemplate sqlSession, String empNo) {
-//        return sqlSession.delete("permissionMapper.deleteEmpPermission", empNo);
-//    }
-
     // 권한 부여
     public int insertEmpPermission(SqlSessionTemplate sqlSession, EmpPermission ep) {
         return sqlSession.insert("permissionMapper.insertEmpPermission", ep);

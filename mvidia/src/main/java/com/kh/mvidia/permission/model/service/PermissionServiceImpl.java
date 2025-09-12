@@ -31,24 +31,6 @@ public class PermissionServiceImpl implements PermissionService {
         return pDao.selectPermList(sqlSession, empNo);
     }
 
-    // 권한 update
-//    @Override
-//    public void updatePermission(String empNo, List<String> list) {
-//        // 전체 권한 삭제
-//        pDao.deleteEmpPermission(sqlSession, empNo);
-//
-//        // 체크된 권한만 insert
-//        if(list != null && !list.isEmpty()) {
-//            for(String p : list) {
-//                EmpPermission ep = new EmpPermission();
-//                ep.setUserId(empNo);
-//                ep.setPermCode(p);
-//                ep.setIsGranted("Y");
-//                pDao.insertEmpPermission(sqlSession, ep);
-//            }
-//        }
-//    }
-
     @Override
     public void updatePermission(String empNo, List<String> list) {
         // 1. 모든 권한 기본값 N 처리
@@ -74,8 +56,5 @@ public class PermissionServiceImpl implements PermissionService {
             }
         }
     }
-
-
-
 
 }

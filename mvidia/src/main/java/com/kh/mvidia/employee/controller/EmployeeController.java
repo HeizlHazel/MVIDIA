@@ -178,10 +178,10 @@ public class EmployeeController {
 					atchReq.setFieldName("profilePic");
 					String oldAttachmentValue = (originAtchNo != null && !originAtchNo.isEmpty())
 							? oldValue
-							: "프로필 사진 없음";
+							: "default_profile.png";
 					
 					atchReq.setOldValue(oldAttachmentValue);
-					atchReq.setNewValue(newAtch.getOriginName());
+					atchReq.setNewValue(newAtch.getChangeName());
 					atchReq.setNewAtchId(newAtch.getAtchId());
 					reqList.add(atchReq);
 				}

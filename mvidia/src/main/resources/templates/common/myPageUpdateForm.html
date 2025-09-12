@@ -44,7 +44,6 @@
                     <br>
                     <span>변경할 프로필 사진 : </span>
                     <input name="atchFile" type="file" accept="image/*" onchange="previewProfilePic(event)">
-
                 </div>
             </div>
 
@@ -73,7 +72,7 @@
             <div class="form-group"><label>내선번호</label><input name="extNo" th:value="${session.loginEmp.extNo}" type="tel" placeholder="변경할 내선번호"></div>
 
             <input type="hidden" name="originAtchNo" th:value="${atch?.atchId}" />
-            <input type="hidden" name="oldValue" th:value="${atch != null ? atch.originName : ''}" />
+            <input type="hidden" name="oldValue" th:value="${atch != null ? atch.changeName : ''}" />
             <input type="hidden" name="empNo" th:value="${session.loginEmp.empNo}" />
 
             <button type="button" class="btn" id="submitBtn" onclick="submitProfileEditRequest()">수정 요청 제출</button>

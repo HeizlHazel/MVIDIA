@@ -42,4 +42,30 @@
         select 1 from dual
     </insert>
 
+    <select id="selectReq" resultMap="empModifyReqResultSet">
+        select
+               req_id
+             , emp_no
+             , field_name
+             , old_value
+             , new_value
+             , old_atch_id
+             , new_atch_id
+             , to_char(req_date, 'YYYY-MM-DD') as "req_date"
+             , req_status
+          from tb_emp_modify_req
+         where emp_no = #{empNo}
+           and req_status = 'W'
+
+    </select>
+
+    <update id="updateEmpModifyReqStatus" parameterType="map">
+        update tb_emp_modify_req
+        set req_status = #{reqStatus}
+        , reject_reason = #{rejectReason}
+        , manager_id = #{managerId}
+        , approve_date = sysdate
+        where req_id = #{reqId}
+    </update>
+
 </mapper>

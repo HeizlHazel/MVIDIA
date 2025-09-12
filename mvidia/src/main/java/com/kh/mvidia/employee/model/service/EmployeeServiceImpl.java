@@ -48,6 +48,11 @@ public class EmployeeServiceImpl implements EmployeeService{
 	}
 	
 	@Override
+	public ArrayList<EmpModifyReq> selectReq(String empNo) {
+		return empDao.selectReq(sqlSession, empNo);
+	}
+	
+	@Override
 	public int updateFile(Attachment atch){
 		return 0;
 	}

@@ -20,6 +20,7 @@
         .btn.danger{background:var(--danger)}
         .btn.ghost{background:transparent;color:#002B39;border:1px solid #002B39}
         .modal-body .input-group {display: flex; gap: 10px; align-items: center;}
+        .modal-body .btn:hover{background:#0050be; color:#fff;}
         .emp-info { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; background-color: #f0f4f7;}
         .emp-info .name, .emp-info .dept { font-weight: bold;}
         .error-message { display: none; color: var(--danger); margin-top: 10px;}
@@ -28,8 +29,8 @@
 <body>
     <!-- 메인 컨텐츠 -->
     <div class="hrEmpAccount">
+        <h2 class="page-title">사원 계정 · 작업 선택</h2>
         <div class="widget" id="home">
-            <h2 class="page-title">사원 계정 · 작업 선택</h2>
             <div class="stack">
                 <a class="btn" th:href="@{/hr/accountCreate.hr}">생성</a>
                 <a class="btn alt"  data-toggle="modal" data-target="#updateModal">수정</a>

@@ -6,6 +6,7 @@ import com.kh.mvidia.employee.model.vo.Employee;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -34,9 +35,15 @@ public class EmployeeDao {
 		return sqlSession.insert("empModifyReqMapper.insertEmpModifyRequests", reqList);
 	}
 	
+	public ArrayList<EmpModifyReq> selectReq(SqlSessionTemplate sqlSession, String empNo) {
+		return (ArrayList)sqlSession.selectList("empModifyReqMapper.selectReq", empNo);
+	}
+	
 	public Employee checkEmpNo(SqlSessionTemplate sqlSession, String empNo) {
 		return sqlSession.selectOne("employeeMapper.checkEmpNo", empNo);
 	}
+	
+
 }
 
 

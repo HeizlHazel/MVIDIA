@@ -5,6 +5,7 @@ import com.kh.mvidia.common.model.vo.Attachment;
 import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.vo.Employee;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface EmployeeService {
@@ -21,6 +22,8 @@ public interface EmployeeService {
 	Employee selectEmpNo(String empNo);
 	
 	int insertEmpModifyRequests(List<EmpModifyReq> reqList);
+	
+	ArrayList<EmpModifyReq> selectReq(String empNo);
 	
 	int updateFile(Attachment atch);
 	

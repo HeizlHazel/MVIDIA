@@ -41,7 +41,7 @@
         }
 
         .card-button {
-            width: 20%;
+            width: 10%;
             padding: 12px 20px;
             background: #1a365d;
             color: white;
@@ -74,12 +74,6 @@
             padding: 0 10px;
         }
 
-        .perm-toggle {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
     </style>
 </head>
 <body>
@@ -89,21 +83,21 @@
         </div>
         <div class="card-grid">
             <div class="innerOuter">
-                <!-- 메뉴1 -->
                 <div class="card-header">
                     <div class="card-title">사용자 검색</div>
                 </div>
 
-                <input type="text" id="empNo" placeholder="사번 입력" width="300px">
+                <!-- 사원 검색 -->
+                <input type="text" id="empNo" placeholder="사번 입력">
                 <button class="card-button" type="button" onclick="searchEmp()">검색</button>
             </div>
 
             <div class="innerOuter">
-                <!-- 메뉴2 -->
                 <div class="card-header">
                     <div id="searchEmpName"></div><span>- 권한 설정</span>
                 </div>
 
+                <!-- 권한 관리 form -->
                 <form id="postForm" action="updatePerm.pe" method="post">
                     <input type="hidden" name="empNo" value="[[$(employee.empNo)]]">
 
@@ -114,65 +108,81 @@
                     </table>
 
                     <button class="card-button" type="reset">취소</button>
-                    <button class="card-button" type="submit" onclick="grantRevoke()">권한 저장</button>
+                    <button class="card-button" type="submit">저장</button>
                 </form>
 
                 <script>
-                function searchEmp() {
-                    const empNo = $("#empNo").val();
+                    function searchEmp() {
+                        const empNo = $("#empNo").val();
 
-                    $.ajax({
-                        url: "search1.pe",
-                        data: { empNo: empNo },
-                        success: function(response) {
-                            console.log(response);
+                        $.ajax({
+                            url: "search1.pe",
+                            data: { empNo: empNo },
+                            success: function(response) {
+                                // 사원 이름/부서
+                                const value = `${response.empLName}${response.empName} (${response.deptName})`;
+                                $("#searchEmpName").html(value);
 
-                            console.log("searchPermission 호출, empNo:", empNo);
+                                // hidden input 업데이트
+                                $("#postForm input[name='empNo']").val(empNo);
 
-                            // 사원 이름/부서
-                            const value = `${response.empLName}${response.empName} (${response.deptName})`;
-                            $("#searchEmpName").html(value);
+                                // 직원 조회 성공하면 권한 리스트도 같이 조회
+                                searchPermission(empNo);
+                                },
+                            error: function() {
+                                console.log("ajax 통신 실패");
+                            }
+                        });
+                    }
 
-                            // hidden input 업데이트
-                            $("#postForm input[name='empNo']").val(empNo);
-
-                            // 직원 조회 성공하면 권한 리스트도 같이 조회
-                            searchPermission(empNo);
+                    function searchPermission(empNo) {
+                        $.ajax({
+                            type: "POST",
+                            url: "searchEmpPerm.pe",
+                            data: { empNo: empNo },
+                            success: function(data) {
+                                let html = "";
+                                data.forEach(function(perm, index) {
+                                    if (perm && perm.permName) {
+                                        html += `
+                                        <tr class="permission-row">
+                                            <td>${perm.permName}</td>
+                                            <td>
+                                                <input type="checkbox" name="permCodes" value="${perm.permCode}" ${perm.isGranted == 'Y' ? 'checked' : ''}>
+                                            </td>
+                                        </tr>`;
+                                    }
+                                });
+                                $("#permTable tbody").html(html);
                             },
-                        error: function() {
-                        console.log("ajax 통신 실패");
-                        }
+                            error: function() {
+                                console.log("권한 목록 ajax 통신 실패");
+                            }
+                        });
+                    }
+
+                    $("#postForm").submit(function(e) {
+                        e.preventDefault();
+
+                        const empNo = $("#postForm input[name='empNo']").val();
+                        const permCodes = [];
+                        $("#permTable input[name='permCodes']:checked").each(function() {
+                            permCodes.push($(this).val());
+                        });
+
+                        $.ajax({
+                            type: "POST",
+                            url: "updatePerm.pe",
+                            traditional: true,
+                            data: { empNo: empNo, permCodes: permCodes },
+                            success: function() {
+                                alert("권한이 저장되었습니다.");
+                            },
+                            error: function() {
+                                alert("권한 저장 중 오류가 발생하였습니다.");
+                            }
+                        });
                     });
-                }
-
-                function searchPermission(empNo) {
-                    $.ajax({
-                        type: "POST",
-                        url: "searchEmpPerm.pe",
-                        data: { empNo: empNo },
-                        success: function(data) {
-
-                            console.log("권한 리스트:", data);
-                            let html = "";
-                            data.forEach(function(perm, index) {
-                                if (perm && perm.permName) {
-                                    html += `
-                                    <tr class="permission-row">
-                                        <td>${perm.permName}</td>
-                                        <td>
-                                            <input type="checkbox" name="permCodes" value="${perm.permCode}" ${perm.isGranted == 'Y' ? 'checked' : ''}>
-                                        </td>
-                                    </tr>`;
-                                }
-                            });
-                            $("#permTable tbody").html(html);
-                        },
-                        error: function() {
-                            console.log("권한 목록 ajax 통신 실패");
-                        }
-                    });
-                }
-
                 </script>
             </div>
         </div>

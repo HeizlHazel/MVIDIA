@@ -31,22 +31,51 @@ public class PermissionServiceImpl implements PermissionService {
         return pDao.selectPermList(sqlSession, empNo);
     }
 
-//    // 권한 update
+    // 권한 update
 //    @Override
-//    public void updatePermission(String userId, List<String> list) {
+//    public void updatePermission(String empNo, List<String> list) {
+//        // 전체 권한 삭제
+//        pDao.deleteEmpPermission(sqlSession, empNo);
+//
+//        // 체크된 권한만 insert
+//        if(list != null && !list.isEmpty()) {
+//            for(String p : list) {
+//                EmpPermission ep = new EmpPermission();
+//                ep.setUserId(empNo);
+//                ep.setPermCode(p);
+//                ep.setIsGranted("Y");
+//                pDao.insertEmpPermission(sqlSession, ep);
+//            }
+//        }
 //    }
 
-//    // 권한 부여
-//    @Override
-//    public int grantPermission(EmpPermission ep) {
-//        return pDao.insertEmpPermission(sqlSession, ep);
-//    }
-//
-//    // 권한 회수
-//    @Override
-//    public int revokePermission(EmpPermission ep) {
-//        return pDao.deleteEmpPermission(sqlSession, ep);
-//    }
+    @Override
+    public void updatePermission(String empNo, List<String> list) {
+        // 1. 모든 권한 기본값 N 처리
+        List<Permission> allPerms = pDao.selectPermList(sqlSession, empNo);
+        for(Permission p : allPerms) {
+            EmpPermission ep = new EmpPermission();
+            ep.setUserId(empNo);
+            ep.setPermCode(p.getPermCode());
+            ep.setIsGranted("N"); // 초기화
+            pDao.updateEmpPermission(sqlSession, ep);
+            pDao.insertEmpPermission(sqlSession, ep);
+        }
+
+        // 2. 체크된 권한 Y로 업데이트
+        if(list != null && !list.isEmpty()) {
+            for(String pCode : list) {
+                EmpPermission ep = new EmpPermission();
+                ep.setUserId(empNo);
+                ep.setPermCode(pCode);
+                ep.setIsGranted("Y");
+                pDao.updateEmpPermission(sqlSession, ep);
+                pDao.insertEmpPermission(sqlSession, ep);
+            }
+        }
+    }
+
+
 
 
 }

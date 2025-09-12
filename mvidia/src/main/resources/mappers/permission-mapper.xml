@@ -23,7 +23,7 @@
              , dept_name
           from tb_employee
           join tb_department using(dept_code)
-         where emp_no = #{ empNo }
+         where emp_no = #{empNo}
     </select>
 
     <select id="selectPermissionList" resultMap="permissionResultSet">
@@ -34,8 +34,39 @@
           from tb_permission p
      left join tb_emp_permission ep
             on p.perm_code = ep.perm_code
-           and ep.user_id = #{ empNo }
+           and ep.user_id = #{empNo}
+         order
+            by p.perm_code
     </select>
+
+<!--    <delete id="deleteEmpPermission">-->
+<!--        delete-->
+<!--        from tb_emp_permission-->
+<!--        where user_id = #{userId}-->
+<!--    </delete>-->
+
+<!--    <insert id="insertEmpPermission">-->
+<!--        insert-->
+<!--          into tb_emp_permission-->
+<!--          (-->
+<!--            user_id-->
+<!--          , perm_code-->
+<!--          , is_granted-->
+<!--          )-->
+<!--          values-->
+<!--          (-->
+<!--            #{userId}-->
+<!--          , #{permCode}-->
+<!--          , #{isGranted}-->
+<!--          )-->
+<!--    </insert>-->
+
+    <update id="updateEmpPermission">
+        update tb_emp_permission
+           set is_granted = #{isGranted}
+         where user_id = #{userId}
+           and perm_code = #{permCode}
+    </update>
 
     <insert id="insertEmpPermission">
         insert
@@ -43,18 +74,14 @@
           (
             user_id
           , perm_code
+          , is_granted
           )
-          values
-          (
-            #{userId}
-          , #{permCode}
-          )
+        select #{userId}, #{permCode}, #{isGranted}
+        from dual
+        where not exists(
+        select 1 from tb_emp_permission
+        where user_id = #{userId} and perm_code = #{permCode}
+        )
     </insert>
-
-    <delete id="deleteEmpPermission">
-        delete
-          from tb_emp_permission
-         where user_id = #{userId}
-    </delete>
 
 </mapper>

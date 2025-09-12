@@ -1,7 +1,6 @@
 package com.kh.mvidia.permission.model.service;
 
 import com.kh.mvidia.employee.model.vo.Employee;
-import com.kh.mvidia.permission.model.vo.EmpPermission;
 import com.kh.mvidia.permission.model.vo.Permission;
 
 import java.util.List;

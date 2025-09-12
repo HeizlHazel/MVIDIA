@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -54,15 +55,15 @@ public class PermissionController {
         return pService.selectPermissionList(empNo);
     }
 
-//    /* 권한 부여/회수 기능 */
-//    @PostMapping("updatePerm.pe")
-//    @ResponseBody
-//    public String updatePermission(String empNo, List<EmpPermission> list, RedirectAttributes redirectAttributes) {
-//        // 기존 권한 모두 삭제
-//        // 체크박스/토글이 on이면 권한 부여
-//        // 저장 누르면 db 반영
-//        return "redirect:/searchPerm.pe?empNo=" + empNo;
-//    }
+    /* 권한 부여/회수 기능 */
+    @PostMapping("updatePerm.pe")
+    public String updatePermission(String empNo, @RequestParam(value="permCodes", required=false) List<String> list, Model model) {
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        pService.updatePermission(empNo, list);
+        return "admin/grantRevokePermission";
+    }
 
     /* 사용자 계정 잠금 해제 */
     @GetMapping("unlock")

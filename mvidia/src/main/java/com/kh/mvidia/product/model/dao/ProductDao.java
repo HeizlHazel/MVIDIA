@@ -12,20 +12,20 @@ import java.util.List;
 public class ProductDao {
 
     // 리스트 카운트 조회
-    public int selectListCount(SqlSessionTemplate sqlSession){
+    public int selectListCount(SqlSessionTemplate sqlSession, String keyword){
 
-        return sqlSession.selectOne("productMapper.selectListCount");
+        return sqlSession.selectOne("productMapper.selectListCount", keyword);
     }
 
     // 리스트 조회
-    public List<ProductQuality> selectList(SqlSessionTemplate sqlSession, PageInfo dpi){
+    public List<ProductQuality> selectList(SqlSessionTemplate sqlSession, PageInfo pi, String keyword){
 
-        int offset = (dpi.getCurrentPage() -1) * dpi.getBoardLimit();
-        int limit = dpi.getBoardLimit();
+        int offset = (pi.getCurrentPage() -1) * pi.getBoardLimit();
+        int limit = pi.getBoardLimit();
 
         RowBounds rowBounds = new RowBounds(offset, limit);
 
-        return sqlSession.selectList("productMapper.selectList", null, rowBounds);
+        return sqlSession.selectList("productMapper.selectList", keyword, rowBounds);
     }
 
     // 불량 등록용 리스트 조회?

@@ -10,52 +10,53 @@
 </head>
 <body>
 
-    <div class="content">
-        <h2>생산 제품 조회 </h2>
-    </div>
+<div class="content">
+    <h2>생산 제품 조회 </h2>
+</div>
 
-    <input type="text" id="searchBox" placeholder="제품코드 또는 제품명을 검색하시오.">
+<form id="searchForm" autocomplete="off">
+    <input type="text" name="keyword" id="searchBox"
+           placeholder="제품코드 또는 제품명을 검색하시오."
+           th:value="${keyword}" list="productList">
+    <datalist id="productList">
+        <option th:each="p : ${list}" th:value="${p.prodCode} + ' | ' + ${p.prodName}"></option>
+    </datalist>
+    <button type="submit">검색</button>
+</form>
 
-    <datalist id="productList"></datalist>
+<!-- 별도 파일의 프래그먼트 사용 - 중복 없음! -->
+<div id="tableArea" th:include="~{fragments/productTable :: prodTable}"></div>
 
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        const products = /*[[${productList}]]*/ [];
-        const dataList = document.getElementById('productList');
+<script>
+    document.querySelector("#searchForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const keyword = form.keyword.value;
 
-        products.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.prodCode + " | " + p.prodName;
-            dataList.appendChild(option);
+        fetch(`/plist.bo?keyword=${encodeURIComponent(keyword)}&ajax=true`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(resp => resp.text())
+        .then(html => {
+            document.querySelector("#tableArea").innerHTML = html;
         });
+    });
+</script>
 
-        document.getElementById('searchBox').setAttribute('list', 'productList');
-        /*]]>*/
-    </script>
-
-    <div class="prodList">
-        <table>
-            <thead>
-                <tr>
-                    <th>제품코드</th>
-                    <th>제품명</th>
-                    <th>단가</th>
-                    <th>재고수량</th>
-                    <th>재고상태</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <tr th:each="p : ${list}">
-                    <td th:text="${p.prodCode}"></td>
-                    <td th:text="${p.prodName}"></td>
-                    <td th:text="${p.price}"></td>
-                    <td th:text="${p.stock}"></td>
-                    <td th:text="${p.statusName}"></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
+<!-- 페이징 -->
+<div id="pagingArea">
+    <ul class="pagination">
+        <li th:classappend="${pi.currentPage == 1} ? 'disabled'">
+            <a th:href="@{|plist.bo?cpage=${pi.currentPage > 1 ? pi.currentPage-1 : 1}&keyword=${keyword}|}">이전</a>
+        </li>
+        <li th:each="pageNum : ${#numbers.sequence(pi.startPage, pi.endPage)}"
+            th:classappend="${pageNum == pi.currentPage} ? 'active'">
+            <a th:href="@{|plist.bo?cpage=${pageNum}&keyword=${keyword}|}" th:text="${pageNum}"></a>
+        </li>
+        <li th:classappend="${pi.currentPage == pi.maxPage} ? 'disabled'">
+            <a th:href="@{|plist.bo?cpage=${pi.currentPage < pi.maxPage ? pi.currentPage+1 : pi.maxPage}&keyword=${keyword}|}">다음</a>
+        </li>
+    </ul>
+</div>
 </body>
 </html>

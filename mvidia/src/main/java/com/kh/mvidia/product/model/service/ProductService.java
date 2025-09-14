@@ -8,8 +8,8 @@ import java.util.List;
 public interface ProductService {
 
     // 생산제품 리스트 페이징 서비스
-    int selectListCount();
-    List<ProductQuality> selectList(PageInfo pi);
+    int selectListCount(String keyword);
+    List<ProductQuality> selectList(PageInfo pi, String keyword);
 
     // 불량제품 등록 시 사용할 조회용
     List<ProductQuality> selectAllList();

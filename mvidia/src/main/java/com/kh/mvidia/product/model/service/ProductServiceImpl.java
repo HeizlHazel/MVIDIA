@@ -19,10 +19,10 @@ public class ProductServiceImpl implements ProductService{
     private SqlSessionTemplate sqlSession;
 
     @Override
-    public int selectListCount() { return pDao.selectListCount(sqlSession); }
+    public int selectListCount(String keyword) { return pDao.selectListCount(sqlSession, keyword); }
 
     @Override
-    public List<ProductQuality> selectList(PageInfo pi) { return pDao.selectList(sqlSession, pi);}
+    public List<ProductQuality> selectList(PageInfo pi, String keyword) { return pDao.selectList(sqlSession, pi, keyword);}
 
     @Override
     public List<ProductQuality> selectAllList(){ return pDao.selectAllList(sqlSession); }

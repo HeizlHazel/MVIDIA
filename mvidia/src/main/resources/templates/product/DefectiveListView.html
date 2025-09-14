@@ -45,7 +45,6 @@
         /* 활성화된 버튼만 호버 주기 */
         .btn:enabled:hover{background:#0050be; color: #fff;}
 
-
         .btn-reset {
         background-color: #6c757d;
         /* color 제거 */
@@ -63,6 +62,18 @@
         background-color: #0c197f; /* 원하는 활성 색상 */
         color: #fff;
         }
+
+        /* 검색창 초기화 버튼 스타일 추가 */
+        .search-reset:disabled {
+            background-color: #6c757d;
+            color: #ddd;
+            cursor: not-allowed;
+        }
+        .search-reset:enabled {
+            background-color: #0c197f;
+            color: #fff;
+        }
+
     table {
       border-collapse: collapse;
       width: 100%;
@@ -100,7 +111,6 @@
         position: absolute;
         top: 10px;
         right: 10px;
-
         color: black;
         border: none;
         border-radius: 4px;
@@ -166,472 +176,529 @@
     </style>
 </head>
 <body>
-    <div class="content">
-        <h2>불량 제품 등록·조회 </h2>
+<div class="content">
+    <h2>불량 제품 등록·조회 </h2>
+</div>
+
+<div class="innerOuter">
+
+    <div class="search-box" align="left">
+        <h4>불량 목록 검색</h4>
+        <br>
+        <div class="search-row">
+            <label for="keyword">제품 검색&nbsp;&nbsp;</label>
+            <input type="text" id="keyword" placeholder="제품코드 또는 제품명 입력하시오" list="searchList">
+            <datalist id="searchList"></datalist>
+        </div>
+        <div class="search-row">
+            <label for="defectType">불량유형</label>
+            <select id="defectType">
+                <option value="">전체</option>
+                <option value="DEF_UNK">미분류</option>
+                <option value="DEF_RND">랜덤 불량</option>
+                <option value="DEF_RPT">반복 불량</option>
+                <option value="DEF_COMB">복합 불량</option>
+                <option value="DEF_SYS">시스템 불량</option>
+            </select>
+        </div>
+        <div class="search-row">
+            <label for="date">발생일</label>
+            <input type="date" id="startDate">
+            <input type="date" id="endDate">
+        </div>
+        <div class="search-row">
+            <label for="status">처리상태</label>
+            <select id="status">
+                <option value="">전체</option>
+                <option value="pending">대기</option>
+                <option value="received">접수</option>
+                <option value="progress">처리 중</option>
+                <option value="done">처리 완료</option>
+            </select>
+        </div>
+        <div class="search-row2" align="right">
+            <button class="btn btn-search" id="searchBtn">검색</button>
+            <button class="btn btn-insert" id="openModalBtn">등록</button>
+            <button class="btn btn-reset search-reset" id="searchResetBtn" disabled>초기화</button>
+        </div>
     </div>
 
-    <div class="innerOuter">
+    <!-- 모달 창 -->
+    <div class='modal-background'>
+        <div class='modal-content'>
+            <form id="defectiveForm">
+                <button type="button" id="closeModalBtn" style="align-items: right, inherit;">X</button>
+                <br><br>
 
-        <div class="search-box" align="left">
-            <h4>불량 목록 검색</h4>
-            <br>
-            <div class="search-row">
-                <label for="keyword">제품 검색&nbsp;&nbsp;</label>
-                <input type="text" onchange="" id="keyword" placeholder="제품코드 또는 제품명 입력하시오">
-            </div>
-            <div class="search-row">
-                <label for="defectType">불량유형</label>
-                <select id="defectType">
-                    <option value="">전체</option>
-                    <option value="DEF_UNK">미분류</option>
-                    <option value="DEF_RND">랜덤 불량</option>
-                    <option value="DEF_RPT">반복 불량</option>
-                    <option value="DEF_COMB">복합 불량</option>
-                    <option value="DEF_SYS">시스템 불량</option>
-                </select>
-            </div>
-            <div class="search-row">
-                <label for="date">발생일</label>
-                <input type="date" id="startDate">
-                <input type="date" id="endDate">
-            </div>
-            <div class="search-row">
-                <label for="status">처리상태</label>
-                <select id="status">
-                    <option value="">전체</option>
-                    <option value="pending">대기</option>
-                    <option value="pending">접수</option>
-                    <option value="progress">처리 중</option>
-                    <option value="done">처리 완료</option>
-                </select>
-            </div>
-            <div class="search-row2" align="right">
-                <button class="btn btn-search">검색</button>
-                <button class="btn btn-insert" id="openModalBtn">등록</button>
-                <button class="btn btn-reset" disabled="disabled" value="">초기화</button>
-            </div>
-        </div>
+                <div class="form-row">
+                    <label style="text-align: right;">발생일&nbsp;&nbsp;&nbsp;</label>
+                    <input type="date" class="form-input" name="occurDate" required>
+                </div>
+                <br>
 
-        <div class='modal-background'>
-            <div class='modal-content'>
-                <form id="defectiveForm" th:action="@{/insert.bo}" method="post">
-                    <button id="closeModalBtn" style="align-items: right, inherit;">X</button>
-                    <br><br>
+                <div class="form-row">
+                    <label style="text-align: right;">제품코드&nbsp;&nbsp;&nbsp;</label>
+                    <input type="text" class="form-input" name="prodCode" list="list1" id="numbers1" placeholder="제품코드" align="left"/>
+                    <datalist id ="list1"></datalist>
+                </div>
+                <br>
 
-                    <div class="form-row">
-                        <label style="text-align: right;">발생일&nbsp;&nbsp;&nbsp;</label>
-                        <input type="date" class="form-input" name="occurDate" required>
+                <div class="form-row">
+                    <label style="text-align: right;">제품명&nbsp;&nbsp;&nbsp;</label>
+                    <input type="text" class="form-input" name="prodName" list="list2" id="numbers2" placeholder="제품명"/>
+                    <datalist id ="list2"></datalist>
+                </div>
+                <br>
+
+                <div class="form-row">
+                    <label style="text-align: right;">불량유형&nbsp;&nbsp;&nbsp;</label>
+                    <select class="form-input" name="defCode" id="">
+                        <option value="DEF_UNK">미분류</option>
+                        <option value="DEF_RND">랜덤 불량</option>
+                        <option value="DEF_RPT">반복 불량</option>
+                        <option value="DEF_COMB">복합 불량</option>
+                        <option value="DEF_SYS">시스템 불량</option>
+                    </select>
+                </div>
+                <br>
+
+                <div class="form-row">
+                    <label style="text-align: right;">수량&nbsp;&nbsp;&nbsp;</label>
+                    <input type="number" style="type=text" class="form-input" name="defQty" required>
+                </div>
+
+                <div class="textarea-form">
+                    <div>
+                        <span><b>비고</b></span>
                     </div>
-                    <br>
+                    <textarea class="text_box form-input" name="remarks" maxlength="1200"
+                              placeholder="불량 원인이나 특이사항을 입력하세요.&#10;예: 외관 손상, 전원 불량, 부품 결함 등&#10;상세 내역을 간략히 작성해주세요 (최대 1200자)"></textarea>
 
-                    <div class="form-row">
-                        <label style="text-align: right;">제품코드&nbsp;&nbsp;&nbsp;</label>
-                        <input type="text" class="form-input" name="prodCode" list="list1" id="numbers1" placeholder="제품코드" align="left"/>
-                        <datalist id ="list1">
-                            <option th:each="p : ${prodcutList}" th:value="${p.prodCode}"></option>
-                        </datalist>
-                    </div>
-                    <br>
-
-                    <div class="form-row">
-                        <label style="text-align: right;">제품명&nbsp;&nbsp;&nbsp;</label>
-                        <input type="text" class="form-input" name="prodName" list="list2" id="numbers2" placeholder="제품명"/>
-                        <datalist id ="list2">
-                            <option th:each="p : ${prodcutList}" th:value="${p.prdodName}"></option>
-                        </datalist>
-                    </div>
-                    <br>
-                    <script th:inline="javascript">
-                        /*<![CDATA[*/
-                        const productMap = {};
-
-                        /* 서버에서 전달된 productList를 JS 객체로 변환 */
-                        /* productList: List<ProductQuality> */
-                        /* 각 ProductQuality: prodCode, prodName */
-                        [[${productList}]].forEach(function(p) {
-                            productMap[p.prodCode] = p.prodName;
-                        });
-
-                        const codeInput = document.getElementById('numbers1');
-                        const nameInput = document.getElementById('numbers2');
-
-                        // 제품코드 선택 시 제품명 자동 입력
-                        codeInput.addEventListener('input', () => {
-                            const code = codeInput.value;
-                            if(productMap[code]) {
-                                nameInput.value = productMap[code];
-                            } else {
-                                nameInput.value = "";
-                            }
-                        });
-
-                        // 제품명 선택 시 제품코드 자동 입력
-                        nameInput.addEventListener('input', () => {
-                            const name = nameInput.value;
-                            const code = Object.keys(productMap).find(key => productMap[key] === name);
-                            if(code) {
-                                codeInput.value = code;
-                            } else {
-                                codeInput.value = "";
-                            }
-                        });
-                        /*]]>*/
-                    </script>
-                    <script>
-                        const modalBg = document.querySelector('.modal-background');
-                        const openModalBtn = document.getElementById('openModalBtn');
-                        const closeModalBtn = document.getElementById('closeModalBtn');
-                        const prodCodeList = document.getElementById('list1');
-                        const prodNameList = document.getElementById('list2');
-
-                        let productMap = {}; // 제품코드 ↔ 제품명 매핑
-
-                        // 모달 열기
-                        openModalBtn.addEventListener('click', () => {
-                            modalBg.style.display = 'flex';
-
-                            // AJAX로 제품 리스트 가져오기
-                            fetch('/getProductList')
-                                .then(response => response.json())
-                                .then(data => {
-                                    // 기존 옵션 초기화
-                                    prodCodeList.innerHTML = '';
-                                    prodNameList.innerHTML = '';
-                                    productMap = {};
-
-                                    data.forEach(item => {
-                                        // datalist에 옵션 추가
-                                        const optionCode = document.createElement('option');
-                                        optionCode.value = item.prodCode;
-                                        prodCodeList.appendChild(optionCode);
-
-                                        const optionName = document.createElement('option');
-                                        optionName.value = item.prodName;
-                                        prodNameList.appendChild(optionName);
-
-                                        // 맵에 저장
-                                        productMap[item.prodCode] = item.prodName;
-                                        productMap[item.prodName] = item.prodCode;
-                                    });
-                                })
-                                .catch(err => console.error('제품 리스트 로딩 실패:', err));
-                        });
-
-                        // 모달 닫기
-                        closeModalBtn.addEventListener('click', () => modalBg.style.display = 'none');
-
-                        // 1:1 연동 (제품코드 입력하면 제품명 자동, 반대도 가능)
-                        document.getElementById('numbers1').addEventListener('input', function() {
-                            const code = this.value;
-                            if(productMap[code]) {
-                                document.getElementById('numbers2').value = productMap[code];
-                            }
-                        });
-
-                        document.getElementById('numbers2').addEventListener('input', function() {
-                            const name = this.value;
-                            if(productMap[name]) {
-                                document.getElementById('numbers1').value = productMap[name];
-                            }
-                        });
-                    </script>
-
-                    <div class="form-row">
-                        <label style="text-align: right;">불량유형&nbsp;&nbsp;&nbsp;</label>
-                        <select class="form-input" name="defCode" id="">
-                            <option value="DEF_UNK">미분류</option>
-                            <option value="DEF_RND">랜덤 불량</option>
-                            <option value="DEF_RPT">반복 불량</option>
-                            <option value="DEF_COMB">복합 불량</option>
-                            <option value="DEF_SYS">시스템 불량</option>
-                        </select>
-                    </div>
-                    <br>
-
-                    <div class="form-row">
-                        <label style="text-align: right;">수량&nbsp;&nbsp;&nbsp;</label>
-                        <input type="number" style="type=text" class="form-input" name="defQty" required>
-                    </div>
-
-                    <div class="textarea-form">
-                        <div>
-                            <span><b>비고</b></span>
-                        </div>
-                        <!-- <label style="text-align: right;">비고&nbsp;&nbsp;&nbsp;</label> -->
-                        <textarea class="text_box" name="remarks" maxlength="1200"
-                                  placeholder="불량 원인이나 특이사항을 입력하세요.&#10;예: 외관 손상, 전원 불량, 부품 결함 등&#10;상세 내역을 간략히 작성해주세요 (최대 1200자)"></textarea>
-
-                        <div class="text_length" style="text-align: right">
-                            <span class="start-text" id="comment_start"></span>
-                            <span class="length" style="color: gray">
+                    <div class="text_length" style="text-align: right">
+                        <span class="start-text" id="comment_start"></span>
+                        <span class="length" style="color: gray">
                                 <span class="comment_length" style="color: gray">0</span>
                                 / 1200
                             </span>
-                        </div>
                     </div>
-                    <br>
-                    <br>
-                    <br>
-
-                    <div class="search-row1" align="right">
-                        <button type="submit" class="btn btn-search">등록</button>
-                        <button type="reset" class="btn btn-reset" disabled="disabled" value="">초기화</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-
-
-
-
-
-
-
-        <!-- 모달 등록 스크립트 -->
-        <script>
-            const modalBg = document.querySelector('.modal-background');
-            const openModalBtn = document.getElementById('openModalBtn');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-            // 등록 버튼 클릭 → 모달 열기
-            openModalBtn.addEventListener('click', () => {
-              modalBg.style.display = 'flex';
-            });
-            // x 클릭 -> 모달 닫기
-            closeModalBtn.addEventListener('click', () => {
-              modalBg.style.display = 'none';
-            });
-        </script>
-
-        <script>
-            $('.text_box').keyup(function (e) {
-              let content = $(this).val();
-
-            // 글자수 세기
-            if (content.length == 0 || content == '') {
-                $(".comment_length").text('0');
-            } else {
-                $(".comment_length").text(content.length);
-            }
-
-            // 글자수 제한
-            if (content.length > 1200) {
-                // 1200자 부터는 타이핑 되지 않도록 만들기
-                $(this).val($(this).val().substring(0, 1200));
-                // 1200자 넘으면 알림창
-                    alert('글자수는 1200자까지 입력 가능합니다.');
-                };
-            });
-        </script>
-
-        <script>
-            const resetBtn = document.querySelector('.btn-reset');
-            const inputs = document.querySelectorAll('.form-input, select');
-
-            function toggleReset(){
-              const inValue = Array.from(inputs).some(input => {
-                if(input.tagName === 'TEXTAREA' || input.type === 'text' || input.type === 'date'){
-                  return input.value.trim() !== '';
-                }else if(input.tagName === 'SELECT'){
-                  return input.value !== '';
-                }
-
-            });
-            resetBtn.disabled = !inValue;
-          }
-
-            inputs.forEach(input => {
-              input.addEventListener('input', toggleReset);
-              input.addEventListener('change', toggleReset);
-              input.addEventListener('keyup', toggleReset);
-            toggleReset();
-            });
-        </script>
-
-        <script>
-            $(function(){
-              // 모달 내부 등록 버튼 클릭
-              $(".modal-content .btn-search").on("click", function(){
-                const prodCode = $("#numbers1").val().trim();
-                const prodName = $("#numbers2").val().trim();
-                const defType = $(".modal-content select").val();
-                const occurDate = $(".modal-content input[type='date']").val();
-                const remarks = $(".modal-content textarea").val().trim();
-
-                // 필수값
-                if(!productCode || !productName){
-                  alert("제품코드와 제품명은 필수입니다.");
-                  return;
-                }
-
-                // 불량유형 한글 변환
-                let defText = "";
-                switch(defType){
-                  case "DEF_UNK": defText = "미분류"; break;
-                  case "DEF_RND": defText = "랜덤 불량"; break;
-                  case "DEF_RPT": defText = "반복 불량"; break;
-                  case "DEF_COMB": defText = "복합 불량"; break;
-                  case "DEF_SYS": defText = "시스템 불량"; break;
-                }
-
-                // 테이블에 row 추가
-                $("table tbody").append(`
-                  <tr>
-                    <td>${prodCode}</td>
-                    <td>${prodName}</td>
-                    <td>${defText}</td>
-                    <td>${occurDate}</td>
-                    <td>대기</td>
-                    <td>${remarks}</td>
-                  </tr>
-                `);
-
-                // 서버로 데이터 전송 ajax 사용
-                $.ajax({
-                    url: "/insert.bo",
-                    type: "POST",
-                    data: {
-                        prodCode: prodCode,
-                        prodName: prodName,
-                        defType: defType,
-                        occurDate: occurDate,
-                        remarks: remarks
-                    },
-                    success: function(response){
-                        console.log("서버 저장 성공", response);
-                    }, error: function(xhr, status, error){
-                        console.error("서버 저장 실패", error);
-                        alert("서버 저장 중 오류가 발생했습니다!");
-                    }
-                });
-
-                // 모달 input 초기화
-                $(".modal-content .form-input, .modal-content select, .modal-content textarea").val("");
-
-                // 초기화 버튼 상태 갱신
-                toggleReset();
-
-                // 모달 닫기
-                $(".modal-background").hide();
-              });
-            });
-        </script>
-        <br>
-
-        <div class="DefList">
-            <form id="deleteForm" action="delete.bo" method="POST">
-                <table id="defTable" align="left">
-                    <thead>
-                        <tr>
-                            <th>선택</th>
-                            <th>불량등록번호</th>
-                            <th>발생일</th>
-                            <th>제품코드</th>
-                            <th>제품명</th>
-                            <th>불량유형</th>
-                            <th>수량</th>
-                            <th>처리 상태</th>
-                            <th>비고</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr th:each="d : ${list}" th:data-defno="#{d.defNo}">
-                            <td><input type="checkbox" class="chk" name="dno" th:value="${d.defNo}"></td>
-                            <td class="defNo" th:text="${d.defNo}"></td>
-                            <td th:text="${d.occurDate}"></td>
-                            <td th:text="${d.prodCode}"></td>
-                            <td th:text="${d.prodName}"></td>
-                            <td th:text="${d.defType}"></td>
-                            <td th:text="${d.defQty}"></td>
-                            <td th:text="${d.statusName}"></td>
-                            <td th:text="${d.remarks}"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <br clear="both"><br>
-            <div>
-            <button type="button" id="btnDelete" class="btn btn-delete" align="left">삭제</button>
-            </div>
-        </form>
-
-        <script>
-            // 최종 삭제 버튼 클릭 이벤트
-            $("#btnDelete").click(function(e){
-                e.preventDefault(); // 폼 기본 제출 방지
-
-                let defNoList = [];
-                $(".chk:checked").each(function(){
-                    defNoList.push($(this).val());
-                });
-
-                if(defNoList.length == 0){
-                    alert("삭제할 제품을 선택해주세요.");
-                    return;
-                }
-
-                if(!confirm("선택한 제품을 삭제하시겠습니까?")) {
-                    return;
-                }
-
-                $.ajax({
-                    url: "/delete.bo",
-                    type: "POST",
-                    traditional: true,
-                    data: { dno: defNoList },
-                    success: function(response){
-                        console.log("서버 응답:", response);
-
-                        if(response.result === "success"){
-                            alert(response.message);
-
-                            // 삭제된 행들을 화면에서 제거
-                            response.deletedItems.forEach(function(defNo){
-                                $("tr[data-defno='" + defNo + "']").remove();
-                            });
-
-                            // 체크박스 해제 (남은 행들의)
-                            $(".chk").prop("checked", false);
-
-                        } else {
-                            alert(response.message || "삭제가 실패됐습니다.");
-                        }
-                    },
-                    error: function(xhr, status, error){
-                        console.error("Ajax 오류:", error);
-                        alert("서버와 통신 중 오류가 발생했습니다.");
-                    }
-                });
-            });
-        </script>
-
-
-
-                <!-- 리스트 관련 버튼 -->
-                <div id="pagingArea">
-                    <ul class="DefPagination">
-                        <!-- 이전 버튼 -->
-                        <li class="page-item" th:classappend="${pi.currentPage == 1} ? 'disabled'">
-                            <a class="page-link" th:href="@{|dlist.bo?cpage=${pi.currentPage > 1 ? pi.currentPage -1 : 1}|}">이전</a>
-                        </li>
-                        <!-- 가운데 리스트 번호 -->
-                        <li class="page-item"
-                            th:each="pageNum : ${#numbers.sequence(pi.startPage, pi.endPage)}"
-                            th:classappend="${pageNum == pi.currentPage} ? 'active'">
-                            <a class="page-link" th:href="@{|dlist.bo?cpage=${pageNum}|}" th:text="${pageNum}"></a>
-                        </li>
-                        <!-- 다음 버튼-->
-                        <li class="page-item" th:classappend="${pi.currentPage == pi.maxPage} ? 'disabled'">
-                            <a class="page-link" th:href="@{|dlist.bo?cpage=${pi.currentPage < pi.maxPage ? pi.currentPage + 1 : pi.maxPage}|}">다음</a>
-                        </li>
-                    </ul>
                 </div>
+                <br>
+                <br>
+                <br>
+
+                <div class="search-row1" align="right">
+                    <button type="button" class="btn btn-search" id="modalInsertBtn">등록</button>
+                    <button type="button" class="btn btn-reset" id="modalResetBtn" disabled>초기화</button>
+                </div>
+            </form>
+        </div>
     </div>
 
+    <br>
 
+    <!-- 테이블 영역 - fragment 사용 -->
+    <div class="DefList">
+        <form id="deleteForm" action="delete.bo" method="POST">
+            <div id="defTableArea" th:include="~{fragments/DefProductTable :: defTable}"></div>
+            <br clear="both"><br>
+            <div>
+                <button type="button" id="btnDelete" class="btn btn-delete" align="left">삭제</button>
+            </div>
+        </form>
+    </div>
 
+    <!-- 페이징 -->
+    <div id="pagingArea">
+        <ul class="DefPagination">
+            <!-- 이전 버튼 -->
+            <li class="page-item" th:classappend="${pi.currentPage == 1} ? 'disabled'">
+                <a class="page-link" th:href="@{|dlist.bo?cpage=${pi.currentPage > 1 ? pi.currentPage -1 : 1}|}">이전</a>
+            </li>
+            <!-- 가운데 리스트 번호 -->
+            <li class="page-item"
+                th:each="pageNum : ${#numbers.sequence(pi.startPage, pi.endPage)}"
+                th:classappend="${pageNum == pi.currentPage} ? 'active'">
+                <a class="page-link" th:href="@{|dlist.bo?cpage=${pageNum}|}" th:text="${pageNum}"></a>
+            </li>
+            <!-- 다음 버튼-->
+            <li class="page-item" th:classappend="${pi.currentPage == pi.maxPage} ? 'disabled'">
+                <a class="page-link" th:href="@{|dlist.bo?cpage=${pi.currentPage < pi.maxPage ? pi.currentPage + 1 : pi.maxPage}|}">다음</a>
+            </li>
+        </ul>
+    </div>
+</div>
 
+<!-- JavaScript 스크립트들 (모든 스크립트를 맨 아래로 정리) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // 전역 변수
+    let allProducts = []; // 전체 제품 리스트 저장용
+    let codeToName = {};
+    let nameToCode = {};
 
+    // DOM 로드 완료 후 실행
+    $(document).ready(function() {
+        // 페이지 로드시 제품 리스트 미리 로드 (검색창 자동완성용)
+        loadProductsForSearch();
+
+        // 검색 관련 이벤트 바인딩
+        bindSearchEvents();
+
+        // 모달 관련 이벤트 바인딩
+        bindModalEvents();
+    });
+
+    // 검색용 제품 리스트 로드
+    function loadProductsForSearch() {
+        fetch('/allprod.bo')
+            .then(resp => resp.json())
+            .then(data => {
+                allProducts = data;
+                const searchDatalist = document.getElementById('searchList');
+                searchDatalist.innerHTML = '';
+
+                data.forEach(item => {
+                    // 제품코드 옵션
+                    const optionCode = document.createElement('option');
+                    optionCode.value = item.prodCode;
+                    optionCode.textContent = item.prodCode + ' - ' + item.prodName;
+                    searchDatalist.appendChild(optionCode);
+
+                    // 제품명 옵션
+                    const optionName = document.createElement('option');
+                    optionName.value = item.prodName;
+                    optionName.textContent = item.prodName + ' (' + item.prodCode + ')';
+                    searchDatalist.appendChild(optionName);
+                });
+            })
+            .catch(err => console.error('제품 리스트 로딩 실패:', err));
+    }
+
+    // 검색 관련 이벤트 바인딩
+    function bindSearchEvents() {
+        const searchInputs = ['#keyword', '#defectType', '#startDate', '#endDate', '#status'];
+        const searchResetBtn = $('#searchResetBtn');
+        const searchBtn = $('#searchBtn');
+
+        // 검색 조건 변경시 초기화 버튼 상태 업데이트
+        function updateSearchResetButton() {
+            let hasValue = false;
+            searchInputs.forEach(selector => {
+                const element = $(selector);
+                if (element.val() && element.val().trim() !== '') {
+                    hasValue = true;
+                }
+            });
+            searchResetBtn.prop('disabled', !hasValue);
+        }
+
+        // 각 검색 입력에 이벤트 바인딩
+        searchInputs.forEach(selector => {
+            $(selector).on('input change keyup', updateSearchResetButton);
+        });
+
+        // 검색 버튼 클릭
+        searchBtn.on('click', function() {
+            performSearch();
+        });
+
+        // 검색창 초기화 버튼
+        searchResetBtn.on('click', function() {
+            searchInputs.forEach(selector => {
+                $(selector).val('');
+            });
+            updateSearchResetButton();
+            // 초기화 후 전체 목록 다시 로드
+            refreshDefList();
+        });
+
+        // 초기 상태 설정
+        updateSearchResetButton();
+    }
+
+    // 검색 실행
+    function performSearch() {
+        const searchParams = {
+            keyword: $('#keyword').val().trim(),
+            defectType: $('#defectType').val(),
+            startDate: $('#startDate').val(),
+            endDate: $('#endDate').val(),
+            status: $('#status').val()
+        };
+
+        // 검색 조건이 하나라도 있는지 확인
+        const hasSearchCondition = Object.values(searchParams).some(value => value !== '');
+
+        if (!hasSearchCondition) {
+            alert('검색 조건을 하나 이상 입력해주세요.');
+            return;
+        }
+
+        // AJAX로 검색 실행
+        $.ajax({
+            url: '/search.bo',
+            type: 'GET',
+            data: searchParams,
+            success: function(response) {
+                if (response.result === 'success') {
+                    // 검색 결과로 테이블 업데이트
+                    $('#defTableArea').html(response.html);
+                } else {
+                    alert('검색 중 오류가 발생했습니다.');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('검색 오류:', error);
+                alert('검색 중 오류가 발생했습니다.');
+            }
+        });
+    }
+
+    // 모달 관련 이벤트 바인딩
+    function bindModalEvents() {
+        const modalBg = $('.modal-background');
+        const openModalBtn = $('#openModalBtn');
+        const closeModalBtn = $('#closeModalBtn');
+        const modalResetBtn = $('#modalResetBtn');
+        const modalInputs = $('.form-input, .modal-content select, .text_box');
+
+        // 모달 열기
+        openModalBtn.on('click', function() {
+            modalBg.show();
+            loadModalProductList();
+        });
+
+        // 모달 닫기
+        closeModalBtn.on('click', function() {
+            modalBg.hide();
+        });
+
+        // 모달 배경 클릭시 닫기
+        modalBg.on('click', function(e) {
+            if (e.target === this) {
+                modalBg.hide();
+            }
+        });
+
+        // 모달 초기화 버튼 상태 업데이트
+        function updateModalResetButton() {
+            let hasValue = false;
+            modalInputs.each(function() {
+                if ($(this).val() && $(this).val().trim() !== '') {
+                    hasValue = true;
+                }
+            });
+            modalResetBtn.prop('disabled', !hasValue);
+        }
+
+        // 모달 입력 필드에 이벤트 바인딩
+        modalInputs.on('input change keyup', updateModalResetButton);
+
+        // 모달 초기화 버튼
+        modalResetBtn.on('click', function() {
+            modalInputs.val('');
+            $('.comment_length').text('0');
+            updateModalResetButton();
+        });
+
+        // 초기 상태 설정
+        updateModalResetButton();
+    }
+
+    // 모달용 제품 리스트 로드
+    function loadModalProductList() {
+        fetch('/allprod.bo')
+            .then(resp => resp.json())
+            .then(data => {
+                const prodCodeList = document.getElementById('list1');
+                const prodNameList = document.getElementById('list2');
+
+                // 초기화
+                prodCodeList.innerHTML = '';
+                prodNameList.innerHTML = '';
+                codeToName = {};
+                nameToCode = {};
+
+                data.forEach(item => {
+                    // Map에 저장
+                    codeToName[item.prodCode] = item.prodName;
+                    nameToCode[item.prodName] = item.prodCode;
+
+                    // datalist 옵션 추가
+                    const optionCode = document.createElement('option');
+                    optionCode.value = item.prodCode;
+                    prodCodeList.appendChild(optionCode);
+
+                    const optionName = document.createElement('option');
+                    optionName.value = item.prodName;
+                    prodNameList.appendChild(optionName);
+                });
+
+                // 이벤트 연결
+                bindModalProductEvents();
+            })
+            .catch(err => console.error('제품 리스트 로딩 실패:', err));
+    }
+
+    // 모달 제품 입력 이벤트 바인딩
+    function bindModalProductEvents() {
+        const codeInput = document.getElementById('numbers1');
+        const nameInput = document.getElementById('numbers2');
+
+        // 기존 이벤트 제거 후 새로 바인딩
+        $(codeInput).off('input').on('input', function() {
+            const code = this.value;
+            if (codeToName[code]) {
+                nameInput.value = codeToName[code];
+            } else if (code === '') {
+                nameInput.value = '';
+            }
+        });
+
+        $(nameInput).off('input').on('input', function() {
+            const name = this.value;
+            if (nameToCode[name]) {
+                codeInput.value = nameToCode[name];
+            } else if (name === '') {
+                codeInput.value = '';
+            }
+        });
+    }
+
+    // 리스트 새로고침 함수 (수정됨)
+    function refreshDefList() {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: '/dlist.bo',
+                type: 'GET',
+                data: { ajax: true },
+                success: function(html) {
+                    $('#defTableArea').html(html);
+                    resolve();
+                },
+                error: function(xhr, status, error) {
+                    console.error("리스트 새로고침 실패:", error);
+                    reject(error);
+                }
+            });
+        });
+    }
+
+    // 글자수 카운터
+    $(document).on('keyup input', '.text_box', function() {
+        const content = $(this).val();
+        const length = content.length;
+
+        $('.comment_length').text(length);
+
+        if (length > 1200) {
+            $(this).val(content.substring(0, 1200));
+            $('.comment_length').text('1200');
+            alert('글자수는 1200자까지 입력 가능합니다.');
+        }
+    });
+
+    // 모달 등록 버튼 클릭 (수정됨)
+    $(document).on('click', '#modalInsertBtn', function(e) {
+        e.preventDefault();
+
+        const prodCode = $("#numbers1").val().trim();
+        const prodName = $("#numbers2").val().trim();
+        const defCode = $("select[name='defCode']").val();
+        const occurDate = $("input[name='occurDate']").val();
+        const defQty = $("input[name='defQty']").val();
+        const remarks = $("textarea[name='remarks']").val().trim();
+
+        // 필수값 체크
+        if (!prodCode || !prodName || !occurDate || !defQty) {
+            alert("필수 항목을 모두 입력해주세요.");
+            return;
+        }
+
+        // 로딩 표시 (선택사항)
+        $(this).prop('disabled', true).text('등록 중...');
+
+        // 서버로 데이터 전송 AJAX
+        $.ajax({
+            url: "/insert.bo",
+            type: "POST",
+            data: {
+                prodCode: prodCode,
+                defCode: defCode,
+                defQty: defQty,
+                occurDate: occurDate,
+                remarks: remarks
+            },
+            success: function(response) {
+                if (response.result === "success") {
+                    alert(response.message);
+
+                    // 리스트 새로고침 후 모달 처리
+                    refreshDefList().then(() => {
+                        // 모달 input 초기화
+                        $(".modal-content .form-input, .modal-content select, .modal-content textarea").val("");
+                        $(".comment_length").text('0');
+
+                        // 모달 초기화 버튼 비활성화
+                        $('#modalResetBtn').prop('disabled', true);
+
+                        // 모달 닫기
+                        $(".modal-background").hide();
+                    });
+                } else {
+                    alert(response.message || "등록이 실패했습니다.");
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("서버 저장 실패", error);
+                alert("서버 저장 중 오류가 발생했습니다!");
+            },
+            complete: function() {
+                // 버튼 상태 복원
+                $('#modalInsertBtn').prop('disabled', false).text('등록');
+            }
+        });
+    });
+
+    // 삭제 버튼 클릭 (수정됨)
+    $(document).on('click', '#btnDelete', function(e) {
+        e.preventDefault();
+
+        let defNoList = [];
+        $(".chk:checked").each(function() {
+            defNoList.push($(this).val());
+        });
+
+        if (defNoList.length == 0) {
+            alert("삭제할 제품을 선택해주세요.");
+            return;
+        }
+
+        if (!confirm("선택한 제품을 삭제하시겠습니까?")) {
+            return;
+        }
+
+        $.ajax({
+            url: "/delete.bo",
+            type: "POST",
+            traditional: true,
+            data: { dno: defNoList },
+            success: function(response) {
+                if (response.result === "success") {
+                    alert(response.message);
+
+                    // 리스트 새로고침
+                    refreshDefList();
+                } else {
+                    alert(response.message || "삭제가 실패했습니다.");
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Ajax 오류:", error);
+                alert("서버와 통신 중 오류가 발생했습니다.");
+            }
+        });
+    });
+</script>
 </body>
 </html>

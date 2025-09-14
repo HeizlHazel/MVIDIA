@@ -32,41 +32,25 @@ public class DefectiveController {
 
     // 불량 등록 조회 페이지 -> 조회 메소드
     @GetMapping("dlist.bo")
-    public ModelAndView deflist(@RequestParam(value = "cpage", defaultValue = "1") int currentPage, ModelAndView mv) {
+    public ModelAndView deflist(@RequestParam(value = "cpage", defaultValue = "1") int currentPage,
+                                @RequestParam(value = "ajax", required = false, defaultValue = "false") boolean ajax,
+                                ModelAndView mv) {
 
         int listCount = dService.selectListCount();
 
         PageInfo pi = Pagination.getPageInfo(listCount, currentPage, 10, 5);
         ArrayList<DefectiveProduction> list = dService.selectList(pi);
 
-        mv.addObject("pi", pi).addObject("list", list).setViewName("product/defectiveListview");
+        mv.addObject("pi", pi).addObject("list", list);
+
+        if(ajax){
+            mv.setViewName("fragment/DefProductTable :: defTable");
+        }else{
+            mv.setViewName("product/defectiveListView");
+        }
 
         return mv;
     }
-
-    // 리스트 table부분만 새로고침
-
-    public Map<String, Object> f5Table(@RequestParam(value = "cpage", defaultValue = "1") int currentPage){
-
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            int listCount = dService.selectListCount();
-            PageInfo pi = Pagination.getPageInfo(listCount, currentPage, 10, 5);
-            ArrayList<DefectiveProduction> list = dService.selectList(pi);
-
-            response.put("result", "success");
-            response.put("list", list);
-            response.put("pi", pi);
-
-        } catch (Exception e) {
-            response.put("result", "error");
-            response.put("message", "데이터 조회 중 오류가 발생했습니다.");
-        }
-
-        return response;
-    }
-
 
     // 불량 등록 조회 페이지 -> 등록 메소드
     @GetMapping("benrollForm.bo")
@@ -76,7 +60,7 @@ public class DefectiveController {
         model.addAttribute("productList", productList);
         return "product/defEnrollForm";
     }
-    /*
+
     // 등록 메서드를 Ajax용으로 수정
     @PostMapping("insert.bo")
     @ResponseBody
@@ -94,28 +78,12 @@ public class DefectiveController {
                 response.put("result", "failure");
                 response.put("message", "불량 제품 등록이 실패됐습니다.");
             }
-
         } catch (Exception e) {
             response.put("result", "error");
             response.put("message", "서버 오류가 발생했습니다: " + e.getMessage());
         }
 
         return response;
-    }
-    */
-
-    @PostMapping("insert.bo")
-    public String insertDefective( DefectiveProduction dp, Model model, RedirectAttributes redirectAttributes){
-
-        int result = dService.insertDefective(dp);
-
-        if(result > 0){
-            redirectAttributes.addFlashAttribute("alertMsg", "성공적으로 불량 제품이 등록되었습니다.");
-            return "redirect:dlist.bo";
-        }else{
-            model.addAttribute("errorMsg", "불량 제품 등록이 실패됐습니다.");
-            return "common/errorPage";
-        }
     }
 
     // 등록된 불량 제품 삭제 기능 (체크박스로 다중 선택 가능)
@@ -137,7 +105,6 @@ public class DefectiveController {
                 response.put("result", "failure");
                 response.put("message", "선택한 항목을 삭제할 수 없습니다. 잠시 후 다시 시도해주세요.");
             }
-
         } catch (Exception e) {
             response.put("result", "error");
             response.put("message", "서버 오류가 발생했습니다: " + e.getMessage());
@@ -146,11 +113,5 @@ public class DefectiveController {
         return response;
 
     }
-
-
-
-
-
-
 
 }

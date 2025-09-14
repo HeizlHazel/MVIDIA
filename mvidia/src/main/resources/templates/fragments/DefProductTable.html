@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>DefProductTable</title>
+</head>
+<body>
+    <div th:fragment="defTable">
+        <table id="defTable" align="left">
+            <thead>
+            <tr>
+                <th>선택</th>
+                <th>불량등록번호</th>
+                <th>발생일</th>
+                <th>제품코드</th>
+                <th>제품명</th>
+                <th>불량유형</th>
+                <th>수량</th>
+                <th>처리 상태</th>
+                <th>비고</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="d : ${list}" th:data-defno="${d.defNo}">
+                <td><input type="checkbox" class="chk" name="dno" th:value="${d.defNo}"></td>
+                <td class="defNo" th:text="${d.defNo}"></td>
+                <td th:text="${d.occurDate}"></td>
+                <td th:text="${d.prodCode}"></td>
+                <td th:text="${d.prodName}"></td>
+                <td th:text="${d.defType}"></td>
+                <td th:text="${d.defQty}"></td>
+                <td th:text="${d.statusName}"></td>
+                <td th:text="${d.remarks}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>📋 전체 일정</h1>
+<div style="max-height:400px; overflow-y:auto;">
+    <table>
+        <thead>
+        <tr>
+            <th>일정명</th>
+            <th>협력사</th>
+            <th>시작일</th>
+            <th>종료일</th>
+            <th>전체검사수</th>
+            <th>불량수</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="s : ${ScheduleAllList}">
+            <td th:text="${s.schNo}"></td>
+            <td th:text="${s.bpPartner}"></td>
+            <td th:text="${s.startDate}"></td>
+            <td th:text="${s.endDate}"></td>
+            <td th:text="${s.totalCount}"></td>
+            <td th:text="${s.defCount}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

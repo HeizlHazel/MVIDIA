@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="chartMapper">
+
+    <resultMap id="ChartResultSet" type="ScheduleRegistration">
+        <result column="schr_id" property="schrId" />
+        <result column="sch_no" property="schNo" />
+        <result column="cat_code" property="catCode" />
+        <result column="bp_partner" property="bpPartner" />
+        <result column="emp_no" property="empNo" />
+        <result column="start_date" property="startDate" />
+        <result column="end_date" property="endDate" />
+        <result column="color_id" property="colorID" />
+        <result column="details" property="details" />
+        <result column="total_count" property="totalCount" />
+        <result column="def_count" property="defCount" />
+    </resultMap>
+
+    <resultMap id="ProgressResultSet" type="ProgressChart">
+        <result column="task_code" property="taskCode" />
+        <result column="task_id" property="taskId" />
+        <result column="item_code" property="itemCode" />
+        <result column="start_date" property="startDate" />
+        <result column="end_date" property="endDate" />
+        <result column="prog_rate" property="progRate" />
+    </resultMap>
+
+    <!-- 품질점검 일정 (전체검사 수 / 불량검사 수 )-->
+    <select id="selectScheduleRegistration" resultType="chartMapper">
+        select
+               schr_id
+             , sch_no
+             , cat_code
+             , bp_partner
+             , emp_no
+             , start_date
+             , end_date
+             , color_id
+             , details
+             , total_count
+             , def_count
+          from tb_schedule_registration
+    </select>
+
+    <select id="selectProgressChart" resultType="ProgressChart">
+        select
+               task_code
+             , task_id
+             , item_code
+             , start_date
+             , end_date
+             , prog_rate
+          from tb_progress_chart
+    </select>
+
+
+    <!-- 개별 일정 top5 -->
+    <select id="selectTop5Schr" resultMap="ChartResultSet">
+        select *
+          from (
+               select *
+                 from tb_schedule_registration
+                order
+                   by end_date
+          )
+         where rownum <= 5
+    </select>
+
+    <!-- 개별 일정 전체 (더보기 클릭-> 페이지 이동) -->
+    <select id="selectAllschr" resultMap="ChartResultSet">
+        select *
+          from tb_schedule_registration
+         order
+            by end_date
+    </select>
+
+    <!-- 현재 진행 중인 일정 진행률 top5 -->
+    <select id="selectTop5prog" resultMap="ProgressResultSet">
+        select *
+          from tb_progress_chart
+         where rownum <= 5
+         order
+            by end_date
+    </select>
+</mapper>

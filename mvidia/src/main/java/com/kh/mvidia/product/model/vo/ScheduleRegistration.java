@@ -15,7 +15,7 @@ public class ScheduleRegistration { // 품질점검일정등록 테이블
     private String schNo;     // 일정명 (일정 테이블 schNo 참조)
     private String catCode;   // 분류 코드 (분류 테이블 catCode 참조)
     private String bpPartner; // 협력사/거래처
-    private String empNO;     // 책임자_사번 (사원 테이블 empNo 참조)
+    private String empNo;     // 책임자_사번 (사원 테이블 empNo 참조)
     private Date startDate;   // 시작일
     private Date endDate;     // 종료일
     private String colorID;   // 색상 아이디 (테마 테이블 theme_code or colorCode)

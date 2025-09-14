@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>ChartListView</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- 진행률 퍼센트 바 -->
+    <div class="progress-bar-horizontal">
+        <div class="progress-fill" style="width:70%"></div>
+    </div>
+    <div class="progress-percentage">70%</div>
+
+    <!-- 불량률 도넛 차트 부분 -->
+    <div class="donut-chart-container" style="--defect-rate: 72deg;">
+        <div class="donut-chart-label">20%</div>
+    </div>
+    <!-- 추후 가능하면 사용하기 상세보기-> 모달창
+    일정 카드 클릭 이벤트 바인딩 (onclick or addEventListener)
+    해당 일정 ID(schrId) Ajax로 조회 → 상세 데이터 가져와서 모달창 출력
+
+    document.querySelectorAll(".schedule-item").forEach(item => {
+      item.addEventListener("click", function() {
+        const schId = this.dataset.schId;
+        fetch(`/progress/detail/${schId}`)
+          .then(res => res.json())
+          .then(data => {
+            // 모달창에 데이터 채우기
+            document.getElementById("modal-title").innerText = data.schNo;
+            document.getElementById("modal-body").innerText = JSON.stringify(data);
+            $("#detailModal").modal("show");
+          });
+      });
+    });
+    -->
+
+
+    <!--
+        <h1>🛠️ 작업진행현황</h1>
+
+     종료임박순 5개 일정만 표시
+    <div th:each="schedule : ${dashboardData}">
+        <p>
+            <span th:text="${schedule.bpPartner}"></span>
+            | 진행률: <span th:text="${#numbers.formatDecimal(schedule.totalCount > 0 ? schedule.defCount*100.0/schedule.totalCount : 0, 0, 2)}"></span>%
+        </p>
+    </div>
+
+    더보기 버튼
+    <a th:href="@{/scheduleList.bo}">더보기</a>
+
+     차트 영역
+    <canvas id="myChart"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('myChart');
+
+        const labels = [
+            /* Thymeleaf 반복문으로 제품명/코드 삽입 */
+            /* 예시 */
+            <th:block th:each="p : ${progressData}">'[[${p.itemCode}]]',</th:block>
+        ];
+        const dataValues = [
+            <th:block th:each="p : ${progressData}">[[${p.progRate}]],</th:block>
+        ];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '작업 진행률',
+                    data: dataValues,
+                    backgroundColor: '#186aea'
+                }]
+            },
+            options: { responsive: true }
+        });
+    </script>
+    -->
+</body>
+</html>

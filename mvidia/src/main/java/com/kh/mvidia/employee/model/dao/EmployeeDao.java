@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class EmployeeDao {
@@ -21,6 +22,22 @@ public class EmployeeDao {
 	
 	public int insertEmpInfo(SqlSessionTemplate sqlSession, Employee emp) {
 		return sqlSession.insert("employeeMapper.insertEmpInfo", emp);
+	}
+	
+	public int updateEmpModifyReqStatus(SqlSessionTemplate sqlSession, Map<String, Object> params) {
+		return sqlSession.update("empModifyReqMapper.updateEmpModifyReqStatus", params);
+	}
+	
+	public int updateFile(SqlSessionTemplate sqlSession, Attachment atch) {
+		return sqlSession.update("AttachmentMapper.updateFile", atch);
+	}
+	
+	public EmpModifyReq findEmpModifyReqById(SqlSessionTemplate sqlSession, String reqId) {
+		return sqlSession.selectOne("empModifyReqMapper.findEmpModifyReqById", reqId);
+	}
+	
+	public int updateEmpSelective(SqlSessionTemplate sqlSession, Employee patch) {
+		return sqlSession.update("employeeMapper.updateEmpSelective", patch);
 	}
 	
 	public Attachment selectProfile(SqlSessionTemplate sqlSession, String empNo) {
@@ -39,10 +56,13 @@ public class EmployeeDao {
 		return (ArrayList)sqlSession.selectList("empModifyReqMapper.selectReq", empNo);
 	}
 	
+	public int deleteEmp(SqlSessionTemplate sqlSession, String empNo) {
+		return sqlSession.update("employeeMapper.deleteEmp", empNo);
+	}
+	
 	public Employee checkEmpNo(SqlSessionTemplate sqlSession, String empNo) {
 		return sqlSession.selectOne("employeeMapper.checkEmpNo", empNo);
 	}
-	
 
 }
 

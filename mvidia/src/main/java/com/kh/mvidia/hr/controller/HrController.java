@@ -1,24 +1,32 @@
 package com.kh.mvidia.hr.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kh.mvidia.common.model.vo.Attachment;
 import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.service.EmployeeService;
 import com.kh.mvidia.employee.model.vo.Employee;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Controller
 @RequestMapping("/hr")
 public class HrController {
+	
+	@Value("${file.upload-dir}")
+	private String uploadDir;
 	
 	@Autowired
 	private EmployeeService empService;
@@ -50,59 +58,207 @@ public class HrController {
 	}
 	
 	@PostMapping("/updateEmp.hr")
-	public String updateEmp(Employee emp, Attachment atch, EmpModifyReq req, RedirectAttributes redirectAttributes){
-		// 1. 세션에서 로그인한 관리자 정보 가져오기
+	public String updateEmp(Employee emp, Attachment atch, EmpModifyReq req, @RequestParam("atchFile") MultipartFile atchFile, @RequestParam Map<String, String> reqIdMap, @RequestParam String pendingRejects, HttpSession session, RedirectAttributes redirectAttributes){
+
 		Employee manager = (Employee) session.getAttribute("loginEmp");
 		String managerId = manager.getEmpNo();
 		
-		// 2. 거절 사유가 담긴 JSON 문자열을 Map으로 파싱
 		ObjectMapper mapper = new ObjectMapper();
-		Map<String, String> rejectReasons = null;
+		Map<String, String> rejectReasons = Collections.emptyMap();
 		try {
-			rejectReasons = mapper.readValue(pendingRejects, new TypeReference<Map<String, String>>() {});
+			if (pendingRejects != null && !pendingRejects.isEmpty()) {
+				rejectReasons = mapper.readValue(pendingRejects, new TypeReference<Map<String, String>>() {});
+			}
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}
 		
-		// 3. 변경 요청 상태 업데이트
-		for (String fieldName : reqIdMap.keySet()) {
-			String reqId = reqIdMap.get(fieldName);
+		Employee patch = new Employee();
+		patch.setEmpNo(emp.getEmpNo());
+		
+		int resultReq = 1;     // req 상태 변경들
+		int resultFile = 1;    // 파일 상태 변경/삽입
+		int resultEmp = 1;     // employee 수정
+		
+		for (Map.Entry<String, String> entry : reqIdMap.entrySet()) {
+			final String fieldName = entry.getKey();
+			final String reqId     = entry.getValue();
 			
-			// Attachment와 관련된 특별 처리
-			if (fieldName.equals("profilePic")) {
-				// ... (아래에서 상세 로직 설명)
-				// 첨부파일 관련 로직이 복잡하여 별도로 분리하는 것이 좋습니다.
-			} else {
-				// 기타 필드 (이름, 주소 등)
-				Map<String, Object> params = new HashMap<>();
-				params.put("reqId", reqId);
-				params.put("managerId", managerId);
+			Map<String, Object> params = new HashMap<>();
+			params.put("reqId", reqId);
+			params.put("managerId", managerId);
+			
+			if ("profilePic".equals(fieldName)) {
+				// 요청 건에서 old/new atch id 조회
+				EmpModifyReq reqRow = empService.findEmpModifyReqById(reqId);
+				String oldAtchId = reqRow.getOldAtchId();
+				String newAtchId = reqRow.getNewAtchId();
 				
-				if (rejectReasons.containsKey(fieldName)) {
-					// 거절된 경우: reqStatus를 'D'로
+				boolean userUploadedNew =
+						(atchFile != null && atchFile.getOriginalFilename() != null && !atchFile.getOriginalFilename().equals(""));
+				
+				if (userUploadedNew) {
+					// ③ 둘 다 아니고 "직접 업로드" 선택한 경우
+					// - 새 파일 저장 & INSERT(file_status='U')
+					// - 이 변경요청(req)은 거절(D), 사유는 입력값(없으면 기본)
+					// - 기존 old/new 첨부는 모두 'L'
+					String changeName = saveFile(atchFile); // 기존 유틸
+					atch.setRefType("F");
+					atch.setOriginName(atchFile.getOriginalFilename());
+					atch.setChangeName(changeName);
+					atch.setFileStatus("U");
+					atch.setUploadEmpNo(emp.getEmpNo());
+					resultFile = empService.insertFile(atch); // atchId 생성 (selectKey)
+					
 					params.put("reqStatus", "D");
-					params.put("rejectReason", rejectReasons.get(fieldName));
+					params.put("rejectReason", rejectReasons.getOrDefault("profilePic", "사용자 직접 업로드로 대체"));
+					resultReq = empService.updateEmpModifyReqStatus(params); // 승인자/일 포함(approve_date=SYSDATE)
+					
+					if (oldAtchId != null){
+						Attachment oldAtch = new Attachment();
+						oldAtch.setAtchId(oldAtchId);
+						oldAtch.setFileStatus("L");
+						resultFile = empService.updateFile(oldAtch);
+					}
+					if (newAtchId != null){
+						Attachment newAtch = new Attachment();
+						newAtch.setAtchId(newAtchId);
+						newAtch.setFileStatus("L");
+						resultFile = empService.updateFile(newAtch);
+					}
+					
+					// 필요 시: 방금 삽입된 atch를 프로필 반영
+					// empService.applyProfileAttachment(emp.getEmpNo(), atch.getAtchId());
+					
+				} else if (rejectReasons.containsKey("profilePic")) {
+					// ① 기존의 걸(OLD)로 쓴다 = "거절"
+					// - req: D + reject_reason
+					// - new_atch_id → 'L'
+					params.put("reqStatus", "D");
+					params.put("rejectReason", rejectReasons.get("profilePic"));
+					resultReq = empService.updateEmpModifyReqStatus(params);
+					
+					if (newAtchId != null){
+						Attachment newAtch = new Attachment();
+						newAtch.setAtchId(newAtchId);
+						newAtch.setFileStatus("L");
+						resultFile = empService.updateFile(newAtch);
+					}
+					
 				} else {
-					// 승인된 경우: reqStatus를 'A'로
+					// ② 변경된 값(NEW)으로 쓴다 = "승인"
+					// - req: A
+					// - old_atch_id → 'L', new_atch_id → 'U'
 					params.put("reqStatus", "A");
 					params.put("rejectReason", null);
+					resultReq = empService.updateEmpModifyReqStatus(params);
+					
+					if (oldAtchId != null){
+						Attachment oldAtch = new Attachment();
+						oldAtch.setAtchId(oldAtchId);
+						oldAtch.setFileStatus("L");
+						resultFile = empService.updateFile(oldAtch);
+					}
+					if (newAtchId != null){
+						Attachment newAtch = new Attachment();
+						newAtch.setAtchId(newAtchId);
+						newAtch.setFileStatus("U");
+						resultFile = empService.updateFile(newAtch);
+					}
+		
 				}
-				empModifyReqService.updateEmpModifyReqStatus(params);
+				
+			} else {
+				// 일반 필드 처리
+				if (rejectReasons.containsKey(fieldName)) {
+					params.put("reqStatus", "D");
+					params.put("rejectReason", rejectReasons.get(fieldName));
+					resultReq = empService.updateEmpModifyReqStatus(params);
+				} else {
+					params.put("reqStatus", "A");
+					params.put("rejectReason", null);
+					resultReq = empService.updateEmpModifyReqStatus(params);
+					
+					applyApprovedFieldToPatch(patch, emp, fieldName);
+				}
+
 			}
 		}
-		
-		return "redirect:/hr/empAccount.hr";
+		resultEmp = empService.updateEmpSelective(patch);
+		if(resultReq * resultFile * resultEmp > 0 ){
+			redirectAttributes.addFlashAttribute("alertMsg", emp.getEmpName() + "사원의 정보를 변경 성공했습니다.");
+			return "redirect:/hr/empAccount.hr";
+		}else{
+			redirectAttributes.addFlashAttribute("alertMsg", emp.getEmpName() + "사원의 정보 변경에 실패했습니다.");
+			return "redirect:/hr/empAccount.hr";
+		}
 	}
 	
-	@GetMapping("/accountDelete.hr")
-	public String accountDeleteForm(){
-		return "/hr/accountDeleteFormPage";
+	@ResponseBody
+	@PostMapping("/accountDelete.hr")
+	public Map<String, Object> accountDeleteForm(String empNo){
+		int result = empService.deleteEmp(empNo);
+		
+		Map<String, Object> response = new HashMap<>();
+		if(result > 0) {
+			response.put("success", true);
+			response.put("message", "계정이 성공적으로 삭제되었습니다.");
+		}else{
+			response.put("success", false);
+			response.put("message", "계정 삭제에 실패했습니다.");
+		}
+		
+		return response;
 	}
 	
 	@ResponseBody
 	@GetMapping("/checkEmpNo.hr")
 	public Employee checkEmpNo(@RequestParam String empNo){
 		return empService.checkEmpNo(empNo);
+	}
+	
+	public String saveFile(MultipartFile atchFile){
+		String originName =atchFile.getOriginalFilename();
+		
+		String currentTime =new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+		int ranNum = (int)(Math.random() * 90000 + 10000);
+		String ext =originName.substring(originName.lastIndexOf("."));
+		
+		String changeName = currentTime + ranNum +ext;
+		
+		File savePath =new File(uploadDir);
+		if(!savePath.exists()){
+			savePath.mkdirs();
+		}
+		
+		try{
+			atchFile.transferTo(new File(savePath, changeName));
+		} catch (IllegalStateException | IOException e ){
+			e.printStackTrace();
+		}
+		
+		return changeName;
+	}
+	
+	/** 승인된 fieldName에 따라 patch에 값 복사 */
+	private void applyApprovedFieldToPatch(Employee patch, Employee src, String fieldName) {
+		switch (fieldName) {
+			case "email":         patch.setEmail(src.getEmail()); break;
+			case "empLName":      patch.setEmpLName(src.getEmpLName()); break;
+			case "empName":       patch.setEmpName(src.getEmpName()); break;
+			case "empEngLName":   patch.setEmpEngLName(src.getEmpEngLName()); break;
+			case "empEngName":    patch.setEmpEngName(src.getEmpEngName()); break;
+			case "birthday":      patch.setBirthday(src.getBirthday()); break;
+			case "deptCode":      patch.setDeptCode(src.getDeptCode()); break;
+			case "deptName":      patch.setDeptName(src.getDeptName()); break;
+			case "jobCode":       patch.setJobCode(src.getJobCode()); break;
+			case "jobName":       patch.setJobName(src.getJobName()); break;
+			case "address":       patch.setAddress(src.getAddress()); break;
+			case "phone":         patch.setPhone(src.getPhone()); break;
+			case "extNo":         patch.setExtNo(src.getExtNo()); break;
+			default:
+				break;
+		}
 	}
 	
 }

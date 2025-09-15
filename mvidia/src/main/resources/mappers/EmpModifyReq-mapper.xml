@@ -61,11 +61,22 @@
 
     <update id="updateEmpModifyReqStatus" parameterType="map">
         update tb_emp_modify_req
-        set req_status = #{reqStatus}
-        , reject_reason = #{rejectReason}
-        , manager_id = #{managerId}
-        , approve_date = sysdate
+        set
+        req_status = #{reqStatus}
+        , manager_id    = #{managerId}
+        , approve_date  = sysdate
+        , reject_reason = #{rejectReason, jdbcType=VARCHAR}
         where req_id = #{reqId}
     </update>
+
+    <select id="findEmpModifyReqById" parameterType="string" resultType="EmpModifyReq">
+        select
+               req_id
+             , field_name
+             , old_atch_id
+             , new_atch_id
+          from tb_emp_modify_req
+         where req_id = #{reqId}
+    </select>
 
 </mapper>

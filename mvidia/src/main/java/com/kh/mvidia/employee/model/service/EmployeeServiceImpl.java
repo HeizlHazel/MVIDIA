@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService{
@@ -53,13 +54,23 @@ public class EmployeeServiceImpl implements EmployeeService{
 	}
 	
 	@Override
-	public int updateFile(Attachment atch){
-		return 0;
+	public int updateEmpModifyReqStatus(Map<String, Object> params) {
+		return empDao.updateEmpModifyReqStatus(sqlSession,params);
 	}
 	
 	@Override
-	public int updateEmp(Employee emp) {
-		return 0;
+	public int updateFile(Attachment atch) {
+		return empDao.updateFile(sqlSession, atch);
+	}
+	
+	@Override
+	public EmpModifyReq findEmpModifyReqById(String reqId) {
+		return empDao.findEmpModifyReqById(sqlSession, reqId);
+	}
+	
+	@Override
+	public int updateEmpSelective(Employee patch) {
+		return empDao.updateEmpSelective(sqlSession, patch);
 	}
 	
 	@Override
@@ -69,7 +80,7 @@ public class EmployeeServiceImpl implements EmployeeService{
 	
 	@Override
 	public int deleteEmp(String empNo) {
-		return 0;
+		return empDao.deleteEmp(sqlSession, empNo);
 	}
 	
 	@Override

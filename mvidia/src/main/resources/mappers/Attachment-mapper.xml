@@ -54,10 +54,12 @@
 
     </select>
 
-    <update id="updateFileStatus">
+    <update id="updateFile" parameterType="map">
         update tb_attachment
-        set file_status = #{fileStatus}
-        where atch_id = #{atchId}
+           set
+               file_status = #{fileStatus}
+         where atch_id = #{atchId}
     </update>
+
 
 </mapper>

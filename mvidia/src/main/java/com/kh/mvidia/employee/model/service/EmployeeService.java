@@ -7,6 +7,7 @@ import com.kh.mvidia.employee.model.vo.Employee;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public interface EmployeeService {
 
@@ -25,9 +26,13 @@ public interface EmployeeService {
 	
 	ArrayList<EmpModifyReq> selectReq(String empNo);
 	
+	int updateEmpModifyReqStatus(Map<String, Object> params);
+	
 	int updateFile(Attachment atch);
 	
-	int updateEmp(Employee emp);
+	EmpModifyReq findEmpModifyReqById(String reqId);
+	
+	int updateEmpSelective(Employee patch);
 	
 	Attachment selectProfile(String empNo);
 	

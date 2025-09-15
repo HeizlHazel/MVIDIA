@@ -423,6 +423,11 @@
             }
         }
     </script>
+
+    <script th:if="${alertMsg}">
+        const alertMsg = '[[${alertMsg}]]';
+        alertify.alert('계정 수정', alertMsg);
+    </script>
 </div>
 </body>
 </html>

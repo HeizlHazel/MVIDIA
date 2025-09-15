@@ -34,7 +34,7 @@
             <select id="deptSelect">
                 <option value="ALL">전체 부서</option>
             </select>
-            <span class="muted">* 직급별 대표 1명씩만 표시돼요. 카드 우측 하단의 "정보조회"를 눌러 부서 전체 인원을 확인할 수 있어요.</span>
+            <span id="allDeptMessage" class="muted">* 각 부서별 부장 1명씩만 표시됩니다.</span>
         </div>
         <div id="integratedList" class="mt16">
         </div>
@@ -68,6 +68,12 @@
     // 선택된 부서에 따라 서버에서 인사 데이터를 가져와 화면을 갱신하는 함수
     function refreshIntegrated() {
         const currentDept = $('#deptSelect').val();
+
+        if (currentDept === 'ALL') {
+            $('#allDeptMessage').show();
+        } else {
+            $('#allDeptMessage').hide();
+        }
         const url = currentDept === 'ALL' ? '/hr/integrated/all' : `/hr/integrated/dept/${currentDept}`;
 
         $.ajax({

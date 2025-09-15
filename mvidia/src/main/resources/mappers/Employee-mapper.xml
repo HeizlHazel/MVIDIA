@@ -42,6 +42,7 @@
         , address
         , phone
         , ext_no
+        , change_name
         , emp_status
         , to_char(create_date, 'YYYY-MM-DD') as create_date
         , to_char(modify_date, 'YYYY-MM-DD') as modify_date
@@ -50,6 +51,7 @@
         from tb_employee
         join tb_department using (dept_code)
         join tb_job using (job_code)
+        left join tb_attachment on (emp_no = up_emp_no and ref_type = 'F' and file_status = 'U')
         where emp_status = 'H'
         and emp_no = #{empNo}
     </select>

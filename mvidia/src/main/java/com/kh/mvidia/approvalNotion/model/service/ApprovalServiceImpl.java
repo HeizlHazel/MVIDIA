@@ -35,8 +35,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     }
 
     @Override
-    public HttpResponse<JsonNode> addApproval(String title, String category, String writer) {
-
+    public HttpResponse<JsonNode> addPage(String writer, String dept, String date, String title, String approval, String details) {
         String url = "https://api.notion.com/v1/pages";
 
         JSONObject parent = new JSONObject();

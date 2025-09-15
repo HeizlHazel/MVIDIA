@@ -4,13 +4,19 @@ import com.kh.mvidia.finance.model.service.FinanceService;
 import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.kh.mvidia.finance.model.vo.Sales;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
+import java.io.OutputStream;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -25,6 +31,9 @@ public class FinanceController {
     @Autowired
     private FinanceService financeService;
 
+    @Autowired
+    private TemplateEngine templateEngine;
+
     @GetMapping("/payroll")
     public String salary(
             @RequestParam(required = false, defaultValue = "202508") String yearMonth,
@@ -37,17 +46,15 @@ public class FinanceController {
         String dbYearMonth;
 
         if (yearMonth == null || yearMonth.isEmpty()) {
-            // 값이 없으면 현재 달로
             viewYearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+
         } else if (yearMonth.matches("\\d{6}")) {
-            // "202508" → "2025-08"
             viewYearMonth = yearMonth.substring(0, 4) + "-" + yearMonth.substring(4);
+
         } else {
-            // 이미 yyyy-MM 형태로 들어온 경우
             viewYearMonth = yearMonth;
         }
 
-        // DB 검색용은 항상 yyyyMM
         dbYearMonth = viewYearMonth.replace("-", "");
 
         if (deptCode == null || deptCode.isEmpty()) {
@@ -62,17 +69,14 @@ public class FinanceController {
             empName = null;
         }
 
-        // 조건들을 Map에 담아서 전달
         Map<String, Object> param = new HashMap<>();
         param.put("yearMonth", dbYearMonth);
         param.put("deptCode", deptCode);
         param.put("jobCode", jobCode);
         param.put("empName", empName);
 
-        // Service 호출
         List<Salary> salaryList = financeService.getSalaryByCondition(param);
 
-        // 화면에 전달
         model.addAttribute("salaryList", salaryList);
         model.addAttribute("yearMonth", viewYearMonth);
         model.addAttribute("deptCode", deptCode);
@@ -82,6 +86,34 @@ public class FinanceController {
         return "finance/payroll";
     }
 
+    @GetMapping("/salary-pdf")
+    public void exportSalaryPdf(
+            @RequestParam String empNo,
+            @RequestParam String payDate,
+            HttpServletResponse response) {
+        try {
+            Salary salary = financeService.getSalaryByEmpAndMonth(empNo, payDate);
+
+            Context context = new Context();
+            context.setVariable("salary", salary);
+
+            String html = templateEngine.process("salary-pdf", context);
+
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=salary_" + empNo + "_" + payDate + ".pdf");
+
+            try (OutputStream os = response.getOutputStream()) {
+                PdfRendererBuilder builder = new PdfRendererBuilder();
+                builder.useFastMode();
+                builder.withHtmlContent(html, new ClassPathResource("/templates/finance/").getURL().toString());
+                builder.toStream(os);
+                builder.run();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private int calculateOvertimePay(int salary, List<Attendance> records) {
         int baseHourly = salary / 209;

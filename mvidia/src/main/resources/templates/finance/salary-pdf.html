@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        body {
+            font-family: 'Malgun Gothic' , sans-serif;
+            font-size: 12px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #000000;
+            padding: 6px; text-align: center;
+        }
+        .title {
+            text-align: center;
+            font-size: 16px; font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .section {
+            background: #ffffff;
+            font-weight: bold;
+        }
+    </style>
+    <title>Title</title>
+</head>
+<body>
+<div class="title">급여명세서</div>
+
+<table>
+    <tr>
+        <th>성명</th><td th:text="${salary.empName}"></td>
+        <th>사번</th><td th:text="${salary.empNo}"></td>
+        <th>지급일</th><td th:text="${salary.payDate}"></td>
+    </tr>
+    <tr>
+        <th>부서</th><td th:text="${salary.deptName}"></td>
+        <th>직급</th><td th:text="${salary.jobName}"></td>
+        <th colspan="2"></th>
+    </tr>
+</table>
+
+<br/>
+
+<table>
+    <tr class="section">
+        <td colspan="3">세부내역</td>
+    </tr>
+    <tr>
+        <th>임금 항목</th>
+        <th>지급 금액</th>
+        <th>공제 항목</th>
+    </tr>
+    <tr>
+        <td>기본급</td><td th:text="${salary.salary}"></td>
+        <td>소득세: </td><td th:text="${salary.incomeTax}"></td>
+    </tr>
+    <tr>
+        <td>연장근로수당: </td><td th:text="${salary.extendOv}"></td>
+        <td>국민 연금: </td><td th:text="${salary.nationalPension}"></td>
+    </tr>
+    <tr>
+        <td>야간근로수당</td><td th:text="${salary.nightOv}"></td>
+        <td>건강보험</td><td th:text="${salary.healthInsurance}"></td>
+    </tr>
+    <tr>
+        <td>휴일근로수당</td><td th:text="${salary.tripOv}"></td>
+        <td>고용보험: <span th:text="${salary.employmentInsurance}"></span></td>
+    </tr>
+    <tr>
+        <td>보너스</td><td th:text="${salary.bonusAmt}"></td>
+        <td>지방소득세: <span th:text="${salary.localTax}"></span></td>
+    </tr>
+    <tr>
+        <td colspan="3">총지급액: <span th:text="${salary.totalPay}"></span> /
+            총공제액: <span th:text="${salary.deductAmt}"></span> /
+            실지급액: <span th:text="${salary.netPay}"></span></td>
+    </tr>
+</table>
+
+<br/>
+
+<div class="section">계산 방법</div>
+<table>
+    <tr>
+        <th>구분</th>
+        <th>산출식</th>
+        <th>금액</th>
+    </tr>
+    <tr>
+        <td>연장근로수당</td>
+        <td>연장근로시간x(시급x1.5)</td>
+        <td th:text="${salary.extendOv}"></td>
+    </tr>
+    <tr>
+        <td>야간근로수당</td>
+        <td>야간근로시간x(시급x2.0)</td>
+        <td th:text="${salary.nightOv}"></td>
+    </tr>
+    <tr>
+        <td>휴일근로수당</td>
+        <td>휴일근무시간x(시급x2.0)</td>
+        <td th:text="${salary.weekendOv}"></td>
+    </tr>
+    <tr>
+        <td>출장수당</td>
+        <td>50000x출장횟수</td>
+        <td th:text="${salary.tripOv}"></td>
+    </tr>
+</table>
+</body>
+</html>

@@ -6,11 +6,13 @@ import com.kh.mvidia.finance.model.vo.Sales;
 import com.kh.mvidia.finance.model.vo.Tax;
 import com.kh.mvidia.notion.service.NotionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/payroll")
@@ -27,23 +29,33 @@ public class NotionController {
 
     @GetMapping("/export-notion")
     @ResponseBody
-    public String exportToNotion(@RequestParam String empNo,
+    public ResponseEntity<?> exportToNotion(@RequestParam String empNo,
                                  @RequestParam String payDate) {
         System.out.println("▶ exportToNotion 호출됨: empNo=" + empNo + ", payDate=" + payDate);
 
-        Salary salary = financeService.getSalaryByEmpAndMonth(empNo, payDate);
-        List<Tax> taxList = financeService.getTaxesByEmpAndMonth(empNo, payDate);
+        try{
+            Salary salary = financeService.getSalaryByEmpAndMonth(empNo, payDate);
+            List<Tax> taxList = financeService.getTaxesByEmpAndMonth(empNo, payDate);
 
-        System.out.println("▶ DB 조회 결과: " + salary);
-        System.out.println("▶ 세금 항목 조회 결과: " + taxList);
+            if (salary == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "status", "fail",
+                        "message", "급여 데이터가 없음"
+                ));
+            }
 
-        if (salary == null) {
-            return "fail";
+            notionService.insertPayrollToNotion(salary, taxList);
+
+            return ResponseEntity.ok().body(Map.of(
+                    "status", "success",
+                    "empNo", empNo,
+                    "payDate", payDate
+            ));
+
+        } catch(Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("fail: 오류 발생");
         }
-
-        notionService.insertPayrollToNotion(salary, taxList);
-
-        return "success";
     }
 
     @GetMapping("/revenue-report")

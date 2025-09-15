@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko"
+<html lang="en"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}"
@@ -7,21 +7,49 @@
 <head>
     <meta charset="UTF-8">
     <title>ChartListView</title>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 <body>
 
-    <!-- 진행률 퍼센트 바 -->
+    <div class="progress-bar">
+        <canvas id="progTop"></canvas>
+    </div>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        
+        const progTop5 = document.getElementById('progTop');
+        
+        new Chart(progTop5, {
+            type: 'bar',
+            data: {
+                labels: ['blue', 'blue', 'blue'],
+                datasets: [{
+                data : [${progTop5}],
+                borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+
+    <!-- 진행률 퍼센트 바
     <div class="progress-bar-horizontal">
         <div class="progress-fill" style="width:70%"></div>
     </div>
     <div class="progress-percentage">70%</div>
 
-    <!-- 불량률 도넛 차트 부분 -->
+    불량률 도넛 차트 부분
     <div class="donut-chart-container" style="--defect-rate: 72deg;">
         <div class="donut-chart-label">20%</div>
-    </div>
+    </div>-->
     <!-- 추후 가능하면 사용하기 상세보기-> 모달창
     일정 카드 클릭 이벤트 바인딩 (onclick or addEventListener)
     해당 일정 ID(schrId) Ajax로 조회 → 상세 데이터 가져와서 모달창 출력
@@ -65,10 +93,10 @@
         const labels = [
             /* Thymeleaf 반복문으로 제품명/코드 삽입 */
             /* 예시 */
-            <th:block th:each="p : ${progressData}">'[[${p.itemCode}]]',</th:block>
+            <th:block th:each="p : ${progTop5}">'[[${p.itemCode}]]',</th:block>
         ];
         const dataValues = [
-            <th:block th:each="p : ${progressData}">[[${p.progRate}]],</th:block>
+            <th:block th:each="p : ${progTop5}">[[${p.progRate}]],</th:block>
         ];
 
         new Chart(ctx, {

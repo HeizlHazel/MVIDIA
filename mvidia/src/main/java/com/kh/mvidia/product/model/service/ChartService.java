@@ -12,6 +12,6 @@ public interface ChartService {
 
     List<ScheduleRegistration> selectTop5Schr();
     List<ScheduleRegistration> selectAllSchr();
-    List<ProgressChart> selectTop5prog();
+    List<ProgressChart> selectTop5Prog();
 
 }

@@ -21,11 +21,11 @@ public class ChartServiceImpl implements ChartService{
     public List<ProgressChart> selectProgList(){ return cDao.selectProgList(); }
 
     @Override
-    public  List<ScheduleRegistration> selectTop5Schr(){ return cDao.selctTop5Schr(); }
+    public  List<ScheduleRegistration> selectTop5Schr(){ return cDao.selectTop5Schr(); }
 
     @Override
     public List<ScheduleRegistration> selectAllSchr(){ return  cDao.selectAllSchr(); }
 
     @Override
-    public List<ProgressChart> selectTop5prog(){ return cDao.selectTop5prog(); }
+    public List<ProgressChart> selectTop5Prog(){ return cDao.selectTop5Prog(); }
 }

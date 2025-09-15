@@ -22,7 +22,7 @@ public class ChartDao {
         return sqlSession.selectList("chartMapper.selectProgressChart");
     }
 
-    public List<ScheduleRegistration> selectTop5Shcr(){
+    public List<ScheduleRegistration> selectTop5Schr(){
         return  sqlSession.selectList("chartMapper.selectTop5Schr");
     }
 
@@ -30,8 +30,8 @@ public class ChartDao {
         return sqlSession.selectList("chartMapper.selectAllSchr");
     }
 
-    public List<ProgressChart> selectTop5prog(){
-        return sqlSession.selectList("chartMapper.selectTop5prog");
+    public List<ProgressChart> selectTop5Prog(){
+        return sqlSession.selectList("chartMapper.selectTop5Prog");
     }
 
 }

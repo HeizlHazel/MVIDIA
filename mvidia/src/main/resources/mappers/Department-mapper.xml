@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="departmentMapper">
+    <resultMap id="departmentResultSet" type="Department">
+        <result column="dept_code" property="deptCode"/>
+        <result column="dept_name" property="deptName"/>
+    </resultMap>
+
+    <select id="selectDeptList" resultMap="departmentResultSet">
+        select
+               dept_code
+             , dept_name
+          from tb_department
+    </select>
+
+</mapper>

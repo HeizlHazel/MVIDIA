@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kh.mvidia.common.model.vo.Attachment;
+import com.kh.mvidia.common.model.vo.Department;
 import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.service.EmployeeService;
 import com.kh.mvidia.employee.model.vo.Employee;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -186,10 +188,10 @@ public class HrController {
 		}
 		resultEmp = empService.updateEmpSelective(patch);
 		if(resultReq * resultFile * resultEmp > 0 ){
-			redirectAttributes.addFlashAttribute("alertMsg", emp.getEmpName() + "사원의 정보를 변경 성공했습니다.");
+			redirectAttributes.addFlashAttribute("alertMsg", emp.getEmpLName() + emp.getEmpName() + "사원의 정보를 변경 성공했습니다.");
 			return "redirect:/hr/empAccount.hr";
 		}else{
-			redirectAttributes.addFlashAttribute("alertMsg", emp.getEmpName() + "사원의 정보 변경에 실패했습니다.");
+			redirectAttributes.addFlashAttribute("alertMsg", emp.getEmpLName() + emp.getEmpName() + "사원의 정보 변경에 실패했습니다.");
 			return "redirect:/hr/empAccount.hr";
 		}
 	}
@@ -202,13 +204,43 @@ public class HrController {
 		Map<String, Object> response = new HashMap<>();
 		if(result > 0) {
 			response.put("success", true);
-			response.put("message", "계정이 성공적으로 삭제되었습니다.");
+			response.put("message","사원 계정이 성공적으로 삭제되었습니다.");
 		}else{
 			response.put("success", false);
-			response.put("message", "계정 삭제에 실패했습니다.");
+			response.put("message","사원 계정 삭제에 실패했습니다.");
 		}
 		
 		return response;
+	}
+	
+	@GetMapping("/integrated")
+	public String integratedPage(){
+		return "/hr/integratedPage";
+	}
+	
+	@ResponseBody
+	@GetMapping("/departments")
+	public ArrayList<Department> selectDeptList(){
+		return empService.selectDeptList();
+	}
+	
+	@ResponseBody
+	@GetMapping("/integrated/all")
+	public ArrayList<Employee> selectEmpAllList(){
+		return empService.selectEmpAllList();
+	}
+	
+	@ResponseBody
+	@GetMapping("/integrated/dept/{deptName}")
+	public ArrayList<Employee> selectEmpByDept(@PathVariable("deptName") String deptName){
+		return empService.selectEmpByDept(deptName);
+	}
+	
+	@GetMapping("/accountEmpDetail.hr")
+	public String EmployeeDetail(@RequestParam("empNo") String empNo, Model model){
+		Employee emp = empService.selectEmpNo(empNo);
+		model.addAttribute("emp", emp);
+		return "hr/accountEmpDetail.hr";
 	}
 	
 	@ResponseBody

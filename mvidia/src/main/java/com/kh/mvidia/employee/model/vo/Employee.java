@@ -31,5 +31,6 @@ public class Employee {
 	private String modifyDate;
 	private String hireDate;
 	private String retiredDate;
+	private String changeName;
 	
 }

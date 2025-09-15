@@ -14,6 +14,7 @@
         <result column="dept_name" property="deptName"/>
         <result column="job_code" property="jobCode"/>
         <result column="job_name" property="jobName"/>
+        <result column="change_name" property="changeName"/>
         <result column="address" property="address"/>
         <result column="phone" property="phone"/>
         <result column="ext_no" property="extNo"/>
@@ -160,6 +161,7 @@
                 modify_date = sysdate
             </set>
          where emp_no = #{empNo}
+           and emp_status = 'H'
     </update>
 
     <update id="deleteEmp">
@@ -168,5 +170,38 @@
                emp_status = 'F'
              , retired_date = sysdate
          where emp_no = #{empNo}
+           and emp_status = 'H'
     </update>
+
+    <select id="selectEmpAllList" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_lname || emp_name as "emp_name"
+             , dept_name
+             , substr(job_name, -2) as "job_name"
+             , email
+             , change_name
+          from tb_employee
+          join tb_department using(dept_code)
+          join tb_job using(job_code)
+          left join tb_attachment on (emp_no = up_emp_no and ref_type = 'F' and file_status = 'U')
+         where job_code like '__1'
+           and emp_status = 'H'
+    </select>
+
+    <select id="selectEmpByDept" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_lname || emp_name as "emp_name"
+             , dept_name
+             , substr(job_name, -2) as "job_name"
+             , email
+             , change_name
+          from tb_employee
+          join tb_department using(dept_code)
+          join tb_job using(job_code)
+          left join tb_attachment on (emp_no = up_emp_no and ref_type = 'F' and file_status = 'U')
+         where dept_Name = #{deptName}
+           and emp_status = 'H'
+    </select>
 </mapper>

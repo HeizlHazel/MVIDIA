@@ -2,6 +2,7 @@ package com.kh.mvidia.employee.model.service;
 
 
 import com.kh.mvidia.common.model.vo.Attachment;
+import com.kh.mvidia.common.model.vo.Department;
 import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.vo.Employee;
 
@@ -38,6 +39,12 @@ public interface EmployeeService {
 	
 	// 사원 삭제 서비스
 	int deleteEmp(String empNo);
+	
+	ArrayList<Department> selectDeptList();
+	
+	ArrayList<Employee> selectEmpAllList();
+	
+	ArrayList<Employee> selectEmpByDept(String deptName);
 	
 	// 사번 확인 서비스
 	Employee checkEmpNo(String empNo);

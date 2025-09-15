@@ -1,6 +1,7 @@
 package com.kh.mvidia.employee.model.service;
 
 import com.kh.mvidia.common.model.vo.Attachment;
+import com.kh.mvidia.common.model.vo.Department;
 import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.dao.EmployeeDao;
 import com.kh.mvidia.employee.model.vo.Employee;
@@ -81,6 +82,21 @@ public class EmployeeServiceImpl implements EmployeeService{
 	@Override
 	public int deleteEmp(String empNo) {
 		return empDao.deleteEmp(sqlSession, empNo);
+	}
+	
+	@Override
+	public ArrayList<Department> selectDeptList() {
+		return empDao.selectDeptList(sqlSession);
+	}
+	
+	@Override
+	public ArrayList<Employee> selectEmpAllList() {
+		return empDao.selectEmpAllList(sqlSession);
+	}
+	
+	@Override
+	public ArrayList<Employee> selectEmpByDept(String deptName) {
+		return empDao.selectEmpByDept(sqlSession, deptName);
 	}
 	
 	@Override

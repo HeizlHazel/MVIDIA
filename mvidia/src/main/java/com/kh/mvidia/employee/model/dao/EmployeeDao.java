@@ -1,6 +1,7 @@
 package com.kh.mvidia.employee.model.dao;
 
 import com.kh.mvidia.common.model.vo.Attachment;
+import com.kh.mvidia.common.model.vo.Department;
 import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.vo.Employee;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -60,9 +61,23 @@ public class EmployeeDao {
 		return sqlSession.update("employeeMapper.deleteEmp", empNo);
 	}
 	
+	public ArrayList<Department> selectDeptList(SqlSessionTemplate sqlSession) {
+		return (ArrayList)sqlSession.selectList("departmentMapper.selectDeptList");
+	}
+	
+	public ArrayList<Employee> selectEmpAllList(SqlSessionTemplate sqlSession) {
+		return (ArrayList)sqlSession.selectList("employeeMapper.selectEmpAllList");
+	}
+	
+	public ArrayList<Employee> selectEmpByDept(SqlSessionTemplate sqlSession, String deptName) {
+		return (ArrayList)sqlSession.selectList("employeeMapper.selectEmpByDept", deptName);
+	}
+	
 	public Employee checkEmpNo(SqlSessionTemplate sqlSession, String empNo) {
 		return sqlSession.selectOne("employeeMapper.checkEmpNo", empNo);
 	}
+	
+	
 
 }
 

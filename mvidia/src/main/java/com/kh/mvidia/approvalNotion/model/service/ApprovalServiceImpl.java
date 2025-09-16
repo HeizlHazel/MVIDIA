@@ -4,12 +4,11 @@ import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONObject;
-import org.json.simple.JSONArray;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ApprovalServiceImpl implements ApprovalService {
@@ -34,40 +33,54 @@ public class ApprovalServiceImpl implements ApprovalService {
         return response.getBody().toPrettyString();
     }
 
+    private static final Map<String, String> CATEGORY_MAP = Map.of(
+            "expense", "지출결의",
+            "purchase", "구매요청",
+            "overtime", "초과근무",
+            "access", "권한신청",
+            "etc", "기타결재"
+    );
+
     @Override
-    public HttpResponse<JsonNode> addPage(String writer, String dept, String date, String title, String approval, String details) {
+    public HttpResponse<JsonNode> addPage(String writer, String dept, String date, String title, String approval, String details, String category) {
+        String categoryMap = CATEGORY_MAP.getOrDefault(category, "기타결재");
+
         String url = "https://api.notion.com/v1/pages";
 
         JSONObject parent = new JSONObject();
         parent.put("database_id", database_id);
 
-        JSONObject properties = new JSONObject();
+        Map<String, Object> properties = new HashMap<>();
 
-        JSONArray titleArray = new JSONArray(); // []
-        JSONObject titleContent = new JSONObject(); // {}
-        titleContent.put("text", new JSONObject().put("content", title));
-        titleArray.add(titleContent); // "title":[{"text":{"content": ..}}]
-        properties.put("제목", new JSONObject().put("title", titleArray));
+        // 제목
+        properties.put("제목", Map.of("title",
+                List.of(Map.of("text", Map.of("content", title)))));
 
         // 구분(select 속성)
-        JSONObject selectObject = new JSONObject(); // {}
-        selectObject.put("name", category);
-        properties.put("구분", new JSONObject().put("select", selectObject));
+        properties.put("구분", Map.of("select", Map.of("name", categoryMap)));
 
         // 작성자(text 속성)
-        // page.작성자.rich_text[0].text.content
-        JSONArray writerArray = new JSONArray(); // []
-        JSONObject writerContent = new JSONObject(); // {}
-        writerContent.put("text", new JSONObject().put("content", writer));
-        writerArray.add(writerContent);
-        properties.put("작성자", new JSONObject().put("rich_text", writerArray));
+        properties.put("작성자", Map.of("rich_text",
+                List.of(Map.of("text", Map.of("content", writer)))));
+
+        // 부서 정보(text 속성)
+        properties.put("부서", Map.of("rich_text",
+                List.of(Map.of("text", Map.of("content", dept)))));
 
         // 작성일(현재 날짜)
-        // page.작성일.date.start
-        String dateOnly = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-        JSONObject dateObject = new JSONObject();
-        dateObject.put("start", dateOnly);
-        properties.put("작성일", new JSONObject().put("date", dateObject));
+        properties.put("작성일", Map.of("date", Map.of("start", date)));
+
+        // 상세 내용(text 속성)
+        properties.put("내용", Map.of("rich_text",
+                List.of(Map.of("text", Map.of("content", details)))));
+
+        // 결재자 (Multi-select 타입)
+        String[] approverArray = approval.split(",");
+        List<Map<String, String>> approverOptions = Arrays.stream(approverArray)
+                .map(String::trim)
+                .map(name -> Map.of("name", name))
+                .collect(Collectors.toList());
+        properties.put("결재자", Map.of("multi_select", approverOptions));
 
         // 3. 최종 body
         JSONObject body = new JSONObject(); // {}

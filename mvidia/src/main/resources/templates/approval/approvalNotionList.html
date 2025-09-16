@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>전자결재 문서함</title>
+    <style>
+        /* 개별 카드 스타일 */
+        .innerOuter {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 필터 탭 스타일 (전자결재 폼과 동일) */
+        .filter-tabs {
+            display: flex;
+            border-bottom: 1px solid #dee0ea;
+            padding-bottom: 0;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+        }
+
+        .filter-tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            border-bottom: 3px solid transparent;
+        }
+
+        .filter-tab:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+
+        .filter-tab.active {
+            background-color: #fff;
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+            font-weight: 600;
+        }
+
+        /* 테이블 컨테이너 */
+        .table-container {
+            background: #fff;
+            border: 1px solid #dee0ea;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
+
+        /* 테이블 스타일 */
+        .board-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .board-table thead {
+            background-color: #f8f9fa;
+        }
+
+        .board-table thead th {
+            padding: 15px 12px;
+            text-align: center;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee0ea;
+            font-size: 14px;
+        }
+
+        .board-table tbody td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+            vertical-align: middle;
+        }
+
+        .board-table tbody tr:hover {
+            background-color: #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+
+        .board-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 제목 컬럼 스타일 */
+        .title-col {
+            text-align: left !important;
+            max-width: 300px;
+        }
+
+        .title-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .title-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        /* 상태 배지 */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* 첨부파일 아이콘 */
+        .file-icon {
+            color: #007bff;
+            font-size: 16px;
+        }
+
+        /* 페이징 스타일 */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 5px;
+        }
+
+        .pagination li {
+            display: inline-block;
+        }
+
+        .pagination .page-link {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #e9ecef;
+            color: #007bff;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #adb5bd;
+            pointer-events: none;
+        }
+
+        /* 검색 폼 스타일 */
+        .search-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .search-form select,
+        .search-form input {
+            padding: 8px 12px;
+            border: 1px solid #dde6ec;
+            border-radius: 6px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .search-form select {
+            width: 120px;
+        }
+
+        .search-form input {
+            width: 250px;
+        }
+
+        .search-form select:focus,
+        .search-form input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .search-btn {
+            padding: 8px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: #0056b3;
+        }
+
+        /* 우상단 버튼 */
+        .top-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .btn-new {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-new:hover {
+            background: #218838;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .filter-tabs {
+                flex-wrap: wrap;
+            }
+
+            .filter-tab {
+                flex: 1 1 calc(50% - 5px);
+                margin-bottom: 5px;
+            }
+
+            .board-table {
+                font-size: 12px;
+            }
+
+            .board-table thead th,
+            .board-table tbody td {
+                padding: 8px 6px;
+            }
+
+            .search-form {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .search-form select,
+            .search-form input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="content">
+    <div class="innerOuter">
+        <h3>📝 전자결재 신청</h3>
+        <!-- 필터 탭 -->
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">전체</button>
+            <button class="filter-tab" data-filter="pending">대기중</button>
+            <button class="filter-tab" data-filter="approved">승인</button>
+            <button class="filter-tab" data-filter="rejected">반려</button>
+            <button class="filter-tab" data-filter="my">내 신청서</button>
+        </div>
+
+        <!-- 테이블 컨테이너 -->
+        <div class="table-container">
+            <table class="board-table">
+                <thead>
+                <tr>
+                    <th width="8%">번호</th>
+                    <th width="12%">구분</th>
+                    <th width="35%">제목</th>
+                    <th width="12%">작성자</th>
+                    <th width="12%">결재상태</th>
+                    <th width="12%">작성일</th>
+                    <th width="9%">첨부</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>15</td>
+                    <td>지출결의</td>
+                    <td class="title-col">
+                        <a href="#" class="title-link">사무용품 구매 결재 요청</a>
+                    </td>
+                    <td>정가온</td>
+                    <td><span class="status-badge status-pending">대기중</span></td>
+                    <td>2025-09-16</td>
+                    <td><span class="file-icon">📎</span></td>
+                </tr>
+                <tr>
+                    <td>14</td>
+                    <td>구매요청</td>
+                    <td class="title-col">
+                        <a href="#" class="title-link">노트북 구매 신청</a>
+                    </td>
+                    <td>김직원</td>
+                    <td><span class="status-badge status-approved">승인</span></td>
+                    <td>2025-09-15</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>13</td>
+                    <td>초과근무</td>
+                    <td class="title-col">
+                        <a href="#" class="title-link">프로젝트 완료를 위한 야근 신청</a>
+                    </td>
+                    <td>박대리</td>
+                    <td><span class="status-badge status-approved">승인</span></td>
+                    <td>2025-09-14</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>12</td>
+                    <td>권한신청</td>
+                    <td class="title-col">
+                        <a href="#" class="title-link">ERP 시스템 접근 권한 신청</a>
+                    </td>
+                    <td>이과장</td>
+                    <td><span class="status-badge status-rejected">반려</span></td>
+                    <td>2025-09-13</td>
+                    <td><span class="file-icon">📎</span></td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td>지출결의</td>
+                    <td class="title-col">
+                        <a href="#" class="title-link">고객 접대비 지출 결재</a>
+                    </td>
+                    <td>최팀장</td>
+                    <td><span class="status-badge status-approved">승인</span></td>
+                    <td>2025-09-12</td>
+                    <td><span class="file-icon">📎</span></td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>기타결재</td>
+                    <td class="title-col">
+                        <a href="#" class="title-link">외부 교육 참석 신청</a>
+                    </td>
+                    <td>한주임</td>
+                    <td><span class="status-badge status-pending">대기중</span></td>
+                    <td>2025-09-11</td>
+                    <td></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 페이징 -->
+        <div class="pagination-container">
+            <ul class="pagination">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#">이전</a>
+                </li>
+                <li class="page-item active">
+                    <a class="page-link" href="#">1</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">2</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">3</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">4</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">5</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">다음</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 검색 폼 -->
+        <form class="search-form" method="get">
+            <select name="condition">
+                <option value="writer">작성자</option>
+                <option value="title">제목</option>
+                <option value="content">내용</option>
+            </select>
+            <input type="text" name="keyword" placeholder="검색어를 입력하세요">
+            <button type="submit" class="search-btn">검색</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 필터 탭 전환 기능
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterTabs = document.querySelectorAll('.filter-tab');
+
+        filterTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 모든 탭 비활성화
+                filterTabs.forEach(t => t.classList.remove('active'));
+
+                // 클릭한 탭 활성화
+                this.classList.add('active');
+
+                const filter = this.dataset.filter;
+                console.log('필터 변경:', filter);
+
+                // 여기서 실제 필터링 로직 구현
+                // Ajax로 데이터를 다시 불러오거나 테이블 필터링
+            });
+        });
+    });
+</script>
+</body>
+</html>

@@ -10,218 +10,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MVIDIA · 근태/휴가 관리</title>
     <style>
-        :root{
-            --brand:#002b39;
-            --muted:#6b7c86;
-            --bg:#f5f7f9;
-            --card:#ffffff;
-            --danger:#cc3344;
-            --warn:#f5a623;
-            --radius:14px;
-            --shadow:0 10px 30px rgba(0,0,0,.08);
-        }
-        * { box-sizing: border-box }
-        html,body { height: 100% }
-        body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 "Pretendard",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif }
-        a { color: inherit; text-decoration: none }
-        button { cursor: pointer; border: 0 }
-
-        .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-        .page-title{font-size:20px;margin:0 0 12px 0}
-        .grid2{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:16px}
-        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background-color:#0c197f ;color:#fff}
-        .btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--brand)}
+        .hr-integratedAtt { grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+        .hr-integratedAtt > .widget { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, .1); }
+        .page-title { font-size: 20px; margin: 0 0 12px 0; }
+        .hr-integratedAtt .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+        .hr-integratedAtt .grid2{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:16px}
+        .hr-integratedAtt .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background-color:#0c197f ;color:#fff}
+        .hr-integratedAtt .btn.ghost{background:transparent;color:var(--brand);border:1px solid var(--brand)}
         .table{width:100%;border-collapse:separate;border-spacing:0 8px}
         .table th{font-size:12px;color:#698492;text-align:left;padding:0 10px}
         .table td{background:#fff;padding:12px;border-top:1px solid #e7eef3;border-bottom:1px solid #e7eef3}
-        .stack{display:flex;gap:10px;flex-wrap:wrap}
-        .mt8{margin-top:8px}
-        .mt16{margin-top:16px}
-        .muted{color:var(--muted)}
-        .chip{display:inline-block;padding:4px 8px;border-radius:999px;background:#e7f3f7;color:#07566a;font-size:11px}
-        .card-footer-action{position:absolute;right:12px;bottom:12px; display: inline-block; padding: 8px 16px; text-decoration: none; text-align: center; border-radius: 8px; color: #fff; background-color: #0c197f; transition: background-color 0.3s ease;}
-        .card-footer-action:hover { background-color: #0050be; }
-        .hidden{display:none !important;}
-        .content{padding:18px;}
+        .hr-integratedAtt .chip{display:inline-block;padding:4px 8px;border-radius:999px;background:#e7f3f7;color:#07566a;font-size:11px}
+        .card-header-action {display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;}
+        .card-header-action h3 {margin: 0;}
+        .card-header-action .btn {font-size: 12px; padding: 6px 10px; background-color: #0c197f;}
+        .hr-integratedAtt .hidden{display:none !important;}
+        .hr-integratedAtt #vacationPreview table, .hr-integratedAtt #attendPreview table {width: 100%; border-collapse: collapse;}
+        .hr-integratedAtt #vacationPreview th, .hr-integratedAtt #attendPreview th {text-align: left; padding: 8px 0; font-size: 12px; color: var(--muted);}
+        .hr-integratedAtt #vacationPreview td, .hr-integratedAtt #attendPreview td {padding: 8px 0;}
+        .hr-integratedAtt #vacationPreview tbody tr, .hr-integratedAtt #attendPreview tbody tr {border-bottom: 1px solid #eee;}
+        .hr-integratedAtt #vacationPreview tbody tr:last-child, .hr-integratedAtt #attendPreview tbody tr:last-child {border-bottom: none;}
     </style>
 </head>
 <body>
-<div class="content">
-    <section id="page-hr-attendance" class="card">
-        <h2 class="page-title">근태/휴가 통합 관리</h2>
+<div class="hr-integratedAtt">
+    <h2 class="page-title">⏰ 근태/휴가 통합 관리</h2>
+    <div class="widget" id="home">
         <div class="grid2 mt8">
             <div class="card" style="position:relative">
-                <h3 style="margin:0 0 8px">휴가 신청 (최근 5건)</h3>
-                <div id="vacationPreview"></div>
-                <a class="btn card-footer-action" href="/hr/vacationList.hr">정보 더보기</a>
+                <div class="card-header-action">
+                    <h3 style="margin:0 0 8px">휴가 신청 (최근 5건)</h3>
+                    <a class="btn card-footer-action" href="/hr/vacationList.hr">정보 더보기</a>
+                </div>
+                <div id="vacationPreview">
+                    <table class="preview-table">
+                        <thead>
+                        <tr>
+                            <th>사번</th>
+                            <th>이름</th>
+                            <th>종류</th>
+                            <th>기간</th>
+                            <th>상태</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="card" style="position:relative">
-                <h3 style="margin:0 0 8px">근태 정보 (최근 5건)</h3>
-                <div id="attendPreview"></div>
-                <a class="btn card-footer-action" href="/hr/attendanceList.hr">정보 더보기</a>
+                <div class="card-header-action">
+                    <h3 style="margin:0 0 8px">근태 정보 (최근 5건)</h3>
+                    <a class="btn card-footer-action" href="/hr/attendanceList.hr">정보 더보기</a>
+                </div>
+                <div id="attendPreview">
+                    <table class="preview-table">
+                        <thead>
+                        <tr>
+                            <th>사번</th>
+                            <th>이름</th>
+                            <th>일자</th>
+                            <th>출근</th>
+                            <th>퇴근</th>
+                            <th>상태</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </section>
-
-    <section id="page-hr-vacations" class="card hidden">
-        <h2 class="page-title">휴가 신청 목록</h2>
-        <div class="stack">
-            <a class="btn ghost" href="/hr/attendance.hr">↩ 통합 관리</a>
-        </div>
-        <table class="table mt16">
-            <thead><tr><th>#</th><th>사번</th><th>이름</th><th>종류</th><th>기간</th><th>상태</th><th>조치</th></tr></thead>
-            <tbody id="vacationList"></tbody>
-        </table>
-        <div class="stack mt8" id="vacationPager"></div>
-    </section>
-
-    <section id="page-hr-attend-list" class="card hidden">
-        <h2 class="page-title">근태 목록</h2>
-        <div class="stack">
-            <a class="btn ghost" href="/hr/attendance.hr">↩ 통합 관리</a>
-        </div>
-        <table class="table mt16">
-            <thead><tr><th>#</th><th>사번</th><th>이름</th><th>일자</th><th>출근</th><th>퇴근</th><th>상태</th><th>조치</th></tr></thead>
-            <tbody id="attendList"></tbody>
-        </table>
-    </section>
+    </div>
 </div>
-
 <script>
-    // 페이지 로드 시 AJAX 호출
     $(document).ready(function() {
-        // 최근 5건 데이터 로딩 함수 호출
         fetchRecentVacations();
         fetchRecentAttendances();
-
-        // 라우팅 로직은 그대로 유지 (다른 페이지 이동을 위해)
-        //handleRouting();
     });
 
-    // 최근 휴가 신청 5건을 AJAX로 가져오는 함수
+    // 최근 휴가 신청 5건을 AJAX로 가져와 테이블에 삽입하는 함수
     function fetchRecentVacations() {
         $.ajax({
-            url: '/hr/vacations/recent5', // 이 URL은 백엔드에 새로 만들어야 합니다.
+            url: '/hr/vacations/recent5',
             type: 'GET',
             success: function(response) {
-                const vwrap = $('#vacationPreview');
-                vwrap.empty();
+                const tbody = $('#vacationPreview tbody');
+                tbody.empty();
                 if (response.length > 0) {
                     response.forEach(vac => {
-                        vwrap.append(`<div class="mt8">${vac.id}. ${vac.name} (${vac.empNo}) · ${vac.type} · ${vac.start.substring(5)}~${vac.end.substring(5)} · <span class="chip">${vac.status}</span></div>`);
+                        const row = `
+                            <tr>
+                                <td>${vac.empNo}</td>
+                                <td>${vac.empName}</td>
+                                <td>${vac.vaName}</td>
+                                <td>${vac.vaStart}~${vac.vaEnd}</td>
+                                <td><span class="chip">${vac.vaStatusName}</span></td>
+                            </tr>
+                        `;
+                        tbody.append(row);
                     });
                 } else {
-                    vwrap.html('<div class="muted">신청 내역이 없어요.</div>');
+                    const emptyRow = `<tr><td colspan="4" class="muted" style="text-align: center;">신청 내역이 없어요.</td></tr>`;
+                    tbody.append(emptyRow);
                 }
             },
             error: function(xhr) {
                 console.error("최근 휴가 신청 목록을 불러오는 데 실패했습니다: ", xhr.responseText);
+                const tbody = $('#vacationPreview tbody');
+                tbody.html(`<tr><td colspan="4" class="muted" style="text-align: center;">데이터 로드 실패</td></tr>`);
             }
         });
     }
 
-    // 최근 근태 기록 5건을 AJAX로 가져오는 함수
+    // 최근 근태 기록 5건을 AJAX로 가져와 테이블에 삽입하는 함수
     function fetchRecentAttendances() {
         $.ajax({
-            url: '/hr/attendances/recent5', // 이 URL도 백엔드에 새로 만들어야 합니다.
+            url: '/hr/attendances/recent5',
             type: 'GET',
             success: function(response) {
-                const awrap = $('#attendPreview');
-                awrap.empty();
+                const tbody = $('#attendPreview tbody');
+                tbody.empty();
                 if (response.length > 0) {
                     response.forEach(attend => {
-                        awrap.append(`<div class="mt8">${attend.id}. ${attend.name} (${attend.empNo}) · ${attend.date.substring(5)} · ${attend.in}~${attend.out} · <span class="chip">${attend.state}</span></div>`);
+                        const row = `
+                            <tr>
+                                <td>${attend.empNo}</td>
+                                <td>${attend.empName}</td>
+                                <td>${attend.attDate}</td>
+                                <td>${attend.arrivingTime || '-'}</td>
+                                <td>${attend.leavingTime || '-'}</td>
+                                <td><span class="chip">${attend.attStatusName}</span></td>
+                            </tr>
+                        `;
+                        tbody.append(row);
                     });
                 } else {
-                    awrap.html('<div class="muted">근태 내역이 없어요.</div>');
+                    const emptyRow = `<tr><td colspan="5" class="muted" style="text-align: center;">근태 내역이 없어요.</td></tr>`;
+                    tbody.append(emptyRow);
                 }
             },
             error: function(xhr) {
                 console.error("최근 근태 기록을 불러오는 데 실패했습니다: ", xhr.responseText);
+                const tbody = $('#attendPreview tbody');
+                tbody.html(`<tr><td colspan="5" class="muted" style="text-align: center;">데이터 로드 실패</td></tr>`);
             }
         });
     }
 
-    // 이하 createVacationList, createAttendList 함수 등은 이전과 동일합니다.
-    function createVacationList(vacations) {
-        const vacationListBody = $('#vacationList');
-        vacationListBody.empty();
-        vacations.forEach(vac => {
-            vacationListBody.append(`
-                <tr>
-                    <td>${vac.id}</td>
-                    <td>${vac.empNo}</td>
-                    <td>${vac.name}</td>
-                    <td>${vac.type}</td>
-                    <td>${vac.start} ~ ${vac.end}</td>
-                    <td>${vac.status}</td>
-                    <td><button class="btn approve-btn" data-id="${vac.id}">승인</button> <button class="btn danger reject-btn" data-id="${vac.id}">반려</button></td>
-                </tr>
-            `);
-        });
-    }
-
-    function createAttendList(attendances) {
-        const attendListBody = $('#attendList');
-        attendListBody.empty();
-        attendances.forEach(attend => {
-            attendListBody.append(`
-                <tr>
-                    <td>${attend.id}</td>
-                    <td>${attend.empNo}</td>
-                    <td>${attend.name}</td>
-                    <td>${attend.date}</td>
-                    <td>${attend.in}</td>
-                    <td>${attend.out}</td>
-                    <td>
-                        <select class="status-select" data-original-status="${attend.state}" data-id="${attend.id}">
-                            <option value="정상" ${attend.state === '정상' ? 'selected' : ''}>정상</option>
-                            <option value="지각" ${attend.state === '지각' ? 'selected' : ''}>지각</option>
-                            <option value="결근" ${attend.state === '결근' ? 'selected' : ''}>결근</option>
-                            <option value="야근" ${attend.state === '야근' ? 'selected' : ''}>야근</option>
-                            <option value="휴가" ${attend.state === '휴가' ? 'selected' : ''}>휴가</option>
-                            <option value="조퇴" ${attend.state === '조퇴' ? 'selected' : ''}>조퇴</option>
-                        </select>
-                    </td>
-                    <td>
-                        <button class="btn ghost hidden cancel-btn" data-id="${attend.id}">변경 취소</button>
-                    </td>
-                </tr>
-            `);
-        });
-
-        $('.status-select').on('change', function() {
-            const rowId = $(this).data('id');
-            $(`.cancel-btn[data-id="${rowId}"]`).removeClass('hidden');
-        });
-
-        $('.cancel-btn').on('click', function() {
-            const rowId = $(this).data('id');
-            const selectElement = $(`.status-select[data-id="${rowId}"]`);
-            const originalStatus = selectElement.data('original-status');
-
-            selectElement.val(originalStatus);
-            $(this).addClass('hidden');
-        });
-    }
-
-    // 라우팅 로직 (참고용으로 남겨둠)
-    const views = {
-        '#/hr/attendance': 'page-hr-attendance',
-        '#/hr/attendance/vacations': 'page-hr-vacations',
-        '#/hr/attendance/records': 'page-hr-attend-list'
-    };
-    function handleRouting() {
-        const hash = window.location.hash || '#/hr/attendance';
-        const targetViewId = views[hash];
-        for (const view in views) {
-            $(`#${views[view]}`).addClass('hidden');
-        }
-        if (targetViewId) {
-            $(`#${targetViewId}`).removeClass('hidden');
-        }
-    }
-    window.onhashchange = handleRouting;
 </script>
 </body>
 </html>

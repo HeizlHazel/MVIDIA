@@ -23,7 +23,7 @@
         .job-group { grid-column: 1 / -1; margin-top: 10px; }
         .job-group h3 { margin: 0; padding-bottom: 5px; border-bottom: 2px solid #ddd; }
         .job-group .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
-         .card-footer-action:hover {color: #0056b3;}
+        .card-footer-action:hover {color: #0056b3;}
     </style>
 </head>
 <body>
@@ -117,7 +117,7 @@
     const defaultProfile = '/images/default_profile.png';
     const profileImg = emp.changeName ? `/uploadFiles/${emp.changeName}` : defaultProfile;
         return `
-            <div class="card" style="position: relative;">
+            <div class="card" style="position: relative; border-radius:10px">
                 <div style="display: flex; gap: 12px; align-items: center;">
                     <img src="${profileImg}" alt="profile" style="width: 54px; height: 54px; border-radius: 14px; object-fit: cover; background: #e1e9ee;" />
                     <div style="display: flex; flex-direction: column;">

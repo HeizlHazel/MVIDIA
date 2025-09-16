@@ -8,6 +8,10 @@ import com.kh.mvidia.common.model.vo.Department;
 import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.service.EmployeeService;
 import com.kh.mvidia.employee.model.vo.Employee;
+import com.kh.mvidia.integratedAtt.model.service.AttendanceService;
+import com.kh.mvidia.integratedAtt.model.service.VacationService;
+import com.kh.mvidia.integratedAtt.model.vo.Attendance;
+import com.kh.mvidia.integratedAtt.model.vo.Vacation;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +36,12 @@ public class HrController {
 	
 	@Autowired
 	private EmployeeService empService;
+	
+	@Autowired
+	private AttendanceService attService;
+	
+	@Autowired
+	private VacationService vaService;
 	
 	@GetMapping("/hrMainPage")
 	public String hrMainPage(){
@@ -213,7 +223,7 @@ public class HrController {
 		return response;
 	}
 	
-	@GetMapping("/integrated")
+	@GetMapping("/integrated.hr")
 	public String integratedPage(){
 		return "/hr/integratedPage";
 	}
@@ -242,6 +252,38 @@ public class HrController {
 		model.addAttribute("emp", emp);
 		return "hr/accountEmpDetail.hr";
 	}
+	
+	@GetMapping("/integratedAttendance.hr")
+	public String integratedAttendancePage(){
+		return "hr/integratedAttendancePage";
+	}
+	
+	@ResponseBody
+	@GetMapping("/vacations/recent5")
+	public ArrayList<Vacation> getRecentVacations(){
+		return vaService.selectRecentVacations();
+	}
+	
+	@ResponseBody
+	@GetMapping("/attendances/recent5")
+	public ArrayList<Attendance> getRecentAttendance(){
+		return attService.selectRecentAttendances();
+	}
+	
+	@GetMapping("/vacationList.hr")
+	public String vacationListPage(Model model){
+		ArrayList<Vacation> vaList = vaService.selectVacationList();
+		model.addAttribute("vaList", vaList);
+		return "/hr/vacationListPage";
+	}
+	
+	@GetMapping("/attendanceList.hr")
+	public String attendanceListPage(Model model){
+		ArrayList<Attendance> attList = attService.selectAttendanceList();
+		model.addAttribute("attList", attList);
+		return "/hr/attendanceListPage";
+	}
+	
 	
 	@ResponseBody
 	@GetMapping("/checkEmpNo.hr")

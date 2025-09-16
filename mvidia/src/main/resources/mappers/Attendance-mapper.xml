@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="attendanceMapper">
+    <resultMap id="attendanceResultSet" type="Attendance">
+        <result column="att_no" property="attNo"/>
+        <result column="emp_no" property="empNo"/>
+        <result column="emp_name" property="empName"/>
+        <result column="att_date" property="attDate"/>
+        <result column="arriving_time" property="arrivingTime"/>
+        <result column="leaving_time" property="leavingTime"/>
+        <result column="att_status" property="attStatus"/>
+        <result column="status_name" property="attStatusName"/>
+    </resultMap>
+
+    <select id="selectRecentAttendances" resultMap="attendanceResultSet">
+        select *
+          from (
+                 select
+                        att_no
+                      , emp_no
+                      , emp_lname || emp_name as "emp_name"
+                      , to_char(att_date, 'YYYY-MM-DD') as "att_date"
+                      , to_char(arriving_time, 'HH24:MI') as "arriving_time"
+                      , to_char(leaving_time, 'HH24:MI') as "leaving_time"
+                      , att_status
+                      , status_name
+                   from tb_attendance
+                   join tb_employee using (emp_no)
+                   join tb_status on (att_status = status_code)
+                  order
+                     by att_no desc
+                )
+        where rownum &lt;= 5
+    </select>
+
+
+
+
+</mapper>

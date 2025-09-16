@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="vacationMapper">
+    <resultMap id="vacationResultSet" type="Vacation">
+        <result column="va_id" property="vaId"/>
+        <result column="emp_no" property="empNo"/>
+        <result column="emp_name" property="empName"/>
+        <result column="auth_no" property="authNo"/>
+        <result column="emp_name" property="authName"/>
+        <result column="va_category" property="vaCategory"/>
+        <result column="va_name" property="vaName"/>
+        <result column="va_start" property="vaStart"/>
+        <result column="va_end" property="vaEnd"/>
+        <result column="va_reason" property="vaReason"/>
+        <result column="alter_emp" property="alterEmp"/>
+        <result column="emp_name" property="alterEmpName"/>
+        <result column="va_status" property="vaStatus"/>
+        <result column="status_name" property="vaStatusName"/>
+    </resultMap>
+
+    <select id="selectRecentVacations" resultMap="vacationResultSet">
+        select *
+          from (
+                 select
+                        va_id
+                      , emp_no
+                      , emp_lname || emp_name as "emp_name"
+                      , va_category
+                      , va_name
+                      , to_char(va_start, 'YYYY-MM-DD') as "va_start"
+                      , to_char(va_end, 'YYYY-MM-DD') as "va_end"
+                      , va_status
+                      , status_name
+                   from tb_vacation
+                   join tb_employee using (emp_no)
+                   join tb_vacation_type using (va_category)
+                   join tb_status on (va_status = status_code)
+                  order
+                     by va_id desc
+                )
+         where rownum &lt;= 5
+    </select>
+
+    <select id="selectVacationList" resultMap="vacataionResultSet">
+        select
+                va_id
+              , emp_no
+              , emp_lname || emp_name as "emp_name"
+              , va_category
+              , va_name
+              , to_char(va_start, 'YYYY-MM-DD') as "va_start"
+              , to_char(va_end, 'YYYY-MM-DD') as "va_end"
+              , va_status
+              , status_name
+              from tb_vacation
+              join tb_employee using (emp_no)
+              join tb_vacation_type using (va_category)
+              join tb_status on (va_status = status_code)
+          order
+             by va_id desc
+    </select>
+
+
+
+</mapper>

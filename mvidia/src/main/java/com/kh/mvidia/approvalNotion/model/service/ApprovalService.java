@@ -10,5 +10,5 @@ public interface ApprovalService {
     public String getDatabase();
 
     // 전자결재 등록(노션 연동)
-    HttpResponse<JsonNode> addPage(String applyWriter, String applyDept, String applyDate, String applyTitle, String approval, String details);
+    HttpResponse<JsonNode> addPage(String applyWriter, String applyDept, String applyDate, String applyTitle, String approval, String details, String category);
 }

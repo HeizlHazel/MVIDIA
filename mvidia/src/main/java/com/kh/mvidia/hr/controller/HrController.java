@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kh.mvidia.common.model.vo.Attachment;
 import com.kh.mvidia.common.model.vo.Department;
 import com.kh.mvidia.common.model.vo.EmpModifyReq;
+import com.kh.mvidia.common.model.vo.PageInfo;
+import com.kh.mvidia.common.template.Pagination;
 import com.kh.mvidia.employee.model.service.EmployeeService;
 import com.kh.mvidia.employee.model.vo.Employee;
 import com.kh.mvidia.integratedAtt.model.service.AttendanceService;
@@ -271,17 +273,104 @@ public class HrController {
 	}
 	
 	@GetMapping("/vacationList.hr")
-	public String vacationListPage(Model model){
-		ArrayList<Vacation> vaList = vaService.selectVacationList();
+	public String vacationListPage(Model model,
+								   @RequestParam(value="cpage", defaultValue = "1") int currentPage,
+								   @RequestParam(value = "keyword", required = false) String keyword,
+								   @RequestParam(value = "status", required = false) String status,
+								   @RequestParam(value = "type", required = false) String type){
+		
+		HashMap<String, String> searchMap = new HashMap<>();
+		searchMap.put("keyword", keyword);
+		searchMap.put("status", status);
+		searchMap.put("type", type);
+		
+		int listCount = vaService.selectVaListCount(searchMap);
+		int pageLimit = 10;
+		int boardLimit = 15;
+		PageInfo pi = Pagination.getPageInfo(listCount, currentPage, pageLimit, boardLimit);
+		
+		int startRow = (pi.getCurrentPage() - 1) * pi.getBoardLimit() + 1;
+		int endRow   = startRow + pi.getBoardLimit() - 1;
+		pi.setStartRow(startRow);
+		pi.setEndRow(endRow);
+		
+		ArrayList<Vacation> vaList = vaService.selectVacationList(pi, searchMap);
 		model.addAttribute("vaList", vaList);
+		model.addAttribute("pi", pi);
 		return "/hr/vacationListPage";
 	}
 	
+	@PostMapping("/vacations/update")
+	@ResponseBody
+	public Map<String, Object> updateVacationStatus(@RequestParam String vaId, @RequestParam String vaStatus, @RequestParam String vaCategory) {
+		Map<String, Object> response = new HashMap<>();
+		Vacation va = new Vacation();
+		va.setVaId(vaId);
+		va.setVaStatus(vaStatus);
+		va.setVaCategory(vaCategory);
+		
+		int result = vaService.updateVacation(va);
+		
+		if (result > 0) {
+			response.put("success", true);
+			response.put("message", "휴가 정보가 업데이트되었습니다.");
+		} else {
+			response.put("success", false);
+			response.put("message", "업데이트에 실패했습니다.");
+		}
+		return response;
+	}
+	
 	@GetMapping("/attendanceList.hr")
-	public String attendanceListPage(Model model){
-		ArrayList<Attendance> attList = attService.selectAttendanceList();
+	public String attendanceListPage(Model model,
+									 @RequestParam(value = "cpage", defaultValue = "1") int currentPage,
+									 @RequestParam(value = "keyword", required = false) String keyword,
+									 @RequestParam(value = "status", required = false) String status){
+		
+		HashMap<String, String> searchMap = new HashMap<>();
+		searchMap.put("keyword", keyword);
+		searchMap.put("status", status);
+		
+		int listCount = attService.selectAttListCount(searchMap);
+		int pageLimit = 10;
+		int boardLimit = 15;
+		PageInfo pi = Pagination.getPageInfo(listCount, currentPage, pageLimit, boardLimit);
+		
+		int startRow = (pi.getCurrentPage() - 1) * pi.getBoardLimit() + 1;
+		int endRow   = startRow + pi.getBoardLimit() - 1;
+		pi.setStartRow(startRow);
+		pi.setEndRow(endRow);
+		
+		ArrayList<Attendance> attList = attService.selectAttendanceList(pi, searchMap);
+		
 		model.addAttribute("attList", attList);
+		model.addAttribute("pi", pi);
 		return "/hr/attendanceListPage";
+	}
+	
+	@PostMapping("/attendances/update")
+	@ResponseBody
+	public Map<String, Object> updateAttendanceStatus(@RequestParam String attNo,
+													  @RequestParam String attStatus,
+													  @RequestParam String arrivingTime,
+													  @RequestParam String leavingTime) {
+		Map<String, Object> response = new HashMap<>();
+		Attendance att = new Attendance();
+		att.setAttNo(attNo);
+		att.setAttStatus(attStatus);
+		att.setArrivingTime(arrivingTime);
+		att.setLeavingTime(leavingTime);
+		
+		int result = attService.updateAttendance(att);
+		
+		if (result > 0) {
+			response.put("success", true);
+			response.put("message", "근태 정보가 업데이트되었습니다.");
+		} else {
+			response.put("success", false);
+			response.put("message", "업데이트에 실패했습니다.");
+		}
+		return response;
 	}
 	
 	

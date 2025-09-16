@@ -41,24 +41,67 @@
          where rownum &lt;= 5
     </select>
 
-    <select id="selectVacationList" resultMap="vacataionResultSet">
-        select
-                va_id
-              , emp_no
-              , emp_lname || emp_name as "emp_name"
-              , va_category
-              , va_name
-              , to_char(va_start, 'YYYY-MM-DD') as "va_start"
-              , to_char(va_end, 'YYYY-MM-DD') as "va_end"
-              , va_status
-              , status_name
-              from tb_vacation
-              join tb_employee using (emp_no)
-              join tb_vacation_type using (va_category)
-              join tb_status on (va_status = status_code)
-          order
-             by va_id desc
+    <select id="selectVaListCount" resultType="_int">
+        select count(*)
+          from tb_vacation
+          join tb_employee using (emp_no)
+          join tb_vacation_type using (va_category)
+          join tb_status on (va_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="keyword != null and keyword != ''">
+                and (emp_no like '%' || #{keyword} || '%' or emp_name like '%' || #{keyword} || '%' or va_reason like '%' || #{keyword} || '%')
+            </if>
+            <if test="status != null and status != ''">
+                and va_status = #{status}
+            </if>
+            <if test="type != null and type != ''">
+                and va_category = #{type}
+            </if>
+        </trim>
     </select>
+
+    <select id="selectVacationList" resultMap="vacationResultSet">
+        select *
+          from (
+                 select rownum rnum, a.*
+                   from (
+                          select
+                                 va_id
+                               , emp_no
+                               , emp_lname || emp_name as "emp_name"
+                               , va_category
+                               , va_name
+                               , to_char(va_start, 'YYYY-MM-DD') as "va_start"
+                               , to_char(va_end, 'YYYY-MM-DD') as "va_end"
+                               , va_status
+                               , status_name
+                            from tb_vacation
+                            join tb_employee using (emp_no)
+                            join tb_vacation_type using (va_category)
+                            join tb_status on (va_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="searchMap.keyword != null and searchMap.keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_name like '%' || #{searchMap.keyword} || '%' or va_reason like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="searchMap.status != null and searchMap.status != ''">
+                and va_status = #{searchMap.status}
+            </if>
+            <if test="searchMap.type != null and searchMap.type != ''">
+                and va_category = #{searchMap.type}
+            </if>
+        </trim>
+                            order by va_id desc
+                        ) a
+            )
+         where rnum between #{pi.startRow} and #{pi.endRow}
+    </select>
+
+    <update id="updateVacation">
+        update tb_vacation
+            set va_status = #{vaStatus}, va_category = #{vaCategory}
+         where va_id = #{vaId}
+    </update>
+
 
 
 

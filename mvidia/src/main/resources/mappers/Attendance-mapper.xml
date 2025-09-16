@@ -33,6 +33,59 @@
         where rownum &lt;= 5
     </select>
 
+    <select id="selectAttListCount" resultType="_int">
+        select count(*)
+          from tb_attendance
+          join tb_employee using (emp_no)
+          join tb_status on (att_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="keyword != null and keyword != ''">
+                and (emp_no like '%' || #{keyword} || '%' or emp_name like '%' || #{keyword} || '%')
+            </if>
+            <if test="status != null and status != ''">
+                and att_status = #{status}
+            </if>
+        </trim>
+    </select>
+
+    <select id="selectAttendanceList" resultMap="attendanceResultSet">
+        select *
+          from (
+                 select rownum rnum, a.*
+                   from (
+                          select
+                                 att_no
+                               , emp_no
+                               , emp_lname || emp_name as "emp_name"
+                               , to_char(att_date, 'YYYY-MM-DD') as "att_date"
+                               , to_char(arriving_time, 'HH24:MI') as "arriving_time"
+                               , to_char(leaving_time, 'HH24:MI') as "leaving_time"
+                               , att_status
+                               , status_name
+                            from tb_attendance
+                            join tb_employee using (emp_no)
+                            join tb_status on (att_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="searchMap.keyword != null and searchMap.keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_name like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="searchMap.status != null and searchMap.status != ''">
+                and att_status = #{searchMap.status}
+            </if>
+        </trim>
+                           order by att_no desc
+                         ) a
+            )
+         where rnum between #{pi.startRow} and #{pi.endRow}
+    </select>
+
+    <update id="updateAttendance">
+        update tb_attendance
+            set att_status = #{attStatus}
+              , arriving_time = to_date(#{arrivingTime}, 'HH24:MI')
+              , leaving_time = to_date(#{leavingTime}, 'HH24:MI')
+         where att_no = #{attNo}
+    </update>
 
 
 

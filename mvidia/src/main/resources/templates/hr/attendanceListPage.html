@@ -7,19 +7,174 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>근태 목록</title>
+    <style>
+        .hr-Attendance { grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+        .hr-Attendance > .widget { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, .1); }
+        .page-title { font-size: 20px; margin: 0 0 12px 0; }
+        .search-container { display: flex; align-items: center; margin-bottom: 15px; }
+        .search-container input, .search-container select { padding: 8px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px; }
+        .search-container button { padding: 8px 12px; border: none; border-radius: 5px; background-color: #0c197f; color: #fff; cursor: pointer; }
+        .action-buttons { display: none; }
+        .hr-Attendance .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background-color: #0c197f; color: #fff; }
+        .hr-Attendance .btn:hover { background: #0050be; color: #fff; }
+        .hr-Attendance .ghost {display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; margin-bottom:5px; border-radius: 12px; background: transparent; color: #002B39; border: 1px solid #002B39; text-decoration:none; }
+        .hr-Attendance .ghost:hover { background: #e7f3f7; }
+        .hr-Attendance .att-cancel-btn {display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; margin-left: 5px; }
+        .hr-Attendance .att-cancel-btn:hover { background: #e7f3f7; }
+        .time-input {width: 80px; padding: 4px; border: 1px solid #ccc; border-radius: 5px;}
+    </style>
 </head>
 <body>
-<div id="page-hr-vacations" class="card hidden">
-    <h2 class="page-title">휴가 신청 목록</h2>
-    <div class="stack">
-        <a class="btn ghost" href="/hr/attendance.hr">↩ 통합 관리</a>
+<div class="hr-Attendance">
+    <h2 class="page-title">📑 근태 목록</h2>
+    <div class="widget" id="home">
+        <div class="stack">
+            <a class="ghost" href="/hr/integratedAttendance.hr">↩ 통합 관리페이지로</a>
+        </div>
+
+        <div class="search-container">
+            <input type="text" id="attendanceSearchKeyword" placeholder="사번, 이름">
+            <select id="attendanceSearchStatus">
+                <option value="">상태 전체</option>
+                <option value="N">정상</option>
+                <option value="T">지각</option>
+                <option value="B">결근</option>
+                <option value="E">조퇴</option>
+                <option value="V">휴가</option>
+                <option value="O">야근</option>
+            </select>
+            <button id="attendanceSearchBtn">검색</button>
+        </div>
+
+        <table class="table mt16">
+            <thead><tr><th>#</th><th>사번</th><th>이름</th><th>일자</th><th>출근</th><th>퇴근</th><th>상태</th><th>조치</th></tr></thead>
+            <tbody id="attendList">
+            <tr th:if="${#lists.isEmpty(attList)}">
+                <td colspan="8" style="text-align: center;">조회된 근태 내역이 없습니다.</td>
+            </tr>
+            <tr th:unless="${#lists.isEmpty(attList)}" th:each="att : ${attList}">
+                <td th:text="${attStat.count}"></td>
+                <td th:text="${att.empNo}"></td>
+                <td th:text="${att.empName}"></td>
+                <td th:text="${att.attDate}"></td>
+                <td>
+                    <input type="time" class="att-arriving-input time-input"
+                           th:value="${att.arrivingTime}" th:data-original-arriving="${att.arrivingTime}">
+                </td>
+                <td>
+                    <input type="time" class="att-leaving-input time-input"
+                           th:value="${att.leavingTime}" th:data-original-leaving="${att.leavingTime}">
+                </td>
+                <td>
+                    <select class="att-status-select" th:data-original-status="${att.attStatus}">
+                        <option value="N" th:selected="${att.attStatus eq 'N'}">정상</option>
+                        <option value="T" th:selected="${att.attStatus eq 'T'}">지각</option>
+                        <option value="B" th:selected="${att.attStatus eq 'B'}">결근</option>
+                        <option value="E" th:selected="${att.attStatus eq 'E'}">조퇴</option>
+                        <option value="V" th:selected="${att.attStatus eq 'V'}">휴가</option>
+                        <option value="O" th:selected="${att.attStatus eq 'O'}">야근</option>
+                    </select>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="att-update-btn btn" th:data-id="${att.attNo}">변경</button>
+                        <button class="att-cancel-btn" th:data-id="${att.attNo}">취소</button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="stack mt8" id="attendancePager" th:if="${pi.listCount > 0}">
+            <a th:href="@{/hr/attendanceList.hr(cpage=${pi.currentPage-1})}" th:if="${pi.currentPage > 1}">&lt;</a>
+            <span th:each="p : ${#numbers.sequence(pi.startPage, pi.endPage)}">
+                <a th:href="@{/hr/attendanceList.hr(cpage=${p})}" th:text="${p}" th:class="${pi.currentPage eq p ? 'active' : ''}"></a>
+            </span>
+            <a th:href="@{/hr/attendanceList.hr(cpage=${pi.currentPage+1})}" th:if="${pi.currentPage < pi.maxPage}">&gt;</a>
+        </div>
     </div>
-    <table class="table mt16">
-        <thead><tr><th>#</th><th>사번</th><th>이름</th><th>종류</th><th>기간</th><th>상태</th><th>조치</th></tr></thead>
-        <tbody id="vacationList"></tbody>
-    </table>
-    <div class="stack mt8" id="vacationPager"></div>
-</d>
+</div>
+<script th:inline="javascript">
+    const contextPath = [[@{/}]];
+
+    // 값 변경 감지 및 버튼 표시
+    $(document).on('change', '.att-status-select, .att-arriving-input, .att-leaving-input', function() {
+        const row = $(this).closest('tr');
+        const statusSelect = row.find('.att-status-select');
+        const arrivingInput = row.find('.att-arriving-input');
+        const leavingInput = row.find('.att-leaving-input');
+
+        // 원본 값과 현재 값이 다르면 버튼 표시
+        if (statusSelect.val() !== statusSelect.data('original-status') ||
+            arrivingInput.val() !== arrivingInput.data('original-arriving') ||
+            leavingInput.val() !== leavingInput.data('original-leaving')) {
+            row.find('.action-buttons').css('display', 'flex');
+        } else {
+            row.find('.action-buttons').css('display', 'none');
+        }
+    });
+
+    // 취소 버튼 클릭 시
+    $(document).on('click', '.att-cancel-btn', function() {
+        const row = $(this).closest('tr');
+        const statusSelect = row.find('.att-status-select');
+        const arrivingInput = row.find('.att-arriving-input');
+        const leavingInput = row.find('.att-leaving-input');
+
+        // 원래 값으로 되돌리기
+        statusSelect.val(statusSelect.data('original-status'));
+        arrivingInput.val(arrivingInput.data('original-arriving'));
+        leavingInput.val(leavingInput.data('original-leaving'));
+
+        // 버튼 숨기기
+        row.find('.action-buttons').css('display', 'none');
+    });
+
+    // 변경 버튼 클릭 시
+    $(document).on('click', '.att-update-btn', function() {
+        const attNo = $(this).data('id');
+        const row = $(this).closest('tr');
+        const newStatus = row.find('.att-status-select').val();
+        const newArriving = row.find('.att-arriving-input').val();
+        const newLeaving = row.find('.att-leaving-input').val();
+
+        // 출근 시간, 퇴근 시간, 상태 값을 함께 전달
+        $.ajax({
+            url: contextPath + 'hr/attendances/update',
+            type: 'POST',
+            data: {
+                attNo: attNo,
+                attStatus: newStatus,
+                arrivingTime: newArriving,
+                leavingTime: newLeaving
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('근태 정보가 성공적으로 변경되었습니다.');
+                    // 원본 데이터 업데이트
+                    row.find('.att-status-select').data('original-status', newStatus);
+                    row.find('.att-arriving-input').data('original-arriving', newArriving);
+                    row.find('.att-leaving-input').data('original-leaving', newLeaving);
+                    row.find('.action-buttons').css('display', 'none');
+                } else {
+                    alert('근태 정보 변경에 실패했습니다: ' + response.message);
+                }
+            },
+            error: function(xhr) {
+                console.error("업데이트 실패: ", xhr.responseText);
+                alert('서버 오류로 업데이트에 실패했습니다.');
+            }
+        });
+    });
+
+    // 검색 버튼 클릭 시
+    $('#attendanceSearchBtn').on('click', function() {
+        const keyword = $('#attendanceSearchKeyword').val();
+        const status = $('#attendanceSearchStatus').val();
+
+        window.location.href = contextPath + 'hr/attendanceList.hr?cpage=1&keyword=' + encodeURIComponent(keyword) + '&status=' + encodeURIComponent(status);
+    });
+</script>
 </body>
 </html>

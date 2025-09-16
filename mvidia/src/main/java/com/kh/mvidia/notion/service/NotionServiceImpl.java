@@ -11,7 +11,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -52,6 +51,14 @@ public class NotionServiceImpl implements NotionService {
         builder.useFastMode();
         builder.withHtmlContent(html, null);
         builder.toStream(outputStream);
+
+        builder.useFont(
+                () -> getClass().getResourceAsStream("/fonts/malgun.ttf"),
+                "Malgun Gothic"
+        );
+
+        builder.useDefaultPageSize(210, 297, PdfRendererBuilder.PageSizeUnits.MM);
+
         builder.run();
 
         return outputStream.toByteArray();
@@ -63,10 +70,11 @@ public class NotionServiceImpl implements NotionService {
             // 1. PDF 생성
             byte[] pdfBytes = generateSalaryPdf(salary, taxList);
 
-            // 2. 단계별 파일 업로드 과정
-            String pageId = createNotionPage(salary);           // 페이지 생성
-            String fileUploadId = uploadFileToNotion(pdfBytes, salary); // 파일 업로드
-            updatePageWithFile(pageId, fileUploadId, salary);    // 페이지에 파일 연결
+            // 2. 파일 업로드
+            String fileUploadId = uploadFileToNotion(pdfBytes, salary);
+
+            // 3. 첨부파일과 함께 페이지 생성 (한 번에 처리)
+            createNotionPageWithFile(salary, fileUploadId);
 
             System.out.println("✅ Notion에 급여명세서 업로드 완료!");
 
@@ -76,8 +84,8 @@ public class NotionServiceImpl implements NotionService {
         }
     }
 
-    // Step 1: 첨부파일 없이 Notion 페이지 생성
-    private String createNotionPage(Salary salary) {
+    // 파일 업로드 후 첨부파일과 함께 페이지 생성
+    private String createNotionPageWithFile(Salary salary, String fileUploadId) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + notionToken);
@@ -107,19 +115,30 @@ public class NotionServiceImpl implements NotionService {
             properties.put("실지급액", new JSONObject()
                     .put("number", Integer.parseInt(salary.getNetPay())));
 
+            // 첨부파일 추가
+            String fileName = "급여명세_" + salary.getEmpName() + "_" + salary.getPayDate() + ".pdf";
+            JSONArray files = new JSONArray();
+            files.put(new JSONObject()
+                    .put("type", "file_upload")
+                    .put("name", fileName)
+                    .put("file_upload", new JSONObject()
+                            .put("id", fileUploadId)));
+
+            properties.put("첨부파일", new JSONObject().put("files", files));
+
             JSONObject parent = new JSONObject().put("database_id", databaseId);
             JSONObject body = new JSONObject()
                     .put("parent", parent)
                     .put("properties", properties);
 
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = new RestTemplate(); // HttpComponentsClientHttpRequestFactory 제거
 
             String response = restTemplate.postForObject(NOTION_URL, request, String.class);
             JSONObject jsonResponse = new JSONObject(response);
 
             String pageId = jsonResponse.getString("id");
-            System.out.println("✅ Step 1: Notion 페이지 생성 완료 - ID: " + pageId);
+            System.out.println("✅ 첨부파일과 함께 Notion 페이지 생성 완료 - ID: " + pageId);
 
             return pageId;
 
@@ -128,18 +147,18 @@ public class NotionServiceImpl implements NotionService {
         }
     }
 
-    // Step 2: Notion에 파일 업로드 (3단계 과정)
+    // Notion에 파일 업로드
     private String uploadFileToNotion(byte[] pdfBytes, Salary salary) {
         try {
             String fileName = "급여명세_" + salary.getEmpName() + "_" + salary.getPayDate() + ".pdf";
 
-            // Step 2-1: 파일 업로드 생성
+            // Step 1: 파일 업로드 생성
             String fileUploadId = createFileUpload(fileName, pdfBytes.length);
 
-            // Step 2-2: 파일 전송
+            // Step 2: 파일 전송
             sendFileUpload(fileUploadId, fileName, pdfBytes);
 
-            System.out.println("✅ Step 2: 파일 업로드 완료 - File Upload ID: " + fileUploadId);
+            System.out.println("✅ 파일 업로드 완료 - File Upload ID: " + fileUploadId);
             return fileUploadId;
 
         } catch (Exception e) {
@@ -147,7 +166,7 @@ public class NotionServiceImpl implements NotionService {
         }
     }
 
-    // Step 2-1: 파일 업로드 생성
+    // 파일 업로드 생성
     private String createFileUpload(String fileName, int fileSize) {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -161,7 +180,7 @@ public class NotionServiceImpl implements NotionService {
                     .put("size", fileSize);
 
             HttpEntity<String> request = new HttpEntity<>(requestBody.toString(), headers);
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = new RestTemplate(); // HttpComponentsClientHttpRequestFactory 제거
 
             String response = restTemplate.postForObject(FILE_UPLOAD_URL, request, String.class);
             JSONObject jsonResponse = new JSONObject(response);
@@ -173,7 +192,7 @@ public class NotionServiceImpl implements NotionService {
         }
     }
 
-    // Step 2-2: 파일 전송
+    // 파일 전송
     private void sendFileUpload(String fileUploadId, String fileName, byte[] pdfBytes) {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -195,52 +214,13 @@ public class NotionServiceImpl implements NotionService {
             body.add("file", fileResource);
 
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            RestTemplate restTemplate = new RestTemplate();
+            RestTemplate restTemplate = new RestTemplate(); // HttpComponentsClientHttpRequestFactory 제거
 
             String sendUrl = FILE_UPLOAD_URL + "/" + fileUploadId + "/send";
             restTemplate.exchange(sendUrl, HttpMethod.POST, requestEntity, String.class);
 
         } catch (Exception e) {
             throw new RuntimeException("파일 전송 실패: " + e.getMessage(), e);
-        }
-    }
-
-    // Step 3: 페이지에 업로드된 파일 연결
-    private void updatePageWithFile(String pageId, String fileUploadId, Salary salary) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + notionToken);
-            headers.set("Notion-Version", "2022-06-28");
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            String fileName = "급여명세_" + salary.getEmpName() + "_" + salary.getPayDate() + ".pdf";
-
-            JSONObject properties = new JSONObject();
-            JSONArray files = new JSONArray();
-
-            // file_upload 타입으로 파일 연결
-            files.put(new JSONObject()
-                    .put("type", "file_upload")
-                    .put("name", fileName)
-                    .put("file_upload", new JSONObject()
-                            .put("id", fileUploadId)));
-
-            properties.put("첨부파일", new JSONObject().put("files", files));
-
-            JSONObject updateBody = new JSONObject().put("properties", properties);
-
-            HttpEntity<String> request = new HttpEntity<>(updateBody.toString(), headers);
-
-            RestTemplate restTemplate = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
-
-            String updateUrl = "https://api.notion.com/v1/pages/" + pageId;
-            restTemplate.exchange(updateUrl, HttpMethod.PATCH, request, String.class);
-
-            System.out.println("✅ Step 3: 페이지에 파일 연결 완료");
-
-        } catch (Exception e) {
-            System.err.println("⚠️ 페이지 업데이트 실패: " + e.getMessage());
-            // 실패해도 페이지와 파일은 생성되었으므로 에러를 던지지 않음
         }
     }
 

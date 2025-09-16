@@ -11,14 +11,15 @@
         <result column="ovPrice" property="ovPrice"/>
         <result column="bonus" property="bonus"/>
         <result column="emp_name" property="empName"/>
+        <result column="birthDay" property="birthDay"/>
         <result column="dept_code" property="deptCode"/>
         <result column="dept_name" property="deptName"/>
         <result column="job_code" property="jobCode"/>
         <result column="job_name" property="jobName"/>
+        <result property="accountNo" column="accountNo"/>
+        <result property="bankName" column="bankName"/>
+        <result property="accountFormat" column="account_format"/>
     </resultMap>
-
-
-
 
     <resultMap id="attendanceResultSet" type="Attendance">
         <result column="ATT_NO" property="attNo"/>
@@ -27,87 +28,98 @@
         <result column="LEAVING_TIME" property="leavingTime"/>
     </resultMap>
 
-    <select id="selectSalaryByCondition" resultMap="salaryResultSet">
-        SELECT TO_CHAR(s.PAY_DATE, 'YYYYMM') AS payDate,
-        s.EMP_NO                      AS empNo,
-        s.SALARY                      AS salary,
-        NVL(s.OV_PRICE, 0)            AS ovPrice,
-        NVL(s.BONUS, 0)               AS bonus,
-        e.EMP_NAME,
-        e.dept_code,
-        d.dept_name,
-        e.job_code,
-        j.job_name
-        FROM TB_SALARY s
-        JOIN TB_EMPLOYEE e ON s.EMP_NO = e.EMP_NO
-        JOIN TB_DEPARTMENT d ON e.DEPT_CODE = d.DEPT_CODE
-        JOIN TB_JOB j ON e.JOB_CODE = j.JOB_CODE
-        <where>
-        <if test="yearMonth != null and yearMonth != ''">
-            AND TO_CHAR(s.PAY_DATE, 'YYYYMM') = #{yearMonth}
-        </if>
-        <if test="deptCode != null and deptCode != ''">
-            AND e.DEPT_CODE = #{deptCode}
-        </if>
-        <if test="jobCode != null and jobCode != ''">
-            AND e.JOB_CODE = #{jobCode}
-        </if>
-        <if test="empName != null and empName != ''">
-            AND e.EMP_NAME LIKE '%' || #{empName} || '%'
-        </if>
-        </where>
-        ORDER BY s.EMP_NO
-    </select>
+    <select id="selectSalary" parameterType="map" resultType="Salary">
+        select
+               to_char(s.pay_date, 'YYYY-MM') as payDate
+             , s.emp_no                       as empNo
+             , s.salary                       as salary
+             , nvl(s.ov_price, 0)             as ovPrice
+             , nvl(s.bonus, 0)                as bonus
+             , (s.salary *
+               nvl(s.bonus, 0) / 100)         as bonusAmt
+             , nvl(s.deduct_amt, 0) as deductAmt
+             , (s.salary + nvl(s.ov_price,0) + nvl(s.bonus,0)
+               - nvl(s.deduct_amt,0))         as netPay
+             , e.emp_name                     as empName
+             , to_char(
+               e.birthday, 'YYYY-MM-DD')      as birthDay
+             , e.dept_code                    as deptCode
+             , d.dept_name                    as deptName
+             , e.job_code                     as jobCode
+             , j.job_name                     as jobName
+             , a.account_no                   as accountNo
+             , b.bank_name                    as bankName
+             , b.acct_format                  as accountFormat
 
-    <select id="selectSalaryByEmpAndMonth" parameterType="map"
-            resultType="Salary">
-        SELECT
-        TO_CHAR(s.PAY_DATE, 'YYYY-MM') AS payDate,
-        s.EMP_NO                      AS empNo,
-        s.SALARY                      AS salary,
-        NVL(s.OV_PRICE, 0)            AS ovPrice,
-        NVL(s.BONUS, 0)               AS bonus,
-        (s.SALARY * NVL(s.BONUS, 0) / 100) AS bonusAmt,
-        NVL(s.DEDUCT_AMT, 0)          AS deductAmt,
-        (s.SALARY + NVL(s.OV_PRICE,0) + NVL(s.BONUS,0) - NVL(s.DEDUCT_AMT,0)) AS netPay,
-        e.EMP_NAME                    AS empName,
-        e.DEPT_CODE                   AS deptCode,
-        d.DEPT_NAME                   AS deptName,
-        e.JOB_CODE                    AS jobCode,
-        j.JOB_NAME                    AS jobName,
-        -- 추가수당
-        NVL((SELECT AMOUNT FROM TB_SALARY_OVER
-            WHERE EMP_NO = s.EMP_NO
-            AND PAY_DATE = s.PAY_DATE
-            AND OV_CODE = 'OV0001'), 0) AS extendOv,
-        NVL((SELECT AMOUNT FROM TB_SALARY_OVER
-            WHERE EMP_NO = s.EMP_NO
-            AND PAY_DATE = s.PAY_DATE
-            AND OV_CODE = 'OV0002'), 0) AS nightOv,
-        NVL((SELECT AMOUNT FROM TB_SALARY_OVER
-            WHERE EMP_NO = s.EMP_NO
-            AND PAY_DATE = s.PAY_DATE
-            AND OV_CODE = 'OV0003'), 0) AS weekendOv,
-        NVL((SELECT AMOUNT FROM TB_SALARY_OVER
-            WHERE EMP_NO = s.EMP_NO
-            AND PAY_DATE = s.PAY_DATE
-            AND OV_CODE = 'OV0004'), 0) AS tripOv
-         FROM TB_SALARY s
-         JOIN TB_EMPLOYEE e ON s.EMP_NO = e.EMP_NO
-         JOIN TB_DEPARTMENT d ON e.DEPT_CODE = d.DEPT_CODE
-         JOIN TB_JOB j ON e.JOB_CODE = j.JOB_CODE
-        WHERE s.EMP_NO = #{empNo}
-          AND TO_CHAR(s.PAY_DATE, 'YYYY-MM') = #{payDate}
+             , nvl( (select amount from tb_salary_over
+               where emp_no = s.emp_no and pay_date =
+               s.pay_date and ov_code = 'OV0001'), 0) as extendOv
+
+             , nvl( (select amount from tb_salary_over
+               where emp_no = s.emp_no and pay_date =
+               s.pay_date and ov_code = 'OV0002'), 0) as nightOv
+
+             , nvl( (select amount from tb_salary_over
+               where emp_no = s.emp_no and pay_date =
+               s.pay_date and ov_code = 'OV0003'), 0) as weekendOv
+
+             , nvl( (select amount from tb_salary_over
+               where emp_no = s.emp_no and pay_date =
+               s.pay_date and ov_code = 'OV0004'), 0) as tripOv
+
+             , nvl( (select amount from tb_salary_tax
+               where emp_no = s.emp_no and pay_date =
+               s.pay_date and tax_code = 'TAX0001'), 0) as incomeTax
+
+             , nvl( (select amount from tb_salary_tax
+               where emp_no = s.emp_no and pay_date =
+               s.pay_date and tax_code = 'TAX0002'), 0) as nationalPension
+
+             , nvl( (select amount from tb_salary_tax
+               where emp_no = s.emp_no and pay_date =
+               s.pay_date and tax_code = 'TAX0003'), 0) as healthInsurance
+
+             , nvl( (select amount from tb_salary_tax
+               where emp_no = s.emp_no and pay_date =
+               s.pay_date and tax_code = 'TAX0004'), 0) as employmentInsurance
+
+             , nvl( (select amount from tb_salary_tax
+               where emp_no = s.emp_no and pay_date =
+               s.pay_date and tax_code = 'TAX0005'), 0) as localTax
+          from tb_salary s
+          join tb_employee e on s.emp_no = e.emp_no
+          join tb_department d on e.dept_code = d.dept_code
+          join tb_job j on e.job_code = j.job_code
+          left join tb_account a on s.emp_no = a.emp_no
+          left join tb_bank b on a.bank_id = b.bank_id
+
+        <where>
+            <if test="yearMonth != null and yearMonth != ''">
+                and to_char(s.pay_date, 'YYYY-MM') = #{yearMonth}
+            </if>
+            <if test="empNo != null and empNo != ''">
+                and s.emp_no = #{empNo}
+            </if>
+            <if test="deptCode != null and deptCode != ''">
+                and e.dept_code = #{deptCode}
+            </if>
+            <if test="jobCode != null and jobCode != ''">
+                and e.job_code = #{jobCode}
+            </if>
+            <if test="empName != null and empName != ''">
+                and e.emp_name like '%' || #{empName} || '%'
+            </if>
+        </where>
     </select>
 
     <select id="selectAttendanceByMonth" resultMap="attendanceResultSet">
-        SELECT ATT_NO,
-               EMP_NO,
-               TO_CHAR(ATT_DATE,'YYYYMMDD') AS attDate,
-               TO_CHAR(LEAVING_TIME,'HH24:MI') AS leavingTime
-          FROM TB_ATTENDANCE
-         WHERE TO_CHAR(ATT_DATE,'YYYYMM') = #{yearMonth}
-         ORDER BY EMP_NO, ATT_DATE
+        select att_no
+             , emp_no
+             , to_char(att_date,'YYYYMMDD') as attDate
+             , to_char(leaving_time,'HH24:MI') as leavingTime
+          from tb_attendance
+         where to_char(att_date,'YYYYMM') = #{yearMonth}
+         order by emp_no, att_date
     </select>
 
     <select id="selectDeductByEmpMonth" resultType="int">
@@ -118,132 +130,89 @@
     </select>
 
     <update id="updateOvPrice">
-        UPDATE TB_SALARY
-           SET OV_PRICE = #{ovPrice}
-         WHERE EMP_NO = #{empNo}
-           AND TO_CHAR(PAY_DATE, 'YYYYMM') = #{yearMonth}
+        update tb_salary
+           set ov_price = #{ovPrice}
+         where emp_no = #{empNo}
+           AND to_char(pay_date, 'YYYYMM') = #{yearMonth}
     </update>
 
     <update id="upsertSalaryOver">
-         MERGE INTO TB_SALARY_OVER t
-         USING (
-        SELECT #{empNo} AS emp_no,
-               (SELECT MAX(PAY_DATE)
-          FROM TB_SALARY
-         WHERE EMP_NO = #{empNo}
-               AND TO_CHAR(PAY_DATE,'YYYYMM') = #{yearMonth}
-               ) AS pay_date,
-               #{ovCode} AS ov_code,
-               #{amount} AS amount
-          FROM dual
-                ) d
-            ON (t.emp_no = d.emp_no
-           AND t.pay_date = d.pay_date
-           AND t.ov_code = d.ov_code)
-          WHEN MATCHED THEN
-        UPDATE SET t.amount = d.amount
-          WHEN NOT MATCHED THEN
-        INSERT (emp_no, pay_date, ov_code, amount)
-         VALUES (d.emp_no, d.pay_date, d.ov_code, d.amount)
+         merge into tb_salary_over t
+         using
+             (
+        select #{empNo} as emp_no,
+               (select max(pay_date)
+          from tb_salary
+         where emp_no = #{empNo}
+           and to_char(pay_date,'YYYYMM') = #{yearMonth} ) as pay_date
+             , #{ovCode} as ov_code
+             , #{amount} as amount
+          from dual
+             ) d
+            on (t.emp_no = d.emp_no
+           and t.pay_date = d.pay_date
+           and t.ov_code = d.ov_code)
+          when matched then
+        update set t.amount = d.amount
+          when not matched then
+        insert (emp_no, pay_date, ov_code, amount)
+        values (d.emp_no, d.pay_date, d.ov_code, d.amount)
     </update>
 
     <update id="upsertSalaryTax">
-         MERGE INTO TB_SALARY_TAX t
-         USING (
-             SELECT #{empNo} AS emp_no,
-                    (SELECT MAX(PAY_DATE)
-                       FROM TB_SALARY
-                      WHERE EMP_NO = #{empNo}
-                        AND TO_CHAR(PAY_DATE,'YYYYMM') = #{yearMonth}
-                    ) AS pay_date,
-                    #{taxCode} AS tax_code,
-                    #{amount}  AS amount
-             FROM dual
-        ) d
-        ON (t.emp_no = d.emp_no AND t.pay_date = d.pay_date AND t.tax_code = d.tax_code)
-        WHEN MATCHED THEN
-            UPDATE SET t.amount = d.amount
-        WHEN NOT MATCHED THEN
-            INSERT (emp_no, pay_date, tax_code, amount)
-            VALUES (d.emp_no, d.pay_date, d.tax_code, d.amount)
-    </update>
-
-    <update id="updateDeductAmt" parameterType="map">
-        UPDATE TB_SALARY
-        SET DEDUCT_AMT = #{deductAmt}
-        WHERE EMP_NO = #{empNo}
-        AND PAY_DATE = #{payDate}
-    </update>
-
-    <select id="selectTaxesByEmpAndMonth" parameterType="map" resultType="Tax">
-        SELECT TAX_CODE    AS taxCode,
-               EMP_NO      AS empNo,
-               TO_CHAR(PAY_DATE, 'YYYY-MM') AS payDate,
-               AMOUNT      AS amount
-          FROM TB_SALARY_TAX
-         WHERE EMP_NO = #{empNo}
-           AND TO_CHAR(PAY_DATE, 'YYYY-MM') = #{PayDate}
-    </select>
-
-    <select id="selectQuarterlySales" resultType="com.kh.mvidia.finance.model.vo.Sales">
-        select p.PROD_NAME AS prodName,
-               EXTRACT(YEAR FROM s.PERIOD_ST) AS year,
-               TO_NUMBER(TO_CHAR(s.PERIOD_ST, 'Q')) AS quarter,
-               SUM(s.TOTAL_SALES) AS totalSales,
-               SUM(s.OP_PROFIT) AS opProfit
-          FROM TB_SALES s
-          JOIN TB_PRODUCTION_QUALITY p
-            ON s.PROD_CODE = p.PROD_CODE
-         WHERE EXTRACT(YEAR FROM s.PERIOD_ST) = #{year}
-         GROUP BY p.PROD_NAME, EXTRACT(YEAR FROM s.PERIOD_ST), TO_CHAR(s.PERIOD_ST, 'Q')
-         ORDER BY p.PROD_NAME, quarter
-    </select>
-
-    <insert id="mergeQuarterlySales" parameterType="string">
-         merge
-               into tb_sales s
+         merge into tb_salary_tax t
          using
              (
-             select h.prod_code
-                  , trunc(h.sale_date, 'Q') AS period_st
-                  , last_day(add_months(trunc(h.sale_date, 'Q'), 2)) AS period_fn
-                  , sum(h.qty * p.price) AS total_sales
-                  , round(sum(h.qty * p.price *
-                    (h.profit_rate / 100)), 0) AS op_profit
-        from tb_sales_history h
-               join tb_production_quality p
-                 on h.prod_code = p.prod_code
-              where to_char(h.sale_date, 'YYYY') = #{year}
-              group by h.prod_code
-                     , trunc(h.sale_date, 'Q')
-                     , last_day(add_months(trunc(h.sale_date, 'Q'), 2))
-             ) src
+               select #{empNo} as emp_no
+             , (select max(pay_date)
+                  from tb_salary
+                 where emp_no = #{empNo}
+                   and to_char(pay_date,'YYYY-MM') = #{yearMonth}
+                ) as pay_date
+             , #{taxCode} as tax_code
+             , #{amount}  as amount
+              from dual
+             ) d
             on
              (
-               s.prod_code = src.prod_code
-               and s.period_st = src.period_st
-               and s.period_fn = src.period_fn
+               t.emp_no = d.emp_no
+           and t.pay_date = d.pay_date
+           and t.tax_code = d.tax_code
              )
           when matched then
-        update set s.total_sales = src.total_sales
-             , s.op_profit = src.op_profit
+        update set t.amount = d.amount
           when not matched then
         insert
              (
-               prod_code
-             , period_st
-             , period_fn
-             , total_sales
-             , op_profit)
+               emp_no
+             , pay_date
+             , tax_code
+             , amount
+             )
         values
              (
-               src.prod_code
-             , src.period_st
-             , src.period_fn
-             , src.total_sales
-             , src.op_profit
+               d.emp_no
+             , d.pay_date
+             , d.tax_code
+             , d.amount
              )
-    </insert>
+    </update>
 
+    <update id="updateDeductAmt" parameterType="map">
+        update tb_salary
+           set deduct_amt = #{deductAmt}
+         where emp_no = #{empNo}
+           and pay_date = #{payDate}
+    </update>
+
+    <select id="selectTaxesByEmpAndMonth" parameterType="map" resultType="Tax">
+        select tax_code                     as taxCode
+             , emp_no                       as empNo
+             , to_char(pay_date, 'YYYY-MM') as payDate
+             , amount                       as amount
+          from tb_salary_tax
+         where emp_no = #{empNo}
+           and to_char(pay_date, 'YYYY-MM') = #{payDate}
+    </select>
 
 </mapper>

@@ -2,14 +2,12 @@ package com.kh.mvidia.finance.model.service;
 import com.kh.mvidia.finance.model.dao.FinanceDao;
 import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
-import com.kh.mvidia.finance.model.vo.Sales;
 import com.kh.mvidia.finance.model.vo.Tax;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,15 +22,18 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Override
     public Salary getSalaryByEmpAndMonth(String empNo, String payDate) {
-        Map<String, Object> param = new HashMap<>();
-        param.put("empNo", empNo);
-        param.put("payDate", payDate);
-        return financeDao.selectSalaryByEmpAndMonth(sqlSession, param);
+        String yearMonth = payDate.replace("-", "");
+
+        List<Salary> list = financeDao.selectSalary(sqlSession,
+                Map.of("empNo", empNo, "yearMonth", yearMonth));
+
+        return list.isEmpty() ? null : list.get(0);
     }
 
+
     @Override
-    public List<Salary> getSalaryByCondition(Map<String, Object> param) {
-        List<Salary> salaryList = financeDao.selectSalaryByCondition(sqlSession, param);
+    public List<Salary> getSalary(Map<String, Object> param) {
+        List<Salary> salaryList = financeDao.selectSalary(sqlSession, param);
 
         String yearMonth = (String) param.get("yearMonth");
 
@@ -42,51 +43,73 @@ public class FinanceServiceImpl implements FinanceService {
             int baseHourly = baseSalary / 209;
 
             List<Attendance> records =
-                    financeDao.selectAttendanceByEmpMonth(sqlSession, s.getEmpNo() ,yearMonth);
+                    financeDao.selectAttendanceByEmpMonth(sqlSession, s.getEmpNo(), yearMonth);
 
             int extendedAmt = calculateExtendedPay(baseHourly, records);
-            int nightAmt = calculateNightPay(baseHourly, records);
-            int weekendAmt = calculateWeekendPay(baseHourly, records);
-            int tripAmt = calculateTripPay(records);
+            int nightAmt    = calculateNightPay(baseHourly, records);
+            int weekendAmt  = calculateWeekendPay(baseHourly, records);
+            int tripAmt     = calculateTripPay(records);
 
-            financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0001", extendedAmt);
-            financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0002", nightAmt);
-            financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0003", weekendAmt);
-            financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0004", tripAmt);
+            upsertOvertimes(s, yearMonth.replace("-", ""), extendedAmt, nightAmt, weekendAmt, tripAmt);
 
             int totalOv = extendedAmt + nightAmt + weekendAmt + tripAmt;
-            financeDao.updateOvPrice(sqlSession, s.getEmpNo(), yearMonth, totalOv);
+            financeDao.updateOvPrice(sqlSession, s.getEmpNo(), yearMonth.replace("-", ""), totalOv);
             s.setOvPrice(String.valueOf(totalOv));
 
             int bonusAmt = baseSalary * bonusPercent / 100;
             s.setBonusAmt(String.valueOf(bonusAmt));
 
-            int deductAmt = financeDao.selectDeductByEmpMonth(sqlSession, s.getEmpNo(), yearMonth);
-
             int totalPay = baseSalary + totalOv + bonusAmt;
-            int netpay = baseSalary + totalOv + bonusAmt - deductAmt;
 
+            // 세금 계산
+            int taxNP = (int)(totalPay * 0.045);
+            int taxHI = (int)(totalPay * 0.035);
+            int taxUE = (int)(totalPay * 0.009);
+            int taxIC = (int)(totalPay * 0.05);
+            int taxLS = (int)(totalPay * 0.005);
+
+            int deductAmt = taxNP + taxHI + taxUE + taxIC + taxLS;
+            int netPay    = totalPay - deductAmt;
+
+            // 값 세팅
             s.setExtendOv(String.valueOf(extendedAmt));
             s.setNightOv(String.valueOf(nightAmt));
             s.setWeekendOv(String.valueOf(weekendAmt));
             s.setTripOv(String.valueOf(tripAmt));
             s.setTotalPay(String.valueOf(totalPay));
+
+            s.setIncomeTax(String.valueOf(taxIC));
+            s.setNationalPension(String.valueOf(taxNP));
+            s.setHealthInsurance(String.valueOf(taxHI));
+            s.setEmploymentInsurance(String.valueOf(taxUE));
+            s.setLocalTax(String.valueOf(taxLS));
+
             s.setDeductAmt(String.valueOf(deductAmt));
-            s.setNetPay(String.valueOf(netpay));
+            s.setNetPay(String.valueOf(netPay));
+
+            // DB 반영
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0001", taxNP);
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0002", taxHI);
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0003", taxUE);
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0004", taxIC);
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0005", taxLS);
         }
 
         return salaryList;
     }
 
-    private int calculateTripPay(List<Attendance> records) {
-        int tripAmt = 0;
-        int dailyAllowance = 50000;
-        for (Attendance att : records) {
-            if ("X".equals(att.getAttStatus())) {
-                tripAmt += dailyAllowance;
-            }
-        }
-        return tripAmt;
+
+    @Override
+    public List<Tax> getTaxesByEmpAndMonth(String empNo, String payDate) {
+        return financeDao.selectTaxesByEmpAndMonth(sqlSession, empNo, payDate);
+    }
+
+    private void upsertOvertimes(Salary s, String yearMonth,
+                                 int extendedAmt, int nightAmt, int weekendAmt, int tripAmt) {
+        financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0001", extendedAmt);
+        financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0002", nightAmt);
+        financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0003", weekendAmt);
+        financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0004", tripAmt);
     }
 
     private int calculateExtendedPay(int baseHourly, List<Attendance> records) {
@@ -143,94 +166,14 @@ public class FinanceServiceImpl implements FinanceService {
         return weekendAmt;
     }
 
-    @Override
-    public List<Salary> getSalaryByMonth(String yearMonth) {
-        List<Salary> salaryList = financeDao.selectSalaryByMonth(sqlSession, yearMonth);
-
-        for (Salary s : salaryList) {
-            int baseSalary = Integer.parseInt(s.getSalary());
-            int bonusPercent = Integer.parseInt(s.getBonus());
-
-            int baseHourly = baseSalary / 209;
-
-            List<Attendance> records = financeDao.selectAttendanceByEmpMonth(sqlSession, s.getEmpNo() ,yearMonth);
-
-            int extendedAmt = calculateExtendedPay(baseHourly, records);
-            int nightAmt = calculateNightPay(baseHourly, records);
-            int weekendAmt = calculateWeekendPay(baseHourly, records);
-            int tripAmt = calculateTripPay(records);
-
-            financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0001", extendedAmt);
-            financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0002", nightAmt);
-            financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0003", weekendAmt);
-            financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0004", tripAmt);
-
-            int totalOv = extendedAmt + nightAmt + weekendAmt + tripAmt;
-            financeDao.updateOvPrice(sqlSession, s.getEmpNo(), yearMonth, totalOv);
-            s.setOvPrice(String.valueOf(totalOv));
-
-            int bonusAmt = baseSalary * bonusPercent / 100;
-            s.setBonusAmt(String.valueOf(bonusAmt));
-
-            int totalPay = baseSalary + totalOv + bonusAmt;
-
-            int taxNP = (int)(totalPay * 0.045);    // 국민연금
-            int taxHI = (int)(totalPay * 0.035);    // 건강보험
-            int taxUE = (int)(totalPay * 0.009);    // 고용보험
-            int taxIC = (int)(totalPay * 0.05);     // 소득세
-            int taxLS = (int)(totalPay * 0.005);    // 지방소득세
-
-            int deductAmt = taxNP +  taxHI + taxUE + taxIC + taxLS;
-            int netPay = totalPay - deductAmt;
-
-            s.setExtendOv(String.valueOf(extendedAmt));
-            s.setNightOv(String.valueOf(nightAmt));
-            s.setWeekendOv(String.valueOf(weekendAmt));
-            s.setTripOv(String.valueOf(tripAmt));
-            s.setTotalPay(String.valueOf(totalPay));
-
-            s.setIncomeTax(String.valueOf(taxIC));
-            s.setNationalPension(String.valueOf(taxNP));
-            s.setHealthInsurance(String.valueOf(taxHI));
-            s.setEmploymentInsurance(String.valueOf(taxUE));
-            s.setLocalTax(String.valueOf(taxLS));
-
-            s.setDeductAmt(String.valueOf(deductAmt));
-            s.setNetPay(String.valueOf(netPay));
-
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0001", taxNP);
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0002", taxHI);
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0003", taxUE);
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0004", taxIC);
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0005", taxLS);
+    private int calculateTripPay(List<Attendance> records) {
+        int tripAmt = 0;
+        int dailyAllowance = 50000;
+        for (Attendance att : records) {
+            if ("X".equals(att.getAttStatus())) {
+                tripAmt += dailyAllowance;
+            }
         }
-
-        return salaryList;
+        return tripAmt;
     }
-
-    @Override
-    public List<Tax> getTaxesByEmpAndMonth(String empNo, String payDate) {
-        return financeDao.selectTaxesByEmpAndMonth(sqlSession, empNo, payDate);
-    }
-
-    @Override
-    public List<Sales> getQuarterlySales(String year) {
-        return financeDao.selectQuarterlySales(sqlSession, year);
-    }
-
-    @Override
-    public long getYearlySales(String year) {
-        List<Sales> list = getQuarterlySales(year); // 이미 있는 쿼터별 조회 활용
-        long sum = 0;
-        for (Sales s : list) {
-            sum += Long.parseLong(s.getTotalSales());
-        }
-        return sum;
-    }
-
-    @Override
-    public int mergeQuarterlySales(String year) {
-        return financeDao.mergeQuarterlySales(sqlSession, year);
-    }
-
 }

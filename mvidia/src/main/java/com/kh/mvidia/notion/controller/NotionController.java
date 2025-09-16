@@ -2,7 +2,8 @@ package com.kh.mvidia.notion.controller;
 
 import com.kh.mvidia.finance.model.service.FinanceService;
 import com.kh.mvidia.finance.model.vo.Salary;
-import com.kh.mvidia.finance.model.vo.Sales;
+import com.kh.mvidia.sales.model.service.SalesService;
+import com.kh.mvidia.sales.model.vo.Sales;
 import com.kh.mvidia.finance.model.vo.Tax;
 import com.kh.mvidia.notion.service.NotionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,9 @@ public class NotionController {
 
     private final NotionService notionService;
     private final FinanceService financeService;
+
+    @Autowired
+    private SalesService salesService;
 
     @Autowired
     public NotionController(NotionService notionService, FinanceService financeService) {
@@ -63,7 +67,7 @@ public class NotionController {
             @RequestParam(defaultValue = "2025") String year,
             Model model) {
 
-        List<Sales> profitList = financeService.getQuarterlySales(year);
+        List<Sales> profitList = salesService.getQuarterlySales(year);
 
         // 1~4분기 다 채우기 (없는 분기는 매출/이익 0)
         for (int q = 1; q <= 4; q++) {

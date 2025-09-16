@@ -16,7 +16,8 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            /* width: 1200px; */
+            width: 1200px;
+            margin: 0 auto;
         }
 
         .swtch {
@@ -59,6 +60,11 @@
             box-shadow: 0 -2px 4px rgba(0,123,255,0.1);
             outline: none;
         }
+/*
+        .form label{font-size:12px;color:var(--muted)}
+        .form input,
+        .form textarea{padding:10px 12px;border-radius:12px;border:1px solid #dde6ec;background:#fff;outline:none}
+        .form input[readonly]{background:#f1f5f8;color:#6f7c83}
 
         .row {
             display: flex;
@@ -68,47 +74,88 @@
         .row .col {
             flex: 1; /* 같은 비율로 너비 차지 */
         }
-
-        .card-header {
-            all: unset; /* 기존 스타일 무시 */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
+        */
+        .form {
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #dee0ea;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
         }
 
-        .card-title {
-            font-size:18px;
-            font-weight:700;
-            color:#333
-        }
-
-        .card-button {
-            width: 20%;
-            padding: 12px 20px;
-            background: #1a365d;
-            color: white;
-            border: none;
-            border-radius: 8px;
+        .form label {
             font-size: 14px;
+            color: #333;
             font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            float: right;
+            margin-bottom: 6px;
+            display: block;
         }
 
-        .card-button:hover {background: #2c5282;}
+        .form input,
+        .form textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #dde6ec;
+            background: #fff;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form input:focus,
+        .form textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .form input[readonly] {
+            background: #f1f5f8;
+            color: #6f7c83;
+        }
+
+        .form textarea {
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        /* 행과 컬럼 레이아웃 */
+        .row {
+            display: flex;
+            /*gap: 40px;*/
+        }
+
+        .col-4 {
+            width: calc(50% - 20px);
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        /* 필수 표시 */
+        .required {
+            color: #dc3545;
+        }
+
+        /* 도움말 텍스트 */
+        .text-muted {
+            color: #6c757d;
+            font-size: 12px;
+            margin-top: 4px;
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="content">
         <div class="innerOuter">
-            <h3>전자결재 신청폼</h3>
-            <br>
+<!--            <h3>전자결재 신청폼</h3>-->
+<!--            <br>-->
 
-            <div class="swtch">
+            <div class="swtch" name="swtch">
                 <button class="tab active" data-value="expense">지출 결의서</button>
                 <button class="tab" data-value="purchase">구매 요청서</button>
                 <button class="tab" data-value="overtime">초과 근무 신청서</button>
@@ -116,49 +163,52 @@
                 <button class="tab" data-value="etc">기타 결재</button>
             </div>
 
-            <form id="notionAddForm" method="post" action="" enctype="">
+            <form id="notionAddForm" class="form" method="post" action="" enctype="multipart/form-data">
                 <div class="row">
-                    <div class="col">
-                        <label for="applyWriter">신청자 *</label>
-                        <input type="text" name="applicant" id="applyWriter" th:value="|${session.loginEmp.empLName}${session.loginEmp.empName}|" readonly>
+                    <div class="col-4">
+                        <label for="applyWriter">작성자 <span class="required">*</span></label>
+                        <input type="text" name="applyWriter" id="applyWriter" th:value="|${session.loginEmp.empLName}${session.loginEmp.empName}|" readonly>
                     </div>
 
-                    <div class="col">
-                        <label for="applyDept">부서 정보 *</label>
+                    <div class="col-4">
+                        <label for="applyDept">부서 정보 <span class="required">*</span></label>
                         <input type="text" name="applyDept" id="applyDept" th:value="${session.loginEmp.jobName}" readonly>
                     </div>
                 </div>
 
-                <div>
-                    <label for="applyDate">신청일 *</label>
+                <div class="form-group">
+                    <label for="applyDate">작성일 <span class="required">*</span></label>
                     <input type="date" name="applyDate" id="applyDate" value="" readonly th:value="${#dates.format(#dates.createNow(),'yyyy-MM-dd')}">
                 </div>
-                <div>
-                    <label for="applyTitle">제목 *</label>
-                    <input type="text" name="title" id="applyTitle" placeholder="예: 사무용품 구매 신청" required>
+
+                <div class="form-group">
+                    <label for="applyTitle">제목 <span class="required">*</span></label>
+                    <input type="text" name="applyTitle" id="applyTitle" placeholder="예: 사무용품 구매 신청" required>
                 </div>
 
-                <div>
-                    <label for="approval">결재 라인 *</label>
-                    <input type="text" name="approvers" id="approval" placeholder="예: 김과장,박차장,정부장" required>
+                <div class="form-group">
+                    <label for="approval">결재 라인 <span class="required">*</span></label>
+                    <input type="text" name="approval" id="approval" placeholder="예: 김과장,박차장,정부장" required>
                     <small class="text-muted">※ 여러명 지정 시 콤마(,)로 구분</small>
                 </div>
 
-                <div>
-                    <label for="details">상세 내용 *</label>
-                    <textarea name="content" id="details" rows="6" required></textarea>
+                <div class="form-group">
+                    <label for="details">상세 내용 <span class="required">*</span></label>
+                    <textarea name="details" id="details" rows="6" required>
+- 지출 항목:교통비/출장비/사무용품/회의비/기타
+- 금액:
+- 사용처/업체명:</textarea>
                 </div>
 
-                <div id="fileUpload" for="file">
-                    <label class="form-label">첨부파일</label>
+                <div id="fileUpload" class="form-group">
+                    <label for="file">첨부파일</label>
                     <input type="file" name="files" id="file" multiple>
-
                 </div>
                 <br>
 
-                <div align="center">
-                    <button type="submit" class="btn btn-primary">등록하기</button>
-                    <button type="reset" class="btn btn-danger">취소하기</button>
+                <div style="text-align: center; margin-top: 30px;">
+                    <button type="submit" class="btn btn-primary">등록</button>
+                    <button type="reset" class="btn btn-secondary">취소</button>
                 </div>
             </form>
         </div>
@@ -214,6 +264,8 @@
             $("#notionAddForm").on("submit", function(e) {
                 e.preventDefault();
 
+                let activeTab = $(".tab.active").data("value");
+
                 let formData = {
                     applyWriter: $(this).find("input[name='applyWriter']").val(),
                     applyDept: $(this).find("input[name='applyDept']").val(),
@@ -221,7 +273,8 @@
                     applyTitle: $(this).find("input[name='applyTitle']").val(),
                     approval: $(this).find("input[name='approval']").val(),
                     details: $(this).find("textarea[name='details']").val(),
-                    file: $(this).find("input[name='file']").val()
+                    file: $(this).find("input[name='file']").val(),
+                    swtch: activeTab
                 };
 
                 $.ajax({
@@ -232,12 +285,12 @@
                     success:function(app){
 
                         if(app === "success"){
-                            alert("전자결재 신청 완료");
+                            alert("전자결재 신청이 등록되었습니다.");
                             location.href="list.notion";
                         }else{
-                            alert("전자결재 신청 실패");
+                            alert("전자결재 신청이 실패하였습니다.");
                         }
-                    }
+                    },
                     error:function(){
                         alert("전자결재 ajax 통신 실패");
                     }

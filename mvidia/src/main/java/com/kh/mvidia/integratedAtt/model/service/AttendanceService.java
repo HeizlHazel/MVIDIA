@@ -15,4 +15,6 @@ public interface AttendanceService {
 	ArrayList<Attendance> selectAttendanceList(PageInfo pi, HashMap<String, String> searchMap);
 	
 	int updateAttendance(Attendance att);
+	
+	ArrayList<Attendance> selectEmpAttendanceList(PageInfo pi, HashMap<String, String> searchMap);
 }

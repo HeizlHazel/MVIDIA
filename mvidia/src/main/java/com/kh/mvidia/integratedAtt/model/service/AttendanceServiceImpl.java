@@ -42,5 +42,13 @@ public class AttendanceServiceImpl implements AttendanceService{
 		return attDao.updateAttendance(sqlSession,att);
 	}
 	
+	@Override
+	public ArrayList<Attendance> selectEmpAttendanceList(PageInfo pi, HashMap<String, String> searchMap){
+		HashMap<String, Object> paramMap = new HashMap<>();
+		paramMap.put("pi",pi);
+		paramMap.put("searchMap", searchMap);
+		return attDao.selectEmpAttendanceList(sqlSession,paramMap);
+	}
+	
 
 }

@@ -33,22 +33,23 @@
         </div>
 
         <div class="search-container">
-            <input type="text" id="vacationSearchKeyword" placeholder="사번, 이름, 사유 등">
+            <input type="text" id="vacationSearchKeyword" placeholder="사번, 이름, 사유 등" th:value="${param.keyword}">
             <select id="vacationSearchStatus">
-                <option value="">상태 전체</option>
-                <option value="W">대기</option>
-                <option value="A">승인</option>
-                <option value="D">반려</option>
+                <option value="" th:selected="${param.status == null or param.status[0] == ''}">상태 전체</option>
+                <option value="W" th:selected="${param.status != null and param.status[0] == 'W'}">대기</option>
+                <option value="A" th:selected="${param.status != null and param.status[0] == 'A'}">승인</option>
+                <option value="D" th:selected="${param.status != null and param.status[0] == 'D'}">반려</option>
             </select>
             <select id="vacationSearchType">
-                <option value="">휴가 종류 전체</option>
-                <option value="HDL">반차</option>
-                <option value="AL">연차</option>
-                <option value="SL">병가</option>
-                <option value="FO">경조사</option>
-                <option value="ML">출산</option>
-                <option value="RL">포상</option>
+                <option value="" th:selected="${param.type == null or param.type[0] == ''}">휴가 종류 전체</option>
+                <option value="HDL" th:selected="${param.type != null and param.type[0] == 'HDL'}">반차</option>
+                <option value="AL" th:selected="${param.type != null and param.type[0] == 'AL'}">연차</option>
+                <option value="SL" th:selected="${param.type != null and param.type[0] == 'SL'}">병가</option>
+                <option value="FO" th:selected="${param.type != null and param.type[0] == 'FO'}">경조사</option>
+                <option value="ML" th:selected="${param.type != null and param.type[0] == 'ML'}">출산</option>
+                <option value="RL" th:selected="${param.type != null and param.type[0] == 'RL'}">포상</option>
             </select>
+
             <button id="vacationSearchBtn">검색</button>
         </div>
 
@@ -92,11 +93,24 @@
         </table>
 
         <div class="stack mt8" id="vacationPager" th:if="${pi.listCount > 0}" align="center">
-            <a th:href="@{/hr/vacationList.hr(cpage=${pi.currentPage-1})}" th:if="${pi.currentPage > 1}">&lt;</a>
+            <a th:if="${pi.currentPage > 1}"
+               th:href="@{/hr/vacationList.hr(
+                                                  cpage=${pi.currentPage-1},
+                                                  keyword=${param.keyword},
+                                                  status=${param.status})}">&lt;</a>
             <span th:each="p : ${#numbers.sequence(pi.startPage, pi.endPage)}">
-                <a th:href="@{/hr/vacationList.hr(cpage=${p})}" th:text="${p}" th:class="${pi.currentPage eq p ? 'active' : ''}"></a>
+                <a  th:href="@{/hr/vacationList.hr(
+                    cpage=${p},
+                    keyword=${param.keyword},
+                    status=${param.status})}"
+                    th:text="${p}"
+                    th:class="${pi.currentPage eq p ? 'active' : ''}"></a>
             </span>
-            <a th:href="@{/hr/vacationList.hr(cpage=${pi.currentPage+1})}" th:if="${pi.currentPage < pi.maxPage}">&gt;</a>
+            <a  th:href="@{/hr/vacationList.hr(
+                cpage=${pi.currentPage+1},
+                keyword=${param.keyword},
+                status=${param.status})}"
+                th:if="${pi.currentPage < pi.maxPage}">&gt;</a>
         </div>
     </div>
 </div>

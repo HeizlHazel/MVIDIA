@@ -88,6 +88,32 @@
          where att_no = #{attNo}
     </update>
 
+    <select id="selectEmpAttendanceList" resultMap="attendanceResultSet">
+        select
+               att_no
+             , emp_no
+             , emp_lname || emp_name as "emp_name"
+             , to_char(att_date, 'YYYY-MM-DD') as "att_date"
+             , to_char(arriving_time, 'HH24:MI') as "arriving_time"
+             , to_char(leaving_time, 'HH24:MI') as "leaving_time"
+             , att_status
+             , status_name
+          from tb_attendance
+          join tb_employee using (emp_no)
+          join tb_status on (att_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="searchMap.keyword != null and searchMap.keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="searchMap.status != null and searchMap.status != ''">
+                and att_status = #{searchMap.status}
+            </if>
+            and emp_no = #{searchMap.empNo}
+        </trim>
+                order
+                   by att_no desc
+    </select>
+
 
 
 </mapper>

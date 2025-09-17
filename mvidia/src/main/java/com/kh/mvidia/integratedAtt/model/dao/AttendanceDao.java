@@ -27,4 +27,8 @@ public class AttendanceDao {
 	public int updateAttendance(SqlSessionTemplate sqlSession, Attendance att) {
 		return sqlSession.update("attendanceMapper.updateAttendance", att);
 	}
+	
+	public ArrayList<Attendance> selectEmpAttendanceList(SqlSessionTemplate sqlSession, HashMap<String, Object> paramMap){
+		return (ArrayList)sqlSession.selectList("attendanceMapper.selectEmpAttendanceList",paramMap);
+	}
 }

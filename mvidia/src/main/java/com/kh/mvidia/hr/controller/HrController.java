@@ -283,6 +283,7 @@ public class HrController {
 		searchMap.put("keyword", keyword);
 		searchMap.put("status", status);
 		searchMap.put("type", type);
+
 		
 		int listCount = vaService.selectVaListCount(searchMap);
 		int pageLimit = 10;

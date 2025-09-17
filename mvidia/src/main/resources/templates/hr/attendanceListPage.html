@@ -38,16 +38,18 @@
         </div>
 
         <div class="search-container">
-            <input type="text" id="attendanceSearchKeyword" placeholder="사번, 이름">
+            <input type="text" id="attendanceSearchKeyword" placeholder="사번, 이름" th:value="${param.keyword}">
             <select id="attendanceSearchStatus">
-                <option value="">상태 전체</option>
-                <option value="N">정상</option>
-                <option value="T">지각</option>
-                <option value="B">결근</option>
-                <option value="E">조퇴</option>
-                <option value="V">휴가</option>
-                <option value="O">야근</option>
+                <option value="" th:selected="${param.status == null or param.status[0] == ''}">상태 전체</option>
+                <option value="N" th:selected="${param.status != null and param.status[0] == 'N'}">정상</option>
+                <option value="T" th:selected="${param.status != null and param.status[0] == 'T'}">지각</option>
+                <option value="B" th:selected="${param.status != null and param.status[0] == 'B'}">결근</option>
+                <option value="E" th:selected="${param.status != null and param.status[0] == 'E'}">조퇴</option>
+                <option value="V" th:selected="${param.status != null and param.status[0] == 'V'}">휴가</option>
+                <option value="O" th:selected="${param.status != null and param.status[0] == 'O'}">야근</option>
+                <option value="X" th:selected="${param.status != null and param.status[0] == 'X'}">출장</option>
             </select>
+
             <button id="attendanceSearchBtn">검색</button>
         </div>
 
@@ -78,6 +80,7 @@
                         <option value="E" th:selected="${att.attStatus eq 'E'}">조퇴</option>
                         <option value="V" th:selected="${att.attStatus eq 'V'}">휴가</option>
                         <option value="O" th:selected="${att.attStatus eq 'O'}">야근</option>
+                        <option value="X" th:selected="${att.attStatus eq 'X'}">출장</option>
                     </select>
                 </td>
                 <td>
@@ -91,11 +94,24 @@
         </table>
 
         <div class="stack mt8" id="attendancePager" th:if="${pi.listCount > 0}" align="center">
-            <a th:href="@{/hr/attendanceList.hr(cpage=${pi.currentPage-1})}" th:if="${pi.currentPage > 1}">&lt;</a>
-            <span th:each="p : ${#numbers.sequence(pi.startPage, pi.endPage)}">
-                <a th:href="@{/hr/attendanceList.hr(cpage=${p})}" th:text="${p}" th:class="${pi.currentPage eq p ? 'active' : ''}"></a>
+            <a th:if="${pi.currentPage > 1}"
+               th:href="@{/hr/attendanceList.hr(
+                                                  cpage=${pi.currentPage-1},
+                                                  keyword=${param.keyword},
+                                                  status=${param.status})}">&lt;</a>
+                <span th:each="p : ${#numbers.sequence(pi.startPage, pi.endPage)}">
+                <a th:href="@{/hr/attendanceList.hr(
+                        cpage=${p},
+                        keyword=${param.keyword},
+                        status=${param.status})}"
+                   th:text="${p}"
+                   th:class="${pi.currentPage eq p ? 'active' : ''}"></a>
             </span>
-            <a th:href="@{/hr/attendanceList.hr(cpage=${pi.currentPage+1})}" th:if="${pi.currentPage < pi.maxPage}">&gt;</a>
+            <a th:href="@{/hr/attendanceList.hr(
+                      cpage=${pi.currentPage+1},
+                      keyword=${param.keyword},
+                      status=${param.status})}"
+               th:if="${pi.currentPage < pi.maxPage}">&gt;</a>
         </div>
     </div>
 </div>

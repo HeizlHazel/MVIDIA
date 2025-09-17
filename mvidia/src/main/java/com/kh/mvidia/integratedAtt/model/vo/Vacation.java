@@ -20,6 +20,7 @@ public class Vacation {
 	private String vaName;
 	private String vaStart;
 	private String vaEnd;
+	private String vaDays;
 	private String vaReason;
 	private String alterEmp;
 	private String alterEmpName;

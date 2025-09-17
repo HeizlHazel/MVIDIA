@@ -15,4 +15,8 @@ public interface VacationService {
 	ArrayList<Vacation> selectVacationList(PageInfo pi, HashMap<String, String> searchMap);
 	
 	int updateVacation(Vacation va);
+	
+	int insertVacation(Vacation va);
+	
+	ArrayList<Vacation> selectEmpVacationList(PageInfo pi, HashMap<String, String> searchMap);
 }

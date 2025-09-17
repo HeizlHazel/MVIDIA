@@ -26,4 +26,12 @@ public class VacationDao {
 	public int updateVacation(SqlSessionTemplate sqlSession, Vacation va) {
 		return sqlSession.update("vacationMapper.updateVacation", va);
 	}
+	
+	public int insertVacation(SqlSessionTemplate sqlSession, Vacation va) {
+		return sqlSession.insert("vacationMapper.insertVacation", va);
+	}
+	
+	public ArrayList<Vacation> selectEmpVacationList(SqlSessionTemplate sqlSession, HashMap<String, Object> paramMap) {
+		return (ArrayList)sqlSession.selectList("vacationMapper.selectEmpVacationList",paramMap);
+	}
 }

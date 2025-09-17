@@ -42,4 +42,17 @@ public class VacationServiceImpl implements VacationService{
 		return vaDao.updateVacation(sqlSession,va);
 	}
 	
+	@Override
+	public int insertVacation(Vacation va) {
+		return vaDao.insertVacation(sqlSession,va);
+	}
+	
+	@Override
+	public ArrayList<Vacation> selectEmpVacationList(PageInfo pi, HashMap<String, String> searchMap) {
+		HashMap<String, Object> paramMap = new HashMap<>();
+		paramMap.put("pi", pi);
+		paramMap.put("searchMap",searchMap);
+		return vaDao.selectEmpVacationList(sqlSession, paramMap);
+	}
+	
 }

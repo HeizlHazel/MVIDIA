@@ -1,4 +1,5 @@
 package com.kh.mvidia.finance.model.service;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.kh.mvidia.finance.model.dao.FinanceDao;
 import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
@@ -8,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,15 +22,37 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Autowired
     private FinanceDao financeDao;
+    @Autowired
+    private ParameterNamesModule parameterNamesModule;
 
     @Override
     public Salary getSalaryByEmpAndMonth(String empNo, String payDate) {
-        String yearMonth = payDate.replace("-", "");
+        System.out.println("🔍 [FinanceService] getSalaryByEmpAndMonth 호출");
+        System.out.println("   - 입력 empNo: [" + empNo + "]");
+        System.out.println("   - 입력 payDate: [" + payDate + "]");
 
-        List<Salary> list = financeDao.selectSalary(sqlSession,
-                Map.of("empNo", empNo, "yearMonth", yearMonth));
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("empNo", empNo);
+            param.put("yearMonth", payDate);
+            Salary result = financeDao.selectSalaryByEmpAndMonth(sqlSession, param);
 
-        return list.isEmpty() ? null : list.get(0);
+            System.out.println("   - 쿼리 실행 결과: " + (result != null ? "데이터 존재" : "데이터 없음"));
+
+            if (result != null) {
+                System.out.println("   - 조회된 데이터:");
+                System.out.println("     * empNo: " + result.getEmpNo());
+                System.out.println("     * empName: " + result.getEmpName());
+                System.out.println("     * payDate: " + result.getPayDate());
+            }
+
+            return result;
+
+        } catch (Exception e) {
+            System.err.println("❌ [FinanceService] 쿼리 실행 중 오류:");
+            e.printStackTrace();
+            return null;
+        }
     }
 
 
@@ -45,15 +70,15 @@ public class FinanceServiceImpl implements FinanceService {
             List<Attendance> records =
                     financeDao.selectAttendanceByEmpMonth(sqlSession, s.getEmpNo(), yearMonth);
 
-            int extendedAmt = calculateExtendedPay(baseHourly, records);
-            int nightAmt    = calculateNightPay(baseHourly, records);
-            int weekendAmt  = calculateWeekendPay(baseHourly, records);
-            int tripAmt     = calculateTripPay(records);
+            int extendedAmt = calculateExtendedPay(baseHourly, records, yearMonth);
+            int nightAmt    = calculateNightPay(baseHourly, records, yearMonth);
+            int weekendAmt  = calculateWeekendPay(baseHourly, records, yearMonth);
+            int tripAmt     = calculateTripPay(records, yearMonth);
 
-            upsertOvertimes(s, yearMonth.replace("-", ""), extendedAmt, nightAmt, weekendAmt, tripAmt);
+            upsertOvertimes(s, yearMonth , extendedAmt, nightAmt, weekendAmt, tripAmt);
 
             int totalOv = extendedAmt + nightAmt + weekendAmt + tripAmt;
-            financeDao.updateOvPrice(sqlSession, s.getEmpNo(), yearMonth.replace("-", ""), totalOv);
+            financeDao.updateOvPrice(sqlSession, s.getEmpNo(), yearMonth, totalOv);
             s.setOvPrice(String.valueOf(totalOv));
 
             int bonusAmt = baseSalary * bonusPercent / 100;
@@ -88,11 +113,24 @@ public class FinanceServiceImpl implements FinanceService {
             s.setNetPay(String.valueOf(netPay));
 
             // DB 반영
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0001", taxNP);
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0002", taxHI);
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0003", taxUE);
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0004", taxIC);
-            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0005", taxLS);
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0001", taxNP); // 국민연금
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0002", taxHI); // 건강보험
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0003", taxUE); // 고용보험
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0004", taxIC); // 소득세
+            financeDao.upsertSalaryTax(sqlSession, s.getEmpNo(), yearMonth, "TAX0005", taxLS); // 지방소득세
+
+            financeDao.updateDeductAmt(sqlSession, s.getEmpNo(), yearMonth, deductAmt);
+            System.out.println("세금 반영: " + s.getEmpNo() + ", " + yearMonth
+                    + " NP=" + taxNP + " HI=" + taxHI + " UE=" + taxUE + " IC=" + taxIC + " LS=" + taxLS);
+            System.out.println("👀 근태 조회: empNo=" + s.getEmpNo() + ", yearMonth=" + yearMonth + ", records=" + records.size());
+            for (Attendance att : records) {
+                System.out.println("   - attDate=" + att.getAttDate() +
+                        ", leavingTime=" + att.getLeavingTime() +
+                        ", status=" + att.getAttStatus());
+            }
+
+
+
         }
 
         return salaryList;
@@ -112,66 +150,102 @@ public class FinanceServiceImpl implements FinanceService {
         financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0004", tripAmt);
     }
 
-    private int calculateExtendedPay(int baseHourly, List<Attendance> records) {
+    private int calculateExtendedPay(int baseHourly, List<Attendance> records, String yearMonth) {
         int extendedAmt = 0;
         for (Attendance att : records) {
-            LocalDate date = LocalDate.parse(att.getAttDate());
-            LocalTime leave = LocalTime.parse(att.getLeavingTime());
-            LocalDateTime out = LocalDateTime.of(date, leave);
+            if (att.getAttDate() == null || att.getLeavingTime() == null) continue;
 
-            LocalDateTime sixPM = date.atTime(18, 0);
-            LocalDateTime tenPM = date.atTime(22, 0);
+            if (!att.getAttDate().startsWith(yearMonth)) continue;
 
-            if (out.isAfter(sixPM)) {
-                LocalDateTime end = out.isBefore(tenPM) ? out : tenPM;
-                long hours = Duration.between(sixPM, end).toHours();
-                extendedAmt += baseHourly * hours;
+            try{
+                LocalDate date = LocalDate.parse(att.getAttDate());
+                LocalTime leave = LocalTime.parse(att.getLeavingTime());
+                LocalDateTime out = LocalDateTime.of(date, leave);
+
+                DayOfWeek day = date.getDayOfWeek();
+                if (day == DayOfWeek.SUNDAY ||
+                        (day == DayOfWeek.MONDAY && out.isBefore(date.atTime(6,0)))) {
+                    continue;
+                }
+
+                LocalDateTime sixPM = date.atTime(18, 0);
+                LocalDateTime tenPM = date.atTime(22, 0);
+
+                if (out.isAfter(sixPM)) {
+                    LocalDateTime end = out.isBefore(tenPM) ? out : tenPM;
+                    long hours = Duration.between(sixPM, end).toHours();
+                    extendedAmt += (int) (baseHourly * hours);
+                }
+            } catch (Exception e) {
+                System.err.println("ExtendedPay 파싱 오류: " + att);
             }
+
         }
         return extendedAmt;
     }
 
-    private int calculateNightPay(int baseHourly, List<Attendance> records) {
+    private int calculateNightPay(int baseHourly, List<Attendance> records, String yearMonth) {
         int nightAmt = 0;
+        YearMonth ym = YearMonth.parse(yearMonth, DateTimeFormatter.ofPattern("yyyy-MM"));
+        LocalDate nextMonthFirst = ym.plusMonths(1).atDay(1);
+        LocalDateTime nextMonthLimit = nextMonthFirst.atTime(6, 0);
+
         for (Attendance att : records) {
-            LocalDate date = LocalDate.parse(att.getAttDate());
-            LocalTime leave = LocalTime.parse(att.getLeavingTime());
-            LocalDateTime out = LocalDateTime.of(date, leave);
+            if (att.getAttDate() == null || att.getLeavingTime() == null) continue;
 
-            LocalDateTime tenPM = date.atTime(22, 0);
-            LocalDateTime sixAM = date.plusDays(1).atTime(6, 0);
+            try {
+                LocalDate date = LocalDate.parse(att.getAttDate());
+                LocalTime leave = LocalTime.parse(att.getLeavingTime());
+                LocalDateTime out = LocalDateTime.of(date, leave);
 
-            if (out.isAfter(tenPM)) {
-                LocalDateTime end = out.isBefore(sixAM) ? out : sixAM;
-                long hours = Duration.between(tenPM, end).toHours();
-                nightAmt += (int)(baseHourly * hours * 1.5);
+                DayOfWeek day = date.getDayOfWeek();
+                if (day == DayOfWeek.SUNDAY ||
+                        (day == DayOfWeek.MONDAY && out.isBefore(date.atTime(6,0)))) {
+                    continue;
+                }
+
+                LocalDateTime tenPM = date.atTime(22, 0);
+                LocalDateTime sixAM = date.plusDays(1).atTime(6, 0);
+
+                if (out.isAfter(tenPM)) {
+                    LocalDateTime end = out.isBefore(sixAM) ? out : sixAM;
+                    long hours = Duration.between(tenPM, end).toHours();
+                    nightAmt += (int) (baseHourly * hours * 1.5);
+                }
+            } catch (Exception e) {
+                System.err.println("ExtendedPay 파싱 오류: " + att);
             }
         }
         return nightAmt;
     }
 
-    private int calculateWeekendPay(int baseHourly, List<Attendance> records) {
+    private int calculateWeekendPay(int baseHourly, List<Attendance> records, String yearMonth) {
         int weekendAmt = 0;
-        for (Attendance att : records) {
-            LocalDate date = LocalDate.parse(att.getAttDate());
-            LocalTime leave = LocalTime.parse(att.getLeavingTime());
-            LocalDateTime out = LocalDateTime.of(date, leave);
+            for (Attendance att : records) {
+                if (att.getAttDate() == null || att.getLeavingTime() == null) continue;
+                if (!att.getAttDate().startsWith(yearMonth)) continue;
 
-            DayOfWeek day = date.getDayOfWeek();
-            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
-                long hours = Duration.between(date.atTime(9, 0), out).toHours();
-                weekendAmt += baseHourly * hours * 2;
+                LocalDate date = LocalDate.parse(att.getAttDate());
+                LocalTime leave = LocalTime.parse(att.getLeavingTime());
+                LocalDateTime out = LocalDateTime.of(date, leave);
+
+                DayOfWeek day = date.getDayOfWeek();
+                if (day == DayOfWeek.SUNDAY) {
+                    long hours = Duration.between(date.atTime(9, 0), out).toHours();
+                    weekendAmt += (int) (baseHourly * hours * 1.5);
+                }
             }
-        }
         return weekendAmt;
     }
 
-    private int calculateTripPay(List<Attendance> records) {
+    private int calculateTripPay(List<Attendance> records, String yearMonth) {
         int tripAmt = 0;
         int dailyAllowance = 50000;
         for (Attendance att : records) {
             if ("X".equals(att.getAttStatus())) {
-                tripAmt += dailyAllowance;
+                if (att.getAttDate() == null || att.getAttDate().startsWith(yearMonth)) {
+                    tripAmt += dailyAllowance;
+                }
             }
         }
         return tripAmt;

@@ -49,7 +49,7 @@ function sendPayroll() {
     const payMonth = document.getElementById("payMonth")?.value;
 
     if (!empNo || !payMonth) {
-        alert("사원번호와 지급월을 모두 입력해주세요.", "warning");
+        alert("사원번호와 지급월을 모두 입력해주세요.");
         return;
     }
 
@@ -65,22 +65,15 @@ function sendPayroll() {
         })
         .then(result => {
             if (result.status === "success") {
-                showAlert("노션 업로드가 완료되었습니다.", "success");
+                alert("노션 업로드가 완료되었습니다.");
                 $("#printModal").modal("hide");
+                $(".modal-backdrop").remove();
             } else {
-                showAlert(' ${result.message || "급여자료가 없습니다."}',"danger");
+                alert(result.message || "급여데이터가 없습니다.");
             }
         })
         .catch(error => {
             console.error(error);
-            showAlert("서버 오류가 발생했습니다.","danger");
+            alert("서버 오류가 발생했습니다.");
         });
-}
-function showAlert(message, type = "info") {
-    const container = document.getElementById("alertContainer");
-    container.innerHTML = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>`;
 }

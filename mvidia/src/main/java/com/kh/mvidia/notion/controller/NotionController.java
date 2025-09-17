@@ -3,17 +3,14 @@ package com.kh.mvidia.notion.controller;
 import com.kh.mvidia.finance.model.service.FinanceService;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.kh.mvidia.sales.model.service.SalesService;
-import com.kh.mvidia.sales.model.vo.Sales;
 import com.kh.mvidia.finance.model.vo.Tax;
 import com.kh.mvidia.notion.service.NotionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/payroll")
@@ -31,71 +28,130 @@ public class NotionController {
         this.financeService = financeService;
     }
 
+    // 기존 export 메소드에 데이터 조회 디버깅 추가
     @GetMapping("/export-notion")
     @ResponseBody
     public ResponseEntity<?> exportToNotion(@RequestParam String empNo,
-                                 @RequestParam String payDate) {
-        System.out.println("▶ exportToNotion 호출됨: empNo=" + empNo + ", payDate=" + payDate);
+                                            @RequestParam String payDate) {
 
-        try{
-            Salary salary = financeService.getSalaryByEmpAndMonth(empNo, payDate);
-            List<Tax> taxList = financeService.getTaxesByEmpAndMonth(empNo, payDate);
+        try {
+            // 데이터 조회 전 파라미터 검증
+            System.out.println("🔍 파라미터 확인: empNo=" + empNo + ", payDate=" + payDate);
+
+            Map<String, Object> param = new HashMap<>();
+            param.put("empNo", empNo);
+            param.put("yearMonth", payDate);
+            Salary salary = financeService.getSalary(param).get(0);
 
             if (salary == null) {
-                return ResponseEntity.badRequest().body(Map.of(
+                System.out.println("급여 데이터 없음");
+
+                return ResponseEntity.ok(Map.of(
                         "status", "fail",
-                        "message", "급여 데이터가 없음"
+                        "message", "급여 데이터가 없습니다"
                 ));
             }
+
+            List<Tax> taxList = financeService.getTaxesByEmpAndMonth(empNo, payDate);
+            System.out.println("💰 세금 데이터: " + (taxList != null ? taxList.size() : 0));
 
             notionService.insertPayrollToNotion(salary, taxList);
 
             return ResponseEntity.ok().body(Map.of(
                     "status", "success",
+                    "message", "급여명세서가 성공적으로 Notion에 업로드되었습니다.",
                     "empNo", empNo,
                     "payDate", payDate
             ));
 
-        } catch(Exception e){
+        } catch (Exception e) {
+            System.err.println("❌ exportToNotion 오류 발생:");
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body("fail: 오류 발생");
+
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "status", "error",
+                    "message", "노션 업로드 중 오류가 발생했습니다: " + e.getMessage(),
+                    "error", e.getClass().getSimpleName()
+            ));
         }
     }
 
-    @GetMapping("/revenue-report")
-    public String revenueReport(
-            @RequestParam(defaultValue = "2025") String year,
-            Model model) {
+    // 데이터 존재 여부 확인용 테스트 엔드포인트
+    @GetMapping("/debug-data")
+    @ResponseBody
+    public ResponseEntity<?> debugData(@RequestParam String empNo,
+                                       @RequestParam String payDate) {
+        try {
+            System.out.println("🔍 데이터 디버깅 시작:");
+            System.out.println("   - 요청 사원번호: [" + empNo + "]");
+            System.out.println("   - 요청 급여년월: [" + payDate + "]");
 
-        List<Sales> profitList = salesService.getQuarterlySales(year);
+            // 급여 데이터 조회
+            Salary salary = financeService.getSalaryByEmpAndMonth(empNo, payDate);
 
-        // 1~4분기 다 채우기 (없는 분기는 매출/이익 0)
-        for (int q = 1; q <= 4; q++) {
-            int finalQ = q;
-            boolean exists = profitList.stream()
-                    .anyMatch(s -> s.getQuarter().equals(String.valueOf(finalQ)));
+            // 세금 데이터 조회
+            List<Tax> taxList = financeService.getTaxesByEmpAndMonth(empNo, payDate);
 
-            if (!exists) {
-                Sales zeroData = new Sales(
-                        null,           // salesCode
-                        null,           // prodCode
-                        null,           // periodSt
-                        null,           // periodFn
-                        "0",            // totalSales
-                        "0",            // opProfit
-                        "전체",          // prodName (또는 "합계")
-                        year,
-                        String.valueOf(q)
-                );
-                profitList.add(zeroData);
+            Map<String, Object> debugInfo = new HashMap<>();
+            debugInfo.put("requestEmpNo", empNo);
+            debugInfo.put("requestPayDate", payDate);
+            debugInfo.put("salaryFound", salary != null);
+            debugInfo.put("taxCount", taxList != null ? taxList.size() : 0);
+
+            if (salary != null) {
+                debugInfo.put("salaryDetails", Map.of(
+                        "empNo", salary.getEmpNo(),
+                        "empName", salary.getEmpName(),
+                        "payDate", salary.getPayDate(),
+                        "netPay", salary.getNetPay()
+                ));
             }
+
+            if (taxList != null && !taxList.isEmpty()) {
+                debugInfo.put("taxDetails", taxList.stream()
+                        .map(tax -> Map.of(
+                                "taxCode", tax.getTaxCode(),
+                                "amount", tax.getAmount()
+                        ))
+                        .collect(Collectors.toList()));
+            }
+
+            return ResponseEntity.ok(debugInfo);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "error", e.getMessage(),
+                    "type", e.getClass().getSimpleName()
+            ));
         }
-
-        // 분기순으로 정렬
-        profitList.sort(Comparator.comparing(Sales::getQuarter));
-
-        model.addAttribute("profitList", profitList);
-        model.addAttribute("year", year);
-        return "finance/revenue-report";
     }
+
+    // 전체 급여 데이터 목록 조회 (데이터 확인용)
+    @GetMapping("/list-salary-data")
+    @ResponseBody
+    public ResponseEntity<?> listSalaryData() {
+        try {
+            // FinanceService에 전체 목록 조회 메소드가 있다면 사용
+            // 없다면 임시로 몇 가지 샘플 데이터로 확인
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "이 엔드포인트는 데이터베이스의 급여 데이터 목록을 확인하기 위한 것입니다.",
+                    "suggestion", "데이터베이스에서 직접 다음 쿼리를 실행해보세요:",
+                    "queries", Arrays.asList(
+                            "SELECT emp_no, pay_date, emp_name FROM salary WHERE emp_no LIKE '%22010001%'",
+                            "SELECT DISTINCT emp_no, pay_date FROM salary ORDER BY pay_date DESC LIMIT 10",
+                            "SELECT COUNT(*) FROM salary WHERE emp_no = '22010001'",
+                            "SELECT * FROM salary WHERE pay_date LIKE '2025-08%'"
+                    )
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+
 }

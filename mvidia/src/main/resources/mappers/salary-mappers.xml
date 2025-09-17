@@ -22,10 +22,11 @@
     </resultMap>
 
     <resultMap id="attendanceResultSet" type="Attendance">
-        <result column="ATT_NO" property="attNo"/>
-        <result column="EMP_NO" property="empNo"/>
-        <result column="ATT_DATE" property="attDate"/>
-        <result column="LEAVING_TIME" property="leavingTime"/>
+        <result column="attDate" property="attDate"/>
+        <result column="leavingTime" property="leavingTime"/>
+        <result column="att_status" property="attStatus"/>
+        <result column="att_no" property="attNo"/>
+        <result column="emp_no" property="empNo"/>
     </resultMap>
 
     <select id="selectSalary" parameterType="map" resultType="Salary">
@@ -69,23 +70,28 @@
 
              , nvl( (select amount from tb_salary_tax
                where emp_no = s.emp_no and pay_date =
-               s.pay_date and tax_code = 'TAX0001'), 0) as incomeTax
+               s.pay_date and tax_code = 'TAX0001'), 0) as nationalPension
 
              , nvl( (select amount from tb_salary_tax
                where emp_no = s.emp_no and pay_date =
-               s.pay_date and tax_code = 'TAX0002'), 0) as nationalPension
+               s.pay_date and tax_code = 'TAX0002'), 0) as healthInsurance
 
              , nvl( (select amount from tb_salary_tax
                where emp_no = s.emp_no and pay_date =
-               s.pay_date and tax_code = 'TAX0003'), 0) as healthInsurance
+               s.pay_date and tax_code = 'TAX0003'), 0) as employmentInsurance
 
              , nvl( (select amount from tb_salary_tax
                where emp_no = s.emp_no and pay_date =
-               s.pay_date and tax_code = 'TAX0004'), 0) as employmentInsurance
+               s.pay_date and tax_code = 'TAX0004'), 0) as incomeTax
 
              , nvl( (select amount from tb_salary_tax
                where emp_no = s.emp_no and pay_date =
                s.pay_date and tax_code = 'TAX0005'), 0) as localTax
+
+             , nvl(s.deduct_amt, 0)                     as deductAmt
+
+             , (s.salary + nvl(s.ov_price,0)
+                + (s.salary * nvl(s.bonus,0) / 100))    as totalPay
           from tb_salary s
           join tb_employee e on s.emp_no = e.emp_no
           join tb_department d on e.dept_code = d.dept_code
@@ -112,39 +118,17 @@
         </where>
     </select>
 
-    <select id="selectAttendanceByMonth" resultMap="attendanceResultSet">
-        select att_no
-             , emp_no
-             , to_char(att_date,'YYYYMMDD') as attDate
-             , to_char(leaving_time,'HH24:MI') as leavingTime
-          from tb_attendance
-         where to_char(att_date,'YYYYMM') = #{yearMonth}
-         order by emp_no, att_date
-    </select>
-
-    <select id="selectDeductByEmpMonth" resultType="int">
-        select nvl(sum(amount), 0)
-          from tb_salary_tax
-         where emp_no = #{empNo}
-           and to_char(pay_date, 'YYYYMM') = #{yearMonth}
-    </select>
-
-    <update id="updateOvPrice">
-        update tb_salary
-           set ov_price = #{ovPrice}
-         where emp_no = #{empNo}
-           AND to_char(pay_date, 'YYYYMM') = #{yearMonth}
-    </update>
 
     <update id="upsertSalaryOver">
          merge into tb_salary_over t
          using
              (
-        select #{empNo} as emp_no,
-               (select max(pay_date)
-          from tb_salary
-         where emp_no = #{empNo}
-           and to_char(pay_date,'YYYYMM') = #{yearMonth} ) as pay_date
+            select #{empNo} as emp_no
+                 , (select max(pay_date)
+              from tb_salary
+             where emp_no = #{empNo}
+               and to_char(pay_date,'YYYY-MM') = #{yearMonth}
+             ) as pay_date
              , #{ovCode} as ov_code
              , #{amount} as amount
           from dual
@@ -202,7 +186,14 @@
         update tb_salary
            set deduct_amt = #{deductAmt}
          where emp_no = #{empNo}
-           and pay_date = #{payDate}
+           and to_char(pay_date, 'YYYY-MM') = #{yearMonth}
+    </update>
+
+    <update id="updateOvPrice">
+        update tb_salary
+           set ov_price = #{ovPrice}
+         where emp_no = #{empNo}
+           and to_char(pay_date, 'YYYY-MM') = #{yearMonth}
     </update>
 
     <select id="selectTaxesByEmpAndMonth" parameterType="map" resultType="Tax">
@@ -213,6 +204,18 @@
           from tb_salary_tax
          where emp_no = #{empNo}
            and to_char(pay_date, 'YYYY-MM') = #{payDate}
+    </select>
+
+    <select id="selectAttendanceByMonth" resultMap="attendanceResultSet">
+        select att_no
+        , emp_no
+        , to_char(att_date,'YYYY-MM-DD') as attDate
+        , to_char(leaving_time,'HH24:MI') as leavingTime
+        , att_status
+        from tb_attendance
+        where to_char(att_date,'YYYY-MM') = #{yearMonth}
+          and emp_no = #{empNo}
+        order by emp_no, att_date
     </select>
 
 </mapper>

@@ -54,4 +54,9 @@ public class FinanceDao {
                 Map.of("empNo", empNo, "yearMonth", yearMonth));
     }
 
+    public int updateDeductAmt(SqlSession sqlSession, String empNo, String yearMonth, int deductAmt) {
+        return sqlSession.update("salaryMapper.updateDeductAmt",
+                Map.of("empNo", empNo, "yearMonth", yearMonth, "deductAmt", deductAmt));
+    }
+
 }

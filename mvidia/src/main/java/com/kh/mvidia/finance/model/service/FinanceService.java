@@ -11,6 +11,5 @@ public interface FinanceService {
 
     Salary getSalaryByEmpAndMonth(String empNo, String payDate);
 
-
     List<Tax> getTaxesByEmpAndMonth(String empNo, String payDate);
 }

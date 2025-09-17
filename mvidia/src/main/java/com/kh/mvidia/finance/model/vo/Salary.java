@@ -59,10 +59,10 @@ public class Salary {
     private String weekendOv;
     private String tripOv;
 
-    private String incomeTax; // 세금 항목
-    private String nationalPension;
+    private String nationalPension; // 세금 항목
     private String healthInsurance;
     private String employmentInsurance;
+    private String incomeTax;
     private String localTax;
     private String deductAmt;
 

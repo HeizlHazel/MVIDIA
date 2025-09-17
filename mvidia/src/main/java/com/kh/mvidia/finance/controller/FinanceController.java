@@ -1,9 +1,7 @@
 package com.kh.mvidia.finance.controller;
 
 import com.kh.mvidia.finance.model.service.FinanceService;
-import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Salary;
-import com.kh.mvidia.sales.model.vo.Sales;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +17,6 @@ import org.thymeleaf.context.Context;
 import java.io.OutputStream;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,22 +33,23 @@ public class FinanceController {
 
     @GetMapping("/payroll")
     public String salary(
-            @RequestParam(required = false, defaultValue = "202508") String yearMonth,
+            @RequestParam(required = false) String yearMonth,
             @RequestParam(required = false) String deptCode,
             @RequestParam(required = false) String jobCode,
             @RequestParam(required = false) String empName,
             Model model) {
 
-        String viewYearMonth;
+        String nowYearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
-        if (yearMonth.matches("\\d{6}")) {
+        String dbYearMonth;
 
-            viewYearMonth = yearMonth.substring(0, 4) + "-" + yearMonth.substring(4);
+        if (yearMonth == null || yearMonth.isEmpty()) {
+            dbYearMonth = nowYearMonth;
         } else {
-            viewYearMonth = yearMonth;
+            dbYearMonth = yearMonth;
         }
 
-        String dbYearMonth = viewYearMonth;
+        String viewYearMonth = dbYearMonth;
 
         Map<String, Object> param = new HashMap<>();
         param.put("yearMonth", dbYearMonth);

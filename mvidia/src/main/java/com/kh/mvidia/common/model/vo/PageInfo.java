@@ -17,4 +17,7 @@ public class PageInfo {
 	private int maxPage;
 	private int startPage;
 	private int endPage;
+	
+	private int startRow;
+	private int endRow;
 }

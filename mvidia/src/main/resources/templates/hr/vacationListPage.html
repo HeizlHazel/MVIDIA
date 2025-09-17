@@ -29,29 +29,31 @@
     <h2 class="page-title">📑 휴가 신청 목록</h2>
     <div class="widget" id="home">
         <div class="stack">
-            <a class="ghost" href="/hr/integratedAttendance.hr">↩ 통합 관리페이지로</a>
+            <a class="ghost" href="/hr/integratedAttendance.hr"><i class="bi bi-arrow-return-left"></i> 통합 관리페이지로</a>
         </div>
 
         <div class="search-container">
             <input type="text" id="vacationSearchKeyword" placeholder="사번, 이름, 사유 등">
             <select id="vacationSearchStatus">
                 <option value="">상태 전체</option>
-                <option value="S1">승인 대기</option>
-                <option value="S2">승인</option>
-                <option value="S3">반려</option>
+                <option value="W">대기</option>
+                <option value="A">승인</option>
+                <option value="D">반려</option>
             </select>
             <select id="vacationSearchType">
                 <option value="">휴가 종류 전체</option>
-                <option value="VA1">연차</option>
-                <option value="VA2">병가</option>
-                <option value="VA3">출산휴가</option>
-                <option value="VA4">경조사</option>
+                <option value="HDL">반차</option>
+                <option value="AL">연차</option>
+                <option value="SL">병가</option>
+                <option value="FO">경조사</option>
+                <option value="ML">출산</option>
+                <option value="RL">포상</option>
             </select>
             <button id="vacationSearchBtn">검색</button>
         </div>
 
         <table class="table mt16">
-            <thead><tr><th>#</th><th>사번</th><th>이름</th><th>종류</th><th>기간</th><th>상태</th><th>조치</th></tr></thead>
+            <thead><tr><th>#</th><th>사번</th><th>이름</th><th>종류</th><th>기간</th><th>사유</th><th>상태</th><th>조치</th></tr></thead>
             <tbody id="vacationList">
             <tr th:if="${#lists.isEmpty(vaList)}">
                 <td colspan="7" style="text-align: center;">조회된 휴가 내역이 없습니다.</td>
@@ -71,6 +73,7 @@
                     </select>
                 </td>
                 <td th:text="${va.vaStart} + ' ~ ' + ${va.vaEnd}"></td>
+                <td th:text="${va.vaReason}"></td>
                 <td>
                     <select class="va-status-select" th:data-original-status="${va.vaStatus}">
                         <option value="W" th:selected="${va.vaStatus eq 'W'}" >대기</option>
@@ -88,7 +91,7 @@
             </tbody>
         </table>
 
-        <div class="stack mt8" id="vacationPager" th:if="${pi.listCount > 0}">
+        <div class="stack mt8" id="vacationPager" th:if="${pi.listCount > 0}" align="center">
             <a th:href="@{/hr/vacationList.hr(cpage=${pi.currentPage-1})}" th:if="${pi.currentPage > 1}">&lt;</a>
             <span th:each="p : ${#numbers.sequence(pi.startPage, pi.endPage)}">
                 <a th:href="@{/hr/vacationList.hr(cpage=${p})}" th:text="${p}" th:class="${pi.currentPage eq p ? 'active' : ''}"></a>
@@ -128,7 +131,7 @@
         const newType = row.find('.va-type-select').val();
 
         $.ajax({
-            url: contextPath + 'hr/vaAtions/update',
+            url: contextPath + 'hr/vacations/update',
             type: 'POST',
             data: { vaId: vaId, vaStatus: newStatus, vaCategory: newType },
             success: function(response) {
@@ -139,12 +142,12 @@
                     row.find('.va-type-select').data('original-type', newType);
                     row.find('.action-buttons').css('display', 'none');
                 } else {
-                    alert('휴가 정보 변경에 실패했습니다: ' + response.message);
+                    alertify.alert('휴가 정보 변경에 실패했습니다: ' + response.message);
                 }
             },
             error: function(xhr) {
                 console.error("업데이트 실패: ", xhr.responseText);
-                alert('서버 오류로 업데이트에 실패했습니다.');
+                alertify.alert('서버 오류로 업데이트에 실패했습니다.');
             }
         });
     });

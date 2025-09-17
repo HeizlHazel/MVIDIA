@@ -22,7 +22,11 @@
         .hr-Attendance .ghost:hover { background: #e7f3f7; }
         .hr-Attendance .att-cancel-btn {display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; margin-left: 5px; }
         .hr-Attendance .att-cancel-btn:hover { background: #e7f3f7; }
-        .time-input {width: 80px; padding: 4px; border: 1px solid #ccc; border-radius: 5px;}
+        .time-input { width: 120px; padding: 4px; border: 1px solid #ccc; border-radius: 5px; min-width: 116px; font-size: 13px;}
+        .time-input::-webkit-datetime-edit-fields-wrapper { padding: 0 2px; }
+        .time-input::-webkit-datetime-edit-hour-field,
+        .time-input::-webkit-datetime-edit-minute-field,
+        .time-input::-webkit-datetime-edit-ampm-field { padding: 0 1px; }
     </style>
 </head>
 <body>
@@ -30,7 +34,7 @@
     <h2 class="page-title">📑 근태 목록</h2>
     <div class="widget" id="home">
         <div class="stack">
-            <a class="ghost" href="/hr/integratedAttendance.hr">↩ 통합 관리페이지로</a>
+            <a class="ghost" href="/hr/integratedAttendance.hr"><i class="bi bi-arrow-return-left"></i> 통합 관리페이지로</a>
         </div>
 
         <div class="search-container">
@@ -86,7 +90,7 @@
             </tbody>
         </table>
 
-        <div class="stack mt8" id="attendancePager" th:if="${pi.listCount > 0}">
+        <div class="stack mt8" id="attendancePager" th:if="${pi.listCount > 0}" align="center">
             <a th:href="@{/hr/attendanceList.hr(cpage=${pi.currentPage-1})}" th:if="${pi.currentPage > 1}">&lt;</a>
             <span th:each="p : ${#numbers.sequence(pi.startPage, pi.endPage)}">
                 <a th:href="@{/hr/attendanceList.hr(cpage=${p})}" th:text="${p}" th:class="${pi.currentPage eq p ? 'active' : ''}"></a>
@@ -158,7 +162,7 @@
                     row.find('.att-leaving-input').data('original-leaving', newLeaving);
                     row.find('.action-buttons').css('display', 'none');
                 } else {
-                    alert('근태 정보 변경에 실패했습니다: ' + response.message);
+                    alertify.alert('근태 정보 변경에 실패했습니다: ' + response.message);
                 }
             },
             error: function(xhr) {

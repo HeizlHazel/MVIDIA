@@ -289,11 +289,6 @@ public class HrController {
 		int boardLimit = 15;
 		PageInfo pi = Pagination.getPageInfo(listCount, currentPage, pageLimit, boardLimit);
 		
-		int startRow = (pi.getCurrentPage() - 1) * pi.getBoardLimit() + 1;
-		int endRow   = startRow + pi.getBoardLimit() - 1;
-		pi.setStartRow(startRow);
-		pi.setEndRow(endRow);
-		
 		ArrayList<Vacation> vaList = vaService.selectVacationList(pi, searchMap);
 		model.addAttribute("vaList", vaList);
 		model.addAttribute("pi", pi);
@@ -302,12 +297,15 @@ public class HrController {
 	
 	@PostMapping("/vacations/update")
 	@ResponseBody
-	public Map<String, Object> updateVacationStatus(@RequestParam String vaId, @RequestParam String vaStatus, @RequestParam String vaCategory) {
+	public Map<String, Object> updateVacationStatus(@RequestParam String vaId, @RequestParam String vaStatus, @RequestParam String vaCategory, HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		Vacation va = new Vacation();
 		va.setVaId(vaId);
 		va.setVaStatus(vaStatus);
 		va.setVaCategory(vaCategory);
+		
+		Employee authEmp =  (Employee)session.getAttribute("loginEmp");
+		va.setAuthNo(authEmp.getEmpNo());
 		
 		int result = vaService.updateVacation(va);
 		
@@ -336,10 +334,6 @@ public class HrController {
 		int boardLimit = 15;
 		PageInfo pi = Pagination.getPageInfo(listCount, currentPage, pageLimit, boardLimit);
 		
-		int startRow = (pi.getCurrentPage() - 1) * pi.getBoardLimit() + 1;
-		int endRow   = startRow + pi.getBoardLimit() - 1;
-		pi.setStartRow(startRow);
-		pi.setEndRow(endRow);
 		
 		ArrayList<Attendance> attList = attService.selectAttendanceList(pi, searchMap);
 		
@@ -353,7 +347,8 @@ public class HrController {
 	public Map<String, Object> updateAttendanceStatus(@RequestParam String attNo,
 													  @RequestParam String attStatus,
 													  @RequestParam String arrivingTime,
-													  @RequestParam String leavingTime) {
+													  @RequestParam String leavingTime,
+													  HttpSession session) {
 		Map<String, Object> response = new HashMap<>();
 		Attendance att = new Attendance();
 		att.setAttNo(attNo);
@@ -361,6 +356,8 @@ public class HrController {
 		att.setArrivingTime(arrivingTime);
 		att.setLeavingTime(leavingTime);
 		
+		Employee hrmEmp = (Employee)session.getAttribute("loginEmp");
+		att.setHrmNo(hrmEmp.getEmpNo());
 		int result = attService.updateAttendance(att);
 		
 		if (result > 0) {

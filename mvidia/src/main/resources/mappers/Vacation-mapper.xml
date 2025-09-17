@@ -29,6 +29,7 @@
                       , va_name
                       , to_char(va_start, 'YYYY-MM-DD') as "va_start"
                       , to_char(va_end, 'YYYY-MM-DD') as "va_end"
+                      , va_reason
                       , va_status
                       , status_name
                    from tb_vacation
@@ -49,13 +50,13 @@
           join tb_status on (va_status = status_code)
         <trim prefix="where" prefixOverrides="and|or">
             <if test="keyword != null and keyword != ''">
-                and (emp_no like '%' || #{keyword} || '%' or emp_name like '%' || #{keyword} || '%' or va_reason like '%' || #{keyword} || '%')
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or va_reason like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
             </if>
             <if test="status != null and status != ''">
-                and va_status = #{status}
+                and va_status = #{searchMap.status}
             </if>
             <if test="type != null and type != ''">
-                and va_category = #{type}
+                and va_category = #{searchMap.type}
             </if>
         </trim>
     </select>
@@ -73,6 +74,7 @@
                                , va_name
                                , to_char(va_start, 'YYYY-MM-DD') as "va_start"
                                , to_char(va_end, 'YYYY-MM-DD') as "va_end"
+                               , va_reason
                                , va_status
                                , status_name
                             from tb_vacation
@@ -81,7 +83,7 @@
                             join tb_status on (va_status = status_code)
         <trim prefix="where" prefixOverrides="and|or">
             <if test="searchMap.keyword != null and searchMap.keyword != ''">
-                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_name like '%' || #{searchMap.keyword} || '%' or va_reason like '%' || #{searchMap.keyword} || '%')
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or va_reason like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
             </if>
             <if test="searchMap.status != null and searchMap.status != ''">
                 and va_status = #{searchMap.status}
@@ -98,7 +100,9 @@
 
     <update id="updateVacation">
         update tb_vacation
-            set va_status = #{vaStatus}, va_category = #{vaCategory}
+            set va_status = #{vaStatus}
+              , va_category = #{vaCategory}
+              , auth_no = #{authNo}
          where va_id = #{vaId}
     </update>
 

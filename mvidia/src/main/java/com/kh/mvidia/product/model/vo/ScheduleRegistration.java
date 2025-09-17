@@ -22,4 +22,6 @@ public class ScheduleRegistration { // 품질점검일정등록 테이블
     private String details;   // 상세내역
     private int totalCount;   // 전체 검사 수
     private int defCount;     // 불량 검사 수
+    private String taskCode;  // task_code 저장
+    private String itemCode;  // item_code 저장
 }

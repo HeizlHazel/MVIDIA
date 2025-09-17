@@ -6,10 +6,11 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>scheduleAllListView</title>
 </head>
 <body>
 <h1>📋 전체 일정</h1>
+<a th:href="@{/clist.bo}">모니터링으로 가기</a>
 <div style="max-height:400px; overflow-y:auto;">
     <table>
         <thead>
@@ -23,7 +24,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="s : ${ScheduleAllList}">
+        <tr th:each="s : ${schrList}">
             <td th:text="${s.schNo}"></td>
             <td th:text="${s.bpPartner}"></td>
             <td th:text="${s.startDate}"></td>

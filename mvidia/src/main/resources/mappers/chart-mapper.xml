@@ -16,6 +16,8 @@
         <result column="details" property="details" />
         <result column="total_count" property="totalCount" />
         <result column="def_count" property="defCount" />
+        <result column="task_code" property="taskCode" />
+        <result column="item_code" property="itemCode" />
     </resultMap>
 
     <resultMap id="ProgressResultSet" type="ProgressChart">
@@ -41,6 +43,8 @@
              , details
              , total_count
              , def_count
+             , task_code
+             , item_code
           from tb_schedule_registration
     </select>
 
@@ -59,31 +63,75 @@
     <select id="selectTop5Schr" resultMap="ChartResultSet">
         select *
           from (
-               select *
-                 from tb_schedule_registration
+               select
+                      s.schr_id
+                    , p.task_code
+                    , p.item_code
+                    , s.start_date
+                    , s.end_date
+                    , sum(case when q.check_status = 'C' then q.def_count else 0 end) as doneCount
+                    , sum(case when q.check_status = 'P' then q.def_count else 0 end) as progressCount
+                    , sum(case when q.check_status = 'S' then q.def_count else 0 end) as delayCount
+                    , sum(case when q.check_status = 'W' then q.def_count else 0 end) as planCount
+                 from tb_progress_chart p
+                 join tb_schedule_registration s on p.task_id = s.schr_id
+                 left
+                 join tb_quality_check q on s.schr_id = q.schr_id
+                group
+                   by s.schr_id, p.task_code, p.item_code, s.start_date, s.end_date
                 order
-                   by end_date
-          )
-         where rownum &gt;= 5
+                   by s.end_date
+               )
+         where rownum &lt;= 5
     </select>
 
     <!-- 현재 진행 중인 일정 진행률 top5 -->
     <select id="selectTop5Prog" resultMap="ProgressResultSet">
         select *
           from (
-               select *
-                 from tb_progress_chart
+               select
+                      p.task_code
+                    , p.task_id
+                    , p.item_code
+                    , s.schr_id
+                    , s.start_date
+                    , s.end_date
+                    , case when s.total_count > 0
+                      then round( nvl(sum(case when q.check_status='C' then 1 else 0 end),0) * 100.0 / s.total_count, 2 )
+                      else 0
+                      end as prog_rate
+                 from tb_progress_chart p
+                 join tb_schedule_registration s on p.task_id = s.schr_id
+                 left
+                 join tb_quality_check q on s.schr_id = q.schr_id
+                group
+                   by p.task_code, p.task_id, p.item_code, s.schr_id, s.start_date, s.end_date, s.total_count
                 order
-                   by end_date
-          )
-         where rownum &gt;= 5
+                   by s.end_date
+               )
+         where rownum &lt;= 5
     </select>
 
     <!-- 개별 일정 전체 (더보기 클릭-> 페이지 이동) -->
     <select id="selectAllSchr" resultMap="ChartResultSet">
-        select *
-          from tb_schedule_registration
+        select
+               s.schr_id
+             , s.sch_no
+             , p.task_code
+             , p.item_code
+             , s.start_date
+             , s.end_date
+             , sum(case when q.check_status = 'C' then q.def_count else 0 end) as doneCount
+             , sum(case when q.check_status = 'P' then q.def_count else 0 end) as progressCount
+             , sum(case when q.check_status = 'S' then q.def_count else 0 end) as delayCount
+             , sum(case when q.check_status = 'W' then q.def_count else 0 end) as planCount
+          from tb_progress_chart p
+          join tb_schedule_registration s on p.task_id = s.schr_id
+          left
+          join tb_quality_check q on s.schr_id = q.schr_id
+         group
+            by s.schr_id, s.sch_no, p.task_code, p.item_code, s.start_date, s.end_date
          order
-            by end_date
+            by s.end_date
     </select>
  </mapper>

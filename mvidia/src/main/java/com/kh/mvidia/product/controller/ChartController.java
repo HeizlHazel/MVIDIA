@@ -24,11 +24,13 @@ public class ChartController {
     @GetMapping("/clist.bo")
     public String chartboard(Model model){
 
-        List<ProgressChart> progTop5 = cService.selectTop5Prog();
+        List<ScheduleRegistration> schrList = cService.selectAllSchr();
         List<ScheduleRegistration> schrTop5 = cService.selectTop5Schr();
+        List<ProgressChart> progTop5 = cService.selectTop5Prog();
 
-        model.addAttribute("progTop5", progTop5);
+        model.addAttribute("schrList", schrList);
         model.addAttribute("schrTop5", schrTop5);
+        model.addAttribute("progTop5", progTop5);
 
         return "product/chartListView";
     }
@@ -37,34 +39,22 @@ public class ChartController {
     // -> 브라우저에서 json 가져올 때 호출함
     @GetMapping("/cplist.bo")
     @ResponseBody
-    public Map<String, Object> ChartData(){
+    public Map<String, Object> chartBoardAjax(){
 
         Map<String, Object> result = new HashMap<>();
+        result.put("progTop5", cService.selectTop5Prog());
+        result.put("schrTop5", cService.selectTop5Schr());
+        result.put("schrList", cService.selectAllSchr());
         return result;
     }
 
-    // 대시보드 페이지 이동
-    @GetMapping("/dashboard.bo")
-    public String chartDashboard(Model model){
-        // 종료임박순 5개 일정만 조회
-        List<ScheduleRegistration> schrList = cService.selectTop5Schr();
-        model.addAttribute("dashboardData", schrList);
-
-        // 진행률 데이터 (샘플/정적)
-        List<ProgressChart> progList = cService.selectProgList();
-        model.addAttribute("progressData", progList);
-
-        return "chart/chartListView";
-    }
-
     // 전체 일정 페이지
-    @GetMapping("/schrAllList.bo")
+    @GetMapping("/schrList.bo")
     public String scheduleList(Model model){
-        List<ScheduleRegistration> fullList = cService.selectAllSchr();
-        model.addAttribute("fullScheduleList", fullList);
-        return "chart/fullScheduleListView";
+        List<ScheduleRegistration> schrList = cService.selectAllSchr();
+        model.addAttribute("schrList", schrList);
+        return "product/scheduleAllListView";
     }
-
 
 
 }

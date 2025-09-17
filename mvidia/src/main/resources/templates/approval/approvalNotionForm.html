@@ -60,21 +60,7 @@
             box-shadow: 0 -2px 4px rgba(0,123,255,0.1);
             outline: none;
         }
-/*
-        .form label{font-size:12px;color:var(--muted)}
-        .form input,
-        .form textarea{padding:10px 12px;border-radius:12px;border:1px solid #dde6ec;background:#fff;outline:none}
-        .form input[readonly]{background:#f1f5f8;color:#6f7c83}
 
-        .row {
-            display: flex;
-            gap: 20px; /* 간격 */
-            margin-bottom: 15px;
-        }
-        .row .col {
-            flex: 1; /* 같은 비율로 너비 차지 */
-        }
-        */
         .form {
             padding: 20px;
             background: #fff;
@@ -152,8 +138,8 @@
 <body>
     <div class="content">
         <div class="innerOuter">
-<!--            <h3>전자결재 신청폼</h3>-->
-<!--            <br>-->
+            <h3>📝 전자결재 신청</h3>
+            <br>
 
             <div class="swtch" name="swtch">
                 <button class="tab active" data-value="expense">지출 결의서</button>
@@ -250,7 +236,7 @@
                 const value = tab.dataset.value;
 
                 // overtime일 때 첨부파일 숨기기
-                if (value === "overtime") {
+                if (value === "overtime" || value === "purchase" || value === "access") {
                     fileUploadArea.style.display = "none";
                   } else {
                     fileUploadArea.style.display = "block";

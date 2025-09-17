@@ -1,5 +1,8 @@
 package com.kh.mvidia.approvalNotion.controller;
 
+import com.kh.mvidia.approvalNotion.model.dto.ApprovalDetail;
+import com.kh.mvidia.approvalNotion.model.dto.ApprovalItem;
+import com.kh.mvidia.approvalNotion.model.dto.NotionPageResult;
 import com.kh.mvidia.approvalNotion.model.service.ApprovalServiceImpl;
 import kong.unirest.JsonNode;
 
@@ -9,6 +12,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import kong.unirest.HttpResponse;
+
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -21,18 +26,8 @@ public class approvalController {
     /* 전자결재 신청 */
     @GetMapping("approvalform")
     public String approvalForm() {
-//    public String approvalForm(Model model) {
-//        model.addAttribute("sessionSeconds", 3600);
         return "approval/approvalNotionForm";
     }
-
-    /* 전자결재 문서함
-    @GetMapping("approvalbox")
-    public String approvalBox(Model model) {
-        model.addAttribute("sessionSeconds", 3600);
-        return "approval/approvalNotionBox";
-    }
-    */
 
     @ResponseBody
     @PostMapping(value="add.notion", consumes="application/json")
@@ -64,10 +59,81 @@ public class approvalController {
     }
 
     @GetMapping("approvalbox")
-    public String selectNotion(Model model) {
-        String dbData = aService.getDatabase();
-        model.addAttribute("dbData", dbData);
-        return "approval/approvalNotionList";
+    public String selectNotion(
+            @RequestParam(defaultValue = "") String cursor,
+            @RequestParam(defaultValue = "10") int size,
+            Model model) {
+        try {
+            NotionPageResult pageData = aService.getDatabaseWithPaging(cursor, size);
+
+            model.addAttribute("approvals", pageData.getResults());
+            model.addAttribute("nextCursor", pageData.getNextCursor());
+            model.addAttribute("hasMore", pageData.isHasMore());
+            model.addAttribute("currentCursor", cursor);
+
+            return "approval/approvalNotionList";
+
+        } catch (Exception e) {
+            System.err.println("에러 발생: " + e.getMessage());
+            e.printStackTrace();
+
+            return "approval/approvalNotionList";
+        }
+    }
+
+    // ✅ Ajax 전용 (JSON 반환)
+    @GetMapping("approvalbox/filter")
+    @ResponseBody
+    public List<ApprovalItem> getFilteredApprovals(
+            @RequestParam(defaultValue = "all") String filter,
+            @RequestParam(defaultValue = "") String cursor) {
+
+        return aService.getApprovalList(filter, cursor);
+    }
+
+    @GetMapping("approvalbox/data")
+    @ResponseBody
+    public List<ApprovalItem> getApprovalData(
+            @RequestParam(defaultValue = "") String cursor,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "all") String filter) {
+
+        NotionPageResult pageData = aService.getDatabaseWithPaging(cursor, size);
+
+        if ("all".equals(filter)) {
+            return pageData.getResults();
+        }
+
+        return pageData.getResults().stream()
+                .filter(item ->
+                        ("pending".equals(filter) && "대기".equals(item.getStatus())) ||
+                                ("approved".equals(filter) && "승인".equals(item.getStatus())) ||
+                                ("rejected".equals(filter) && "반려".equals(item.getStatus()))
+                )
+                .toList();
+    }
+
+
+    @ResponseBody
+    @GetMapping("/approval/detail/{pageId}")
+    public ApprovalDetail getApprovalDetail(@PathVariable String pageId) {
+        return aService.getApprovalDetail(pageId);
+    }
+
+    @ResponseBody
+    @PostMapping("/approval/approve/{pageId}")
+    public String approveApproval(@PathVariable String pageId) {
+        // 노션 API를 통해 상태를 "승인"으로 업데이트하는 서비스 메서드 호출
+        aService.updateApprovalStatus(pageId, "승인");
+        return "success";
+    }
+
+    @ResponseBody
+    @PostMapping("/approval/reject/{pageId}")
+    public String rejectApproval(@PathVariable String pageId) {
+        // 노션 API를 통해 상태를 "반려"로 업데이트하는 서비스 메서드 호출
+        aService.updateApprovalStatus(pageId, "반려");
+        return "success";
     }
 
 }

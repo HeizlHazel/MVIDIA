@@ -98,172 +98,192 @@
     <canvas id="statusChart"></canvas>
 </div>
 
+<!-- 도넛 차트: 불량 유형별 합계 -->
+<div class="chart-container">
+    <canvas id="defectDonut"></canvas>
+</div>
+
+
 <script>
-    // 초기 데이터 (예시)
-    let scheduleData = [
-      { schr_id: ${shcr_id}, doneCount: 2, progressCount: 5, delayCount: 2, planCount: 1, totalCount: ${total_count} }
-    ];
 
-    const ctx = document.getElementById('statusChart').getContext('2d');
-    const statusChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: scheduleData.map(d => d.schr_id),
-        datasets: [
-          { label: '완료(C)', data: scheduleData.map(d=>d.doneCount), backgroundColor:'rgba(75,192,192,0.8)' },
-          { label: '진행중(P)', data: scheduleData.map(d=>d.progressCount), backgroundColor:'rgba(54,162,235,0.8)' },
-          { label: '지연(S)', data: scheduleData.map(d=>d.delayCount), backgroundColor:'rgba(255,206,86,0.8)' },
-          { label: '대기(W)', data: scheduleData.map(d=>d.planCount), backgroundColor:'rgba(201,203,207,0.8)' }
-        ]
-      },
-      options: {
-        indexAxis: 'y',
-        scales: {
-        y: { stacked: true },
-        x: { stacked: true }
-        },
-        responsive:true,
-        plugins:{
-          title:{ display:true, text:'상태별 누적 검사 건수' },
-          legend:{
-              position:'bottom',
-              labels:{
-                  usePointStyle: true,
-                  pointStyle: 'circle',
-                  boxWidth: 8,
-                  boxHeight: 8,
-                  padding: 10,
-                  textAlign: 'center',
-                  font:{size: 11}
-              }
-          },
-          datalabels:{
-            color:'black',
-            anchor:'center',
-            align:'center',
-            offset: 2,
-            formatter:(value, context)=>{
-              const idx = context.dataIndex;
-              const total = scheduleData[idx].totalCount;
-              const done = scheduleData[idx].doneCount;
-              const progRate = total>0?Math.round(done*100/total):0;
-              return progRate+'%';
-            }
+
+    // 도넛 차트 생성
+new Chart(document.getElementById('defectDonut'), {
+  type: 'doughnut',
+  data: defectData,
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom' },
+      tooltip: { enabled: true }
+    }
+  }
+});
+// 초기 데이터 (예시)
+let scheduleData = [
+  { schr_id: ${shcr_id}, doneCount: 2, progressCount: 5, delayCount: 2, planCount: 1, totalCount: ${total_count} }
+];
+
+const ctx = document.getElementById('statusChart').getContext('2d');
+const statusChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: scheduleData.map(d => d.schr_id),
+    datasets: [
+      { label: '완료(C)', data: scheduleData.map(d=>d.doneCount), backgroundColor:'rgba(75,192,192,0.8)' },
+      { label: '진행중(P)', data: scheduleData.map(d=>d.progressCount), backgroundColor:'rgba(54,162,235,0.8)' },
+      { label: '지연(S)', data: scheduleData.map(d=>d.delayCount), backgroundColor:'rgba(255,206,86,0.8)' },
+      { label: '대기(W)', data: scheduleData.map(d=>d.planCount), backgroundColor:'rgba(201,203,207,0.8)' }
+    ]
+  },
+  options: {
+    indexAxis: 'y',
+    scales: {
+    y: { stacked: true },
+    x: { stacked: true }
+    },
+    responsive:true,
+    plugins:{
+      title:{ display:true, text:'상태별 누적 검사 건수' },
+      legend:{
+          position:'bottom',
+          labels:{
+              usePointStyle: true,
+              pointStyle: 'circle',
+              boxWidth: 8,
+              boxHeight: 8,
+              padding: 10,
+              textAlign: 'center',
+              font:{size: 11}
           }
-        },
-        scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{precision:0} } }
       },
-      plugins:[ChartDataLabels]
-    });
-
-    // 일정 선택 시 total/def 표시
-    document.getElementById('schrSelect').addEventListener('change', function(){
-      const selected = this.selectedOptions[0];
-      if(selected && selected.value){
-        document.getElementById('totalCount').innerText = selected.dataset.total;
-        document.getElementById('defCount').innerText = selected.dataset.def;
-        // 기본 입력 초기화
-        document.getElementById('doneInput').value = 0;
-        document.getElementById('progressInput').value = 0;
-        document.getElementById('delayInput').value = 0;
-        document.getElementById('planInput').value = 0;
-      } else {
-        document.getElementById('totalCount').innerText = '-';
-        document.getElementById('defCount').innerText = '-';
+      datalabels:{
+        color:'black',
+        anchor:'center',
+        align:'center',
+        offset: 2,
+        formatter:(value, context)=>{
+          const idx = context.dataIndex;
+          const total = scheduleData[idx].totalCount;
+          const done = scheduleData[idx].doneCount;
+          const progRate = total>0?Math.round(done*100/total):0;
+          return progRate+'%';
+        }
       }
+    },
+    scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{precision:0} } }
+  },
+  plugins:[ChartDataLabels]
+});
+
+// 일정 선택 시 total/def 표시
+document.getElementById('schrSelect').addEventListener('change', function(){
+  const selected = this.selectedOptions[0];
+  if(selected && selected.value){
+    document.getElementById('totalCount').innerText = selected.dataset.total;
+    document.getElementById('defCount').innerText = selected.dataset.def;
+    // 기본 입력 초기화
+    document.getElementById('doneInput').value = 0;
+    document.getElementById('progressInput').value = 0;
+    document.getElementById('delayInput').value = 0;
+    document.getElementById('planInput').value = 0;
+  } else {
+    document.getElementById('totalCount').innerText = '-';
+    document.getElementById('defCount').innerText = '-';
+  }
+});
+
+// 값 넣기 버튼
+document.getElementById('updateBtn').addEventListener('click', ()=>{
+  const schrId = document.getElementById('schrSelect').value;
+  if(!schrId) return alert("일정을 선택해주세요.");
+
+  const done = parseInt(document.getElementById('doneInput').value)||0;
+  const progress = parseInt(document.getElementById('progressInput').value)||0;
+  const delay = parseInt(document.getElementById('delayInput').value)||0;
+  const plan = parseInt(document.getElementById('planInput').value)||0;
+
+  // 선택한 일정 데이터 업데이트
+  const idx = scheduleData.findIndex(d=>d.schr_id===schrId);
+  if(idx>=0){
+    scheduleData[idx].doneCount = done;
+    scheduleData[idx].progressCount = progress;
+    scheduleData[idx].delayCount = delay;
+    scheduleData[idx].planCount = plan;
+  } else {
+    scheduleData.push({ schr_id: schrId, doneCount: done, progressCount: progress, delayCount: delay, planCount: plan, totalCount: parseInt(document.getElementById('totalCount').innerText) });
+  }
+
+  // 차트 데이터 갱신
+  statusChart.data.datasets[0].data = scheduleData.map(d=>d.doneCount);
+  statusChart.data.datasets[1].data = scheduleData.map(d=>d.progressCount);
+  statusChart.data.datasets[2].data = scheduleData.map(d=>d.delayCount);
+  statusChart.data.datasets[3].data = scheduleData.map(d=>d.planCount);
+  statusChart.update();
+});
+
+<!-- 불량률 도넛 차트 부분 -->
+<div class="donut-chart-container" style="--defect-rate: 72deg;">
+  <div class="donut-chart-label">20%</div>
+</div>
+<!-- 추후 가능하면 사용하기 상세보기-> 모달창
+일정 카드 클릭 이벤트 바인딩 (onclick or addEventListener)
+해당 일정 ID(schrId) Ajax로 조회 → 상세 데이터 가져와서 모달창 출력
+
+document.querySelectorAll(".schedule-item").forEach(item => {
+item.addEventListener("click", function() {
+  const schId = this.dataset.schId;
+  fetch(`/progress/detail/${schId}`)
+    .then(res => res.json())
+    .then(data => {
+      // 모달창에 데이터 채우기
+      document.getElementById("modal-title").innerText = data.schNo;
+      document.getElementById("modal-body").innerText = JSON.stringify(data);
+      $("#detailModal").modal("show");
     });
+});
+});
+-->
 
-    // 값 넣기 버튼
-    document.getElementById('updateBtn').addEventListener('click', ()=>{
-      const schrId = document.getElementById('schrSelect').value;
-      if(!schrId) return alert("일정을 선택해주세요.");
 
-      const done = parseInt(document.getElementById('doneInput').value)||0;
-      const progress = parseInt(document.getElementById('progressInput').value)||0;
-      const delay = parseInt(document.getElementById('delayInput').value)||0;
-      const plan = parseInt(document.getElementById('planInput').value)||0;
-
-      // 선택한 일정 데이터 업데이트
-      const idx = scheduleData.findIndex(d=>d.schr_id===schrId);
-      if(idx>=0){
-        scheduleData[idx].doneCount = done;
-        scheduleData[idx].progressCount = progress;
-        scheduleData[idx].delayCount = delay;
-        scheduleData[idx].planCount = plan;
-      } else {
-        scheduleData.push({ schr_id: schrId, doneCount: done, progressCount: progress, delayCount: delay, planCount: plan, totalCount: parseInt(document.getElementById('totalCount').innerText) });
-      }
-
-      // 차트 데이터 갱신
-      statusChart.data.datasets[0].data = scheduleData.map(d=>d.doneCount);
-      statusChart.data.datasets[1].data = scheduleData.map(d=>d.progressCount);
-      statusChart.data.datasets[2].data = scheduleData.map(d=>d.delayCount);
-      statusChart.data.datasets[3].data = scheduleData.map(d=>d.planCount);
-      statusChart.update();
-    });
-
-  <!-- 불량률 도넛 차트 부분 -->
-  <div class="donut-chart-container" style="--defect-rate: 72deg;">
-      <div class="donut-chart-label">20%</div>
+<!--/*
+  종료임박순 5개 일정만 표시
+  <div th:each="schedule : ${schrTopList}">
+      <p>
+          <span th:text="${schedule.bpPartner}"></span>
+          | 진행률: <span th:text="${#numbers.formatDecimal(schedule.totalCount > 0 ? schedule.defCount*100.0/schedule.totalCount : 0, 0, 2)}"></span>%
+      </p>
   </div>
-  <!-- 추후 가능하면 사용하기 상세보기-> 모달창
-  일정 카드 클릭 이벤트 바인딩 (onclick or addEventListener)
-  해당 일정 ID(schrId) Ajax로 조회 → 상세 데이터 가져와서 모달창 출력
-
-  document.querySelectorAll(".schedule-item").forEach(item => {
-    item.addEventListener("click", function() {
-      const schId = this.dataset.schId;
-      fetch(`/progress/detail/${schId}`)
-        .then(res => res.json())
-        .then(data => {
-          // 모달창에 데이터 채우기
-          document.getElementById("modal-title").innerText = data.schNo;
-          document.getElementById("modal-body").innerText = JSON.stringify(data);
-          $("#detailModal").modal("show");
-        });
-    });
-  });
-  -->
-
-
-  <!--/*
-      종료임박순 5개 일정만 표시
-      <div th:each="schedule : ${schrTopList}">
-          <p>
-              <span th:text="${schedule.bpPartner}"></span>
-              | 진행률: <span th:text="${#numbers.formatDecimal(schedule.totalCount > 0 ? schedule.defCount*100.0/schedule.totalCount : 0, 0, 2)}"></span>%
-          </p>
-      </div>
 
 
 
-       차트 영역
-      <canvas id="myChart"></canvas>
+   차트 영역
+  <canvas id="myChart"></canvas>
 
-      <script>
-          const ctx = document.getElementById('myChart');
+  <script>
+      const ctx = document.getElementById('myChart');
 
-          const labels = [
-              /* Thymeleaf 반복문으로 제품명/코드 삽입 */
-              /* 예시 */
-              <th:block th:each="p : ${progTop5}">'[[${p.itemCode}]]',</th:block>
-          ];
-          const dataValues = [
-              <th:block th:each="p : ${progTop5}">[[${p.progRate}]],</th:block>
-          ];
+      const labels = [
+          /* Thymeleaf 반복문으로 제품명/코드 삽입 */
+          /* 예시 */
+          <th:block th:each="p : ${progTop5}">'[[${p.itemCode}]]',</th:block>
+      ];
+      const dataValues = [
+          <th:block th:each="p : ${progTop5}">[[${p.progRate}]],</th:block>
+      ];
 
-          new Chart(ctx, {
-              type: 'bar',
-              data: {
-                  labels: labels,
-                  datasets: [{
-                      label: '작업 진행률',
-                      data: dataValues,
-                      backgroundColor: '#186aea'
-                  }]
-              },
-              options: { responsive: true }
-          });
+      new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: labels,
+              datasets: [{
+                  label: '작업 진행률',
+                  data: dataValues,
+                  backgroundColor: '#186aea'
+              }]
+          },
+          options: { responsive: true }
+      });
     </script>
     */-->
 

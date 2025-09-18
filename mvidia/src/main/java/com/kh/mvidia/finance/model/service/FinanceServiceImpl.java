@@ -2,6 +2,7 @@ package com.kh.mvidia.finance.model.service;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.kh.mvidia.finance.model.dao.FinanceDao;
 import com.kh.mvidia.finance.model.vo.Attendance;
+import com.kh.mvidia.finance.model.vo.Comp;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.kh.mvidia.finance.model.vo.Tax;
 import org.apache.ibatis.session.SqlSession;
@@ -249,5 +250,15 @@ public class FinanceServiceImpl implements FinanceService {
             }
         }
         return tripAmt;
+    }
+
+    @Override
+    public List<Comp> getAllComponents() {
+        return financeDao.getAllComponents();
+    }
+
+    @Override
+    public List<Comp> searchComponents(String keyword) {
+        return financeDao.searchComponents(keyword);
     }
 }

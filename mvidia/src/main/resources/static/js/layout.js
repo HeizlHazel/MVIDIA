@@ -77,3 +77,23 @@ function sendPayroll() {
             alert("서버 오류가 발생했습니다.");
         });
 }
+
+// 급여 검색 (Ajax)
+function searchPayroll() {
+    $.ajax({
+        url: "/finance/payroll",   // 컨트롤러 그대로 호출
+        type: "get",
+        data: {
+            yearMonth: $("#yearMonth").val(),
+            deptCode: $("#deptCode").val(),
+            jobCode: $("#jobCode").val(),
+            empName: $("#empName").val()
+        },
+        success: function (data) {
+            console.log("응답 도착:", data);
+            const newTable = $(data).find(".table-responsive").html();
+            $(".table-responsive").html(newTable);
+        }
+    });
+}
+

@@ -219,28 +219,30 @@ public class NotionServiceImpl implements NotionService {
             JSONObject properties = new JSONObject();
 
             // 명세서 이름 (title)
-            properties.put("명세서 이름", new JSONObject()
+            properties.put("명세서 구분", new JSONObject()
                     .put("title", new JSONArray().put(new JSONObject()
                             .put("text", new JSONObject().put("content",
-                                    "급여명세-" + salary.getEmpName() + "-" + salary.getPayDate())))));
+                                    salary.getPayDate() + "-급여명세서-" + salary.getEmpName() )))));
 
             // 사원명 (rich_text)
             properties.put("사원명", new JSONObject()
                     .put("rich_text", new JSONArray().put(new JSONObject()
                             .put("text", new JSONObject().put("content", salary.getEmpName())))));
 
-            // 급여연월 (date)
-            String payDate = salary.getPayDate();
-            String isoDate = payDate + "-01";
-            properties.put("급여년월", new JSONObject()
-                    .put("date", new JSONObject().put("start", isoDate)));
+            String workedMonth = salary.getPayDate();
+            java.time.YearMonth ym = java.time.YearMonth.parse(workedMonth);
+            java.time.LocalDate payDateForNotion = ym.plusMonths(1).atDay(9);
 
-            // 실지급액
+            properties.put("지급일", new JSONObject()
+                    .put("date", new JSONObject().put("start", payDateForNotion.toString())));
+
             properties.put("실지급액", new JSONObject()
-                    .put("number", Integer.parseInt(salary.getNetPay())));
+                    .put("rich_text", new JSONArray().put(new JSONObject()
+                            .put("text", new JSONObject().put("content", salary.getNetPay() + "원")))));
+
 
             // 첨부파일 추가
-            String fileName = "급여명세_" + salary.getEmpName() + "_" + salary.getPayDate() + ".pdf";
+            String fileName = "급여명세서_" + salary.getEmpName() + "_" + salary.getPayDate() + ".pdf";
             JSONArray files = new JSONArray();
             files.put(new JSONObject()
                     .put("type", "file_upload")

@@ -23,10 +23,6 @@
             padding: 8px;
             text-align: center;
         }
-        th {
-            background-color: #0050be;
-            color: white;
-        }
 
         .header {
             font-size: 18px;
@@ -41,11 +37,6 @@
         }
         .body div{
             flex: 1;
-        }
-        .body h5 {
-            font-weight:bold;
-            margin-bottom: 5px;
-            color: #0050be;
         }
         .body small{
             color: #555;
@@ -210,9 +201,24 @@
         });
     </script>
         <script>
-            function  changeYear(year) {
-                window.location.href="/finance/revenue-report?year=" + year;
+            function changeYear(year) {
+                $.ajax({
+                    url: "/finance/revenue-report",
+                    type: "get",
+                    data: { year: year },
+                    success: function (data) {
+                        // 새 HTML에서 container-fluid 추출
+                        const newDoc = $(data);
+                        const newCard = newDoc.find(".container-fluid").html();
+                        $(".container-fluid").html(newCard);
+
+                        newDoc.find("script").each(function() {
+                            eval(this.text);
+                        });
+                    }
+                });
             }
+
         </script>
             <div class="header"> 분기별 총매출 & 영업이익 (단위: 억원)
             </div>

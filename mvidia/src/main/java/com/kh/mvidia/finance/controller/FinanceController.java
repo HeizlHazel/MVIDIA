@@ -1,6 +1,7 @@
 package com.kh.mvidia.finance.controller;
 
 import com.kh.mvidia.finance.model.service.FinanceService;
+import com.kh.mvidia.finance.model.vo.Comp;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import jakarta.servlet.http.HttpServletResponse;
@@ -96,5 +97,73 @@ public class FinanceController {
             e.printStackTrace();
         }
     }
+
+    private static final Map<String, Integer> MIN_QTY_MAP = new HashMap<>();
+    static {
+        MIN_QTY_MAP.put("CP0001", 400);
+        MIN_QTY_MAP.put("CP0002", 100);
+        MIN_QTY_MAP.put("CP0003", 60);
+        MIN_QTY_MAP.put("CP0004", 80);
+        MIN_QTY_MAP.put("CP0005", 200);
+    }
+
+    public int getMinQty(String cpCode) {
+        return MIN_QTY_MAP.getOrDefault(cpCode, 0);
+    }
+
+    private void applyMinQtyAndStatus(List<Comp> compList, Model model) {
+        int normalCnt = 0;
+        int lowCnt = 0;
+
+        Map<String, String> statusMap = new HashMap<>();
+
+        for(Comp c : compList) {
+            int minQty = getMinQty((c.getCpCode()));
+            int qty = Integer.parseInt(c.getQty());
+
+            if (qty >= minQty) {
+                statusMap.put(c.getCpCode(), "정상");
+                normalCnt++;
+            } else  {
+                statusMap.put(c.getCpCode(), "부족");
+                lowCnt++;
+            }
+        }
+
+        model.addAttribute("normalCnt", normalCnt);
+        model.addAttribute("lowCnt", lowCnt);
+        model.addAttribute("statusMap", statusMap);
+    }
+
+    @GetMapping("/inventory")
+    public String inventory(Model model) {
+        List<Comp> compList = financeService.getAllComponents();
+        applyMinQtyAndStatus(compList, model);
+        model.addAttribute("compList", compList);
+        return "finance/inventory";
+    }
+
+    @GetMapping("/inventory/search")
+    public String searchInventory(@RequestParam(value = "keyword", defaultValue = "") String keyword,
+                                  @RequestParam(value = "status", defaultValue = "") String status,
+                                  Model model) {
+
+        List<Comp> compList = (keyword != null && !keyword.trim().isEmpty())
+                ? financeService.searchComponents(keyword)
+                : financeService.getAllComponents();
+
+        // 상태별 필터링
+        applyMinQtyAndStatus(compList, model);
+
+        if ("normal".equals(status)) {
+            compList.removeIf(c -> Integer.parseInt(c.getQty()) < getMinQty(c.getCpCode()));
+        } else if ("low".equals(status)) {
+            compList.removeIf(c -> Integer.parseInt(c.getQty()) >= getMinQty(c.getCpCode()));
+        }
+
+        model.addAttribute("compList", compList);
+        return "finance/inventory :: componentTableFrag";
+    }
+
 }
 

@@ -34,9 +34,9 @@
 </div>
 
 <div class="card custom p-3 mt-3">
-        <form method="get" action="/finance/payroll" class="mb-3">
+        <form id="searchForm" class="mb-3">
             지급월:
-            <input type="month" name="yearMonth" th:value="${yearMonth}">
+            <input type="month" id="yearMonth" name="yearMonth" th:value="${yearMonth}">
 
             부서:
             <select id="deptCode" name="deptCode" onchange="updateJobSelect()">
@@ -53,13 +53,14 @@
             </select>
 
             사원이름:
-            <input type="text" name="empName" th:value="${empName}"placeholder="사원이름을 적어주세요">
+            <input type="text" id="empName" name="empName" th:value="${empName}" placeholder="사원이름을 적어주세요">
 
-            <button type="submit" class="btn btn-secondary">검색</button>
+            <button type="button" class="btn btn-secondary" onclick="searchPayroll()">검색</button>
+
         </form>
         <div class="table-responsive">
-            <table class="table table-bordered text-center">
-                <thead class="thead-light">
+            <table class="table table-bordered text-center table-hover">
+                <thead class="table-primary">
                 <tr>
                     <th>사번</th>
                     <th>사원명</th>
@@ -118,4 +119,5 @@
         </div>
 </div>
 </body>
+<script src="/js/layout.js"></script>
 </html>

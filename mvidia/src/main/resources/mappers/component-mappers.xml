@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="componentMapper">
+
+    <resultMap id="compResultMap" type="Comp">
+        <result property="cpCode" column="cp_code"/>
+        <result property="cpName" column="cp_name"/>
+        <result property="price" column="price"/>
+        <result property="qty" column="qty"/>
+        <result property="localCode" column="local_code"/>
+        <result property="minQty" column="min_qty"/>
+    </resultMap>
+
+    <select id="getAllComponents" resultMap="compResultMap">
+        select cp_code, cp_name, price, qty, local_code
+          from tb_component
+         order by cp_code
+    </select>
+
+    <select id="searchComponents" parameterType="string" resultMap="compResultMap">
+        select cp_code, cp_name, price, qty, local_code
+          from tb_component
+         where lower(cp_name) like '%' || lower(#{keyword}) || '%'
+            or lower(cp_code) like '%' || lower(#{keyword}) || '%'
+         order by cp_code
+    </select>
+</mapper>

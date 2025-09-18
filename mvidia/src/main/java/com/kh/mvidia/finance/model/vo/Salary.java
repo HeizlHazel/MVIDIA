@@ -1,9 +1,6 @@
 package com.kh.mvidia.finance.model.vo;
 
-import com.kh.mvidia.employee.model.vo.Employee;
 import lombok.*;
-
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor

@@ -11,6 +11,7 @@
         <result column="ovPrice" property="ovPrice"/>
         <result column="bonus" property="bonus"/>
         <result column="emp_name" property="empName"/>
+        <result column="emp_lname" property="empLname"/>
         <result column="birthDay" property="birthDay"/>
         <result column="dept_code" property="deptCode"/>
         <result column="dept_name" property="deptName"/>
@@ -41,7 +42,7 @@
              , nvl(s.deduct_amt, 0) as deductAmt
              , (s.salary + nvl(s.ov_price,0) + nvl(s.bonus,0)
                - nvl(s.deduct_amt,0))         as netPay
-             , e.emp_name                     as empName
+             , emp_Lname || e.emp_name         as empName
              , to_char(
                e.birthday, 'YYYY-MM-DD')      as birthDay
              , e.dept_code                    as deptCode
@@ -113,7 +114,7 @@
                 and e.job_code = #{jobCode}
             </if>
             <if test="empName != null and empName != ''">
-                and e.emp_name like '%' || #{empName} || '%'
+                e.emp_lname || e.emp_name LIKE '%' || #{empName} || '%'
             </if>
         </where>
     </select>

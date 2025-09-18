@@ -1,6 +1,7 @@
 package com.kh.mvidia.finance.model.dao;
 
 import com.kh.mvidia.finance.model.vo.Attendance;
+import com.kh.mvidia.finance.model.vo.Comp;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.kh.mvidia.finance.model.vo.Tax;
 import org.apache.ibatis.session.SqlSession;
@@ -11,6 +12,12 @@ import java.util.Map;
 @Repository
 public class FinanceDao {
 
+
+    private final SqlSession sqlSession;
+
+    public FinanceDao(SqlSession sqlSession) {
+        this.sqlSession = sqlSession;
+    }
 
     public List<Salary> selectSalary(SqlSession sqlSession, Map<String, Object> param) {
         return sqlSession.selectList("salaryMapper.selectSalary", param);
@@ -57,6 +64,14 @@ public class FinanceDao {
     public int updateDeductAmt(SqlSession sqlSession, String empNo, String yearMonth, int deductAmt) {
         return sqlSession.update("salaryMapper.updateDeductAmt",
                 Map.of("empNo", empNo, "yearMonth", yearMonth, "deductAmt", deductAmt));
+    }
+
+    public List<Comp> getAllComponents() {
+        return sqlSession.selectList("componentMapper.getAllComponents");
+    }
+
+    public List<Comp> searchComponents(String keyword) {
+        return sqlSession.selectList("componentMapper.searchComponents", keyword);
     }
 
 }

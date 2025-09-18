@@ -1,5 +1,6 @@
 package com.kh.mvidia.finance.model.service;
 
+import com.kh.mvidia.finance.model.vo.Comp;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.kh.mvidia.finance.model.vo.Tax;
 
@@ -12,4 +13,7 @@ public interface FinanceService {
     Salary getSalaryByEmpAndMonth(String empNo, String payDate);
 
     List<Tax> getTaxesByEmpAndMonth(String empNo, String payDate);
+
+    List<Comp> getAllComponents();
+    List<Comp> searchComponents(String keyword);
 }

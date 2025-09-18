@@ -49,8 +49,11 @@
             <li>
                 <div class="link" data-toggle>📝 전자결재</div>
                 <div class="submenu">
-                    <a th:href="@{/approvalform}">전자결재 신청</a>
+                    <a th:href="@{/approvalform}">결재 신청</a>
                     <a th:href="@{/approvalbox}">내 문서함</a>
+                    <th:block th:if="${session.grantedPerms.contains('PERM0001')}">
+                        <a th:href="@{/approvalmanage}">결재 승인함</a>
+                    </th:block>
                 </div>
             </li>
 

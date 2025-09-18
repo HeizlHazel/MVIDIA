@@ -26,7 +26,9 @@ public class PermissionDao {
         return sqlSession.insert("permissionMapper.insertEmpPermission", ep);
     }
 
+    // 권한 부여(
     public int updateEmpPermission(SqlSessionTemplate sqlSession, EmpPermission ep) {
         return sqlSession.update("permissionMapper.updateEmpPermission", ep);
     }
+
 }

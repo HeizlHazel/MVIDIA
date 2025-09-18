@@ -3,6 +3,9 @@ package com.kh.mvidia.employee.controller;
 import com.kh.mvidia.common.model.vo.Attachment;
 import com.kh.mvidia.employee.model.service.EmployeeService;
 import com.kh.mvidia.employee.model.vo.Employee;
+import com.kh.mvidia.permission.model.service.PermissionService;
+import com.kh.mvidia.permission.model.service.PermissionServiceImpl;
+import com.kh.mvidia.permission.model.vo.Permission;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Random;
+import java.util.*;
 
 
 @Controller
@@ -34,6 +36,9 @@ public class EmployeeController {
 	
     @Autowired
     private EmployeeService empService;
+
+    @Autowired
+    private PermissionService pService;
 	
 	@Autowired
 	private PasswordEncoder bcryptPasswordEncoder;
@@ -46,8 +51,19 @@ public class EmployeeController {
 		if(loginEmp != null && bcryptPasswordEncoder.matches(emp.getEmpPwd(), loginEmp.getEmpPwd())) {
 			
 			session.setAttribute("loginEmp", loginEmp);
-			
-			// 세션에 저장된 'redirectUrl'을 가져옴
+
+            // 권한 정보 조회 및 세션 저장
+            List<Permission> permissions = pService.selectPermissionList(loginEmp.getEmpNo());
+            Set<String> grantedPerms = new HashSet<>();
+
+            for(Permission perm : permissions) {
+                if("Y".equals(perm.getIsGranted())) {
+                    grantedPerms.add(perm.getPermCode());
+                }
+            }
+            session.setAttribute("grantedPerms", grantedPerms);
+
+            // 세션에 저장된 'redirectUrl'을 가져옴
 			String redirectUrl = (String) session.getAttribute("redirectUrl");
 			
 			// 사용 후 세션에서 URL을 제거하여 재사용 방지
@@ -68,6 +84,8 @@ public class EmployeeController {
 	
 	@PostMapping("/logout.emp")
 	public String logoutEmp(HttpSession session){
+        session.removeAttribute("loginEmp");
+        session.removeAttribute("grantedPerms");
 		session.invalidate();
 		return "redirect:/";
 	}

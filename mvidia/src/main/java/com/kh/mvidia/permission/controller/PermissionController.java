@@ -3,6 +3,7 @@ package com.kh.mvidia.permission.controller;
 import com.kh.mvidia.permission.model.service.PermissionService;
 import com.kh.mvidia.employee.model.vo.Employee;
 import com.kh.mvidia.permission.model.vo.Permission;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 public class PermissionController {
@@ -79,6 +81,8 @@ public class PermissionController {
         return "admin/uiSettings";
     }
 
-
-
+    public boolean hasPermission(HttpSession session, String permCode) {
+        Set<String> grantedPerms = (Set<String>) session.getAttribute("grantedPerms");
+        return grantedPerms != null && grantedPerms.contains(permCode);
+    }
 }

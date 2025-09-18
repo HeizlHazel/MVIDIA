@@ -371,6 +371,11 @@ public class HrController {
 		return response;
 	}
 	
+	@GetMapping("/certificate")
+	public String certificatePage(){
+		return "/certificate/certificatePage";
+	}
+	
 	
 	@ResponseBody
 	@GetMapping("/checkEmpNo.hr")

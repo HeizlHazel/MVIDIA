@@ -18,6 +18,13 @@
         <result column="def_count" property="defCount" />
         <result column="task_code" property="taskCode" />
         <result column="item_code" property="itemCode" />
+        <!-- 쿼리 as 컬럼 -->
+        <result column="done_count" property="doneCount" />
+        <result column="ing_count" property="ingCount" />
+        <result column="delay_count" property="delayCount" />
+        <result column="wait_count" property="waitCount" />
+        <result column="total_def_count" property="totalDefCount" />
+        <result column="schName" property="schName" />
     </resultMap>
 
     <resultMap id="ProgressResultSet" type="ProgressChart">
@@ -27,6 +34,11 @@
         <result column="start_date" property="startDate" />
         <result column="end_date" property="endDate" />
         <result column="prog_rate" property="progRate" />
+    </resultMap>
+    
+    <resultMap id="DefTypeResultSet" type="ScheduleRegistration">
+        <result column="def_type" property="defType" />
+        <result column="def_count_type" property="defCountType" />
     </resultMap>
 
     <!-- 품질점검 일정 (전체검사 수 / 불량검사 수 )-->
@@ -59,33 +71,65 @@
           from tb_progress_chart
     </select>
 
-    <!-- 개별 일정 top5 -->
+    <!-- 개별 일정 top5 누적상태별 막대바 그래프 -->
     <select id="selectTop5Schr" resultMap="ChartResultSet">
+            SELECT *
+            FROM (
+            SELECT *
+            FROM (
+            SELECT s.schr_id,
+            s.sch_no,
+            sc.sch_name AS schName,
+            s.cat_code,
+            s.bp_partner,
+            s.emp_no,
+            s.start_date,
+            s.end_date,
+            s.color_id,
+            s.details,
+            s.total_count,
+            s.def_count,
+            SUM(CASE WHEN q.check_status='C' THEN q.def_count ELSE 0 END) AS done_count,
+            SUM(CASE WHEN q.check_status='P' THEN q.def_count ELSE 0 END) AS ing_count,
+            SUM(CASE WHEN q.check_status='S' THEN q.def_count ELSE 0 END) AS delay_count,
+            SUM(CASE WHEN q.check_status='W' THEN q.def_count ELSE 0 END) AS wait_count,
+            SUM(NVL(q.def_count,0)) AS total_def_count,
+            ROW_NUMBER() OVER (PARTITION BY s.bp_partner, s.sch_no ORDER BY s.end_date) AS rn
+            FROM tb_schedule_registration s
+            LEFT JOIN tb_schedule sc ON s.sch_no = sc.sch_no
+            LEFT JOIN tb_quality_check q ON s.schr_id = q.schr_id
+            GROUP BY s.schr_id, s.sch_no, s.cat_code, s.bp_partner, s.emp_no,
+            s.start_date, s.end_date, s.color_id, s.details, s.total_count,
+            s.def_count, sc.sch_name
+            )
+            WHERE rn = 1
+            ORDER BY end_date
+            )
+            WHERE ROWNUM &lt;= 5
+    </select>
+
+    <!-- 개별 일정 top5 누적상태별 불량 도넛 그래프 -->
+    <select id="selectTop5SchrDonut" resultType="ScheduleRegistration" parameterType="String">
         select *
           from (
                select
-                      s.schr_id
-                    , p.task_code
-                    , p.item_code
-                    , s.start_date
-                    , s.end_date
-                    , sum(case when q.check_status = 'C' then q.def_count else 0 end) as doneCount
-                    , sum(case when q.check_status = 'P' then q.def_count else 0 end) as progressCount
-                    , sum(case when q.check_status = 'S' then q.def_count else 0 end) as delayCount
-                    , sum(case when q.check_status = 'W' then q.def_count else 0 end) as planCount
-                 from tb_progress_chart p
-                 join tb_schedule_registration s on p.task_id = s.schr_id
+                      d.def_type
+                    , sum(nvl(q.def_count, 0)) as def_count_type
+                 from tb_quality_check q
                  left
-                 join tb_quality_check q on s.schr_id = q.schr_id
+                 join tb_schedule_registration s on q.schr_id = s.schr_id
+                 left
+                 join tb_defective_type d on q.def_code = d.def_code
+                where s.schr_id = #{schrId}
                 group
-                   by s.schr_id, p.task_code, p.item_code, s.start_date, s.end_date
+                   by d.def_type
                 order
-                   by s.end_date
-               )
+                   by d.def_type
+          )
          where rownum &lt;= 5
     </select>
 
-    <!-- 현재 진행 중인 일정 진행률 top5 -->
+    <!-- 현재 진행 중인 일정 진행률 top5 계산 쿼리 -->
     <select id="selectTop5Prog" resultMap="ProgressResultSet">
         select *
           from (
@@ -112,26 +156,53 @@
          where rownum &lt;= 5
     </select>
 
-    <!-- 개별 일정 전체 (더보기 클릭-> 페이지 이동) -->
+    <!-- 개별 일정 전체 누적상태별막대(더보기 클릭-> 페이지 이동) -->
     <select id="selectAllSchr" resultMap="ChartResultSet">
         select
-               s.schr_id
-             , s.sch_no
-             , p.task_code
-             , p.item_code
-             , s.start_date
-             , s.end_date
-             , sum(case when q.check_status = 'C' then q.def_count else 0 end) as doneCount
-             , sum(case when q.check_status = 'P' then q.def_count else 0 end) as progressCount
-             , sum(case when q.check_status = 'S' then q.def_count else 0 end) as delayCount
-             , sum(case when q.check_status = 'W' then q.def_count else 0 end) as planCount
-          from tb_progress_chart p
-          join tb_schedule_registration s on p.task_id = s.schr_id
+             s.schr_id as schrId
+             , s.sch_no as schNo
+             , sc.sch_name as schName
+             , s.cat_code as catCode
+             , s.bp_partner as bpPartner
+             , s.emp_no as empNo
+             , s.start_date as startDate
+             , s.end_date as endDate
+             , s.color_id as colorId
+             , s.details as details
+             , s.total_count as totalCount
+             , s.def_count as defCount
+             , sc.sch_name as schName
+             , sum(case when q.check_status='C' then q.def_count else 0 end) as doneCount
+             , sum(case when q.check_status='P' then q.def_count else 0 end) as ingCount
+             , sum(case when q.check_status='S' then q.def_count else 0 end) as delayCount
+             , sum(case when q.check_status='W' then q.def_count else 0 end) as waitCount
+             , sum(nvl(q.def_count,0)) as totalDefCount
+          from tb_schedule_registration s
+          left
+          join tb_schedule sc on s.sch_no = sc.sch_no
           left
           join tb_quality_check q on s.schr_id = q.schr_id
          group
-            by s.schr_id, s.sch_no, p.task_code, p.item_code, s.start_date, s.end_date
+            by s.schr_id, s.sch_no, s.cat_code, s.bp_partner, s.emp_no,
+               s.start_date, s.end_date, s.color_id, s.details, s.total_count,
+               s.def_count, sc.sch_name
          order
             by s.end_date
+    </select>
+
+    <!-- 개별 일정 전체 누적상태별 불량 도넛 (더보기 클릭-> 페이지 이동) -->
+    <select id="selectAllSchrDonut" resultType="ScheduleRegistration">
+        select
+               d.def_type
+             , sum(nvl(q.def_count, 0)) as def_count_type
+          from tb_quality_check q
+          left
+          join tb_schedule_registration s on q.schr_id = s.schr_id
+          left
+          join tb_defective_type d on q.def_code = d.def_code
+         group
+            by d.def_type
+         order
+            by d.def_type
     </select>
  </mapper>

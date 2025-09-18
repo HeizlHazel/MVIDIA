@@ -18,10 +18,16 @@ public class ScheduleRegistration { // 품질점검일정등록 테이블
     private String empNo;     // 책임자_사번 (사원 테이블 empNo 참조)
     private Date startDate;   // 시작일
     private Date endDate;     // 종료일
-    private String colorID;   // 색상 아이디 (테마 테이블 theme_code or colorCode)
+    private String colorId;   // 색상 아이디 (테마 테이블 theme_code or colorCode)
     private String details;   // 상세내역
     private int totalCount;   // 전체 검사 수
     private int defCount;     // 불량 검사 수
     private String taskCode;  // task_code 저장
     private String itemCode;  // item_code 저장
+    private int doneCount;
+    private int ingCount;
+    private int delayCount;
+    private int waitCount;
+    private int totalDefCount;
+    private String schName;
 }

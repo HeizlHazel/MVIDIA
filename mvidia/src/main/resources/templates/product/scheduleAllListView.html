@@ -7,33 +7,223 @@
 <head>
     <meta charset="UTF-8">
     <title>scheduleAllListView</title>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 <body>
 <h1>📋 전체 일정</h1>
 <a th:href="@{/clist.bo}">모니터링으로 가기</a>
-<div style="max-height:400px; overflow-y:auto;">
-    <table>
-        <thead>
-        <tr>
-            <th>일정명</th>
-            <th>협력사</th>
-            <th>시작일</th>
-            <th>종료일</th>
-            <th>전체검사수</th>
-            <th>불량수</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="s : ${schrList}">
-            <td th:text="${s.schNo}"></td>
-            <td th:text="${s.bpPartner}"></td>
-            <td th:text="${s.startDate}"></td>
-            <td th:text="${s.endDate}"></td>
-            <td th:text="${s.totalCount}"></td>
-            <td th:text="${s.defCount}"></td>
-        </tr>
-        </tbody>
-    </table>
+
+<div class="chart-section">
+    <h3>누적 진행 현황</h3>
+    <canvas id="statusChart"></canvas>
 </div>
+
+<!-- 도넛 차트: 불량 유형별 합계 -->
+<div class="chart-container">
+    <canvas id="defectDonut"></canvas>
+</div>
+
+<!-- 누적 막대(상태별) script -->
+
+<script th:inline="javascript">
+    const schrList = /*[[${schrList}]]*/ [];
+    const schrDefData = {
+        labels: schrList.map(d => d.defType),
+        datasets: [{
+            label: '불량수',
+            data: schrList.map(d => d.defCountType),
+            backgroundColor: ['#FF6384', '#FF6384', '#FF6384', '#FF6384', '#FF6384']
+        }]
+    };
+
+    const partnerName = /*[[${schrTop5[0].bpPartner}]]*/ '업체명없음';
+    const statusBar = document.getElementById('statusChart').getContext('2d');
+    const statusChart = new Chart(statusBar, {
+        type: 'bar',
+        data: {
+            labels: schrList.map(d => d.schName),
+            datasets: [
+                { label: '완료(C)', data: schrList.map(d => d.doneCount), backgroundColor:'rgba(75,192,192,0.8)'},
+                { label: '진행중(P)', data: schrList.map(d => d.ingCount), backgroundColor:'rgba(54,162,235,0.8)'},
+                { label: '지연(S)', data: schrList.map(d => d.delayCount), backgroundColor:'rgba(255,206,86,0.8)'},
+                { label: '예정(W)', data: schrList.map(d => d.waitCount), backgroundColor:'rgba(201,203,207,0.8)'}
+            ]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive:true,
+            plugins:{
+                title:{ display:true, text: partnerName + ' 누적 검사 현황'},
+                legend:{
+                    position:'bottom',
+                    labels:{
+                        usePointStyle:true,
+                        pointStyle:'circle',
+                        boxWidth:8,
+                        boxHeight:8,
+                        padding:10,
+                        textAlign:'center',
+                        font:{size:11}
+                    }
+                },
+                datalabels:{
+                    color:'black',
+                    anchor:'center',
+                    align:'center',
+                    offset:2,
+                    formatter:(value, context)=>{
+                        const idx = context.dataIndex;
+                        const total = schrList[idx].totalCount;
+                        const done = schrList[idx].doneCount;
+                        const progRate = total>0?Math.round(done*100/total):0;
+                        return progRate+'%';
+                    }
+                }
+            },
+            scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{precision:0}}}
+        },
+        plugins:[ChartDataLabels]
+    });
+</script>
+
+<!-- 불량률 도넛 차트 script -->
+<script>
+    const schrDonutList = /*[[${schrDonutList}]]*/ [];
+    const defData = {
+      labels: schrDonutList.map(d => d.defType),
+      datasets: [{
+        data: schrDonutList.map(d => d.defCountType),
+        backgroundColor: ['#FF6384', '#FF6384', '#FF6384', '#FF6384', '#FF6384'],
+        hoverOffset: 4
+      }]
+    };
+
+    const defCtx = document.getElementById('defDonut').getContext('2d');
+    const defDonut = new Chart(defCtx, {
+        type: 'doughnut',
+        data: defData,
+        options: {
+            responsive: true,
+            cutout: '60%',
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: { enabled: true }
+            }
+        }
+    });
+
+    const totalDef = schrDonutList.reduce((sum, d) => sum + d.defCountType, 0);
+    const totalCheck = schrDonutList.reduce((sum, d) => sum + d.totalCount, 0);
+    const defRate = totalCheck > 0 ? Math.round(totalDef * 100 / totalCheck) : 0;
+    document.getElementById('donutLabel').innerText = defRate + '%';
+</script>
+
+
+<!--------------------------------------------------------------------------------------------------------------------->
+<!-- 일정 선택 및 상태 입력 -->
+<!-- 버튼 -->
+<button id="openModalBtn" class="submit-btn">임시 입력</button>
+<!-- 모달 -->
+<div id="inputModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+
+        <h3>일정 선택 및 상태 입력</h3>
+        <label for="schrSelect"><b>품질 점검 일정 선택:</b></label>
+        <select id="schrSelect">
+            <option value="">--------------------------- 일정 선택 ----------------------------</option>
+            <option th:each="s: ${schrList}"
+                    th:value="${s.schrId}"
+                    th:data-total="${s.totalCount}"
+                    th:data-def="${s.defCount}"
+                    th:text="${s.schNo} + ' : (' + s.itemCode + ')'"></option>
+        </select>
+
+        <table>
+            <tr>
+                <th>전체</th><th>불량</th>
+            </tr>
+            <tr>
+                <td id="totalCount">-</td>
+                <td id="defCount">-</td>
+            </tr>
+        </table>
+
+        <table>
+            <tr>
+                <th style="background-color: rgba(75,192,192,0.8)">완료(C)</th>
+                <th style="background-color: rgba(54,162,235,0.8)">진행중(P)</th><br>
+                <th style="background-color: rgba(255,206,86,0.8)">지연(S)</th>
+                <th style="background-color: rgba(201,203,207,0.8)">대기(W)</th>
+            </tr>
+            <tr>
+                <td><input type="number" id="doneInput" value="0" min="0"></td>
+                <td><input type="number" id="ingInput" value="0" min="0"></td>
+                <td><input type="number" id="delayInput" value="0" min="0"></td>
+                <td><input type="number" id="waitInput" value="0" min="0"></td>
+            </tr>
+        </table>
+
+        <button class="submit-btn" id="updateBtn">값 넣기</button>
+    </div>
+</div>
+
+<script>
+    const modal = document.getElementById("inputModal");
+    const openBtn = document.getElementById("openModalBtn");
+    const closeBtn = document.querySelector(".close");
+
+    openBtn.onclick = () => modal.style.display = "block";
+    closeBtn.onclick = () => modal.style.display = "none";
+    window.onclick = (e) => {
+      if (e.target === modal) modal.style.display = "none";
+    };
+
+    //일정 선택시 total / def 표시하는 코드
+    document.getElementById('schrSelect').addEventListener('change', function(){
+        const selected = this.selectedOptions[0];
+        if(selected && selected.value){
+            document.getElementById('totalCount').innerText = selected.dataset.total;
+            document.getElementById('defCount').innerText = selected.dataset.def;
+            // 기본 입력값 초기화
+            document.getElementById('doneInput').value = 0;
+            document.getElementById('ingInput').value = 0;
+            document.getElementById('delayInput').value = 0;
+            document.getElementById('waitInput').value = 0;
+        }else{
+            document.getElementById('totalCount').innerText = '-';
+            document.getElementById('defCount').innerText = '-';
+        }
+    });
+
+    // 값 넣기 버튼
+    document.getElementById('updateBtn').addEventListener('click', ()=>{
+        const schrId = document.getElementById('schrSelect').value;
+        if(!schrId) return alert("일정을 선택해주세요.");
+
+        const done = parseInt(document.getElementById('doneInput').value)||0;
+        const ing = parseInt(document.getElementById('ingInput').value)||0;
+        const delay = parseInt(document.getElementById('delayInput').value)||0;
+        const wait = parseInt(document.getElementById('waitInput').value)||0;
+
+        // 선택한 일정 데이터 업데이트
+        const idx = schrList.findIndex(d=>d.schrId===schrId);
+        if(idx>=0){
+        schrList[idx].doneCount = done;
+        schrList[idx].ingCount = ing;
+        schrList[idx].delayCount = delay;
+        schrList[idx].waitCount = wait;
+        } else {
+        schrList.push({ schr_id: schrId, doneCount: done, ingCount: ing, delayCount: delay, waitCount: wait, totalCount: parseInt(document.getElementById('totalCount').innerText) });
+        }
+
+        // 차트 데이터 갱신
+        statusChart.data.datasets[0].data = schrList.map(d=>d.doneCount);
+        statusChart.data.datasets[1].data = schrList.map(d=>d.ingCount);
+        statusChart.data.datasets[2].data = schrList.map(d=>d.delayCount);
+        statusChart.data.datasets[3].data = schrList.map(d=>d.waitCount);
+        statusChart.update();
+    });
+</script>
 </body>
 </html>

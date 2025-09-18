@@ -14,24 +14,23 @@ public class ChartDao {
     @Autowired
     private SqlSessionTemplate sqlSession;
 
-    public List<ScheduleRegistration> selectSchrList(){
-        return sqlSession.selectList("chartMapper.selectScheduleRegistration");
-    }
+    public List<ScheduleRegistration> selectSchrList(){ return sqlSession.selectList("chartMapper.selectScheduleRegistration"); }
 
-    public List<ProgressChart> selectProgList(){
-        return sqlSession.selectList("chartMapper.selectProgressChart");
-    }
+    public List<ProgressChart> selectProgList(){ return sqlSession.selectList("chartMapper.selectProgressChart"); }
 
     public List<ScheduleRegistration> selectTop5Schr(){
         return  sqlSession.selectList("chartMapper.selectTop5Schr");
     }
 
-    public List<ScheduleRegistration> selectAllSchr(){
-        return sqlSession.selectList("chartMapper.selectAllSchr");
-    }
+    public List<ScheduleRegistration> selectTop5SchrDonut() { return sqlSession.selectList("chartMapper.selectTop5SchrDonut"); }
 
     public List<ProgressChart> selectTop5Prog(){
         return sqlSession.selectList("chartMapper.selectTop5Prog");
     }
+
+    public List<ScheduleRegistration> selectAllSchr(){ return sqlSession.selectList("chartMapper.selectAllSchr"); }
+
+    public List<ScheduleRegistration> selectAllSchrDonut() { return sqlSession.selectList("chartMapper.selectAllSchrDonut"); }
+
 
 }

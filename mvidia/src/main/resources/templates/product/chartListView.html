@@ -8,39 +8,24 @@
     <meta charset="UTF-8">
     <title>ChartListView</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
-        .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0; top: 0;
-        width: 100%; height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-        background: #fff;
-        margin: 10% auto;
-        padding: 20px;
-        border-radius: 12px;
-        width: 900px;
-        }
-        .close {
-        float: right;
-        font-size: 24px;
-        cursor: pointer;
-        }
-            input[type=number] { width: 60px; }
-    select { width: 100%; }
-    table { width: 100%; margin-top: 10px; border-collapse: collapse; }
-    th, td { border: 1px solid #ccc; padding: 5px; text-align: center; }
-    th { background-color: #f0f0f0; }
-    .submit-btn { margin-top: 10px; padding: 5px 10px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);}
+        .modal-content { background: #fff; margin: 10% auto; padding: 20px; border-radius: 12px; width: 900px;}
+        .close { float: right; font-size: 24px; cursor: pointer;}
+        input[type=number] { width: 60px; }
+        select { width: 100%; }
+        table { width: 100%; margin-top: 10px; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 5px; text-align: center; }
+        th { background-color: #f0f0f0; }
+        .submit-btn { margin-top: 10px; padding: 5px 10px; }
+        .card-container { display:flex; gap:10px; flex-wrap:wrap; }
+        .schedule-card { border:1px solid #ccc; padding:10px; border-radius:8px; width:250px; }
+        .card-chart { height:150px; }
     </style>
 </head>
 <body>
 <h1>🛠️ 작업진행현황</h1>
-
-
 
 <h5>현재 진행 중인 일정 전체 진행도</h5>
 <div class="chart-container">
@@ -48,314 +33,80 @@
 </div>
 
 <script th:inline="javascript">
+    const progTop5 = /*[[${progTop5}]]*/ [];
+    const labels = progTop5.map(p => p.taskId);
+    const dataValues = progTop5.map(p => p.progRate);
 
-    // 서버에서 전달받은 데이터를 JavaScript 변수로 변환
-    const progTop5Data = /*[[${progTop5}]]*/ [];
-
-    const labels = progTop5Data.map(p => p.taskId);
-    const dataValues = progTop5Data.map(p => p.progRate);
-
-    const ctx = document.getElementById('progressChart');
-
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels, // 일정명
-        datasets: [{
-          label: '진행률 (%)',
-          data: dataValues, // 샘플 진행률
-          backgroundColor: '#36A2EB'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: false }, // 상단 범례 숨김
-          tooltip: {
-            callbacks: {
-              label: (context) => context.raw + '%'
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            ticks: {
-              callback: (value) => value + '%'
-            }
-          }
-        }
-      }
+    new Chart(document.getElementById('progressChart'), {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ label: '진행률 (%)', data: dataValues, backgroundColor: '#36A2EB' }] },
+        options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, max:100, ticks:{callback: v=>v+'%'} } } }
     });
 </script>
 
-<!-- 개별 일정 상세 진행률  -->
 <a th:href="@{/schrList.bo}">더보기</a>
 
-<div class="chart-section">
-    <h3>누적 진행 현황</h3>
-    <canvas id="statusChart"></canvas>
-</div>
+<h3>종료 임박 일정 TOP 5</h3>
+<div class="card-container">
+    <div th:each="item,index : ${schrTop5}" class="schedule-card">
+        <h4 th:text="${item.schName}">일정명</h4>
+        <p><b>업체명:</b> <span th:text="${item.bpPartner}">업체명</span></p>
+        <p><b>진행률:</b>
+            <span th:text="${item.totalCount>0 ? (item.doneCount*100/item.totalCount) + '%' : '0%'}">0%</span>
+        </p>
+        <p><b>시작일:</b> <span th:text="${#dates.format(item.startDate,'yyyy-MM-dd')}">2025-01-01</span></p>
+        <p><b>종료일:</b> <span th:text="${#dates.format(item.endDate,'yyyy-MM-dd')}">2025-01-05</span></p>
 
-<!-- 도넛 차트: 불량 유형별 합계 -->
-<div class="chart-container">
-    <canvas id="defectDonut"></canvas>
-</div>
-
-
-<script>
-
-
-    // 도넛 차트 생성
-new Chart(document.getElementById('defectDonut'), {
-  type: 'doughnut',
-  data: defectData,
-  options: {
-    responsive: true,
-    plugins: {
-      legend: { position: 'bottom' },
-      tooltip: { enabled: true }
-    }
-  }
-});
-// 초기 데이터 (예시)
-let scheduleData = [
-  { schr_id: ${shcr_id}, doneCount: 2, progressCount: 5, delayCount: 2, planCount: 1, totalCount: ${total_count} }
-];
-
-const ctx = document.getElementById('statusChart').getContext('2d');
-const statusChart = new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: scheduleData.map(d => d.schr_id),
-    datasets: [
-      { label: '완료(C)', data: scheduleData.map(d=>d.doneCount), backgroundColor:'rgba(75,192,192,0.8)' },
-      { label: '진행중(P)', data: scheduleData.map(d=>d.progressCount), backgroundColor:'rgba(54,162,235,0.8)' },
-      { label: '지연(S)', data: scheduleData.map(d=>d.delayCount), backgroundColor:'rgba(255,206,86,0.8)' },
-      { label: '대기(W)', data: scheduleData.map(d=>d.planCount), backgroundColor:'rgba(201,203,207,0.8)' }
-    ]
-  },
-  options: {
-    indexAxis: 'y',
-    scales: {
-    y: { stacked: true },
-    x: { stacked: true }
-    },
-    responsive:true,
-    plugins:{
-      title:{ display:true, text:'상태별 누적 검사 건수' },
-      legend:{
-          position:'bottom',
-          labels:{
-              usePointStyle: true,
-              pointStyle: 'circle',
-              boxWidth: 8,
-              boxHeight: 8,
-              padding: 10,
-              textAlign: 'center',
-              font:{size: 11}
-          }
-      },
-      datalabels:{
-        color:'black',
-        anchor:'center',
-        align:'center',
-        offset: 2,
-        formatter:(value, context)=>{
-          const idx = context.dataIndex;
-          const total = scheduleData[idx].totalCount;
-          const done = scheduleData[idx].doneCount;
-          const progRate = total>0?Math.round(done*100/total):0;
-          return progRate+'%';
-        }
-      }
-    },
-    scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{precision:0} } }
-  },
-  plugins:[ChartDataLabels]
-});
-
-// 일정 선택 시 total/def 표시
-document.getElementById('schrSelect').addEventListener('change', function(){
-  const selected = this.selectedOptions[0];
-  if(selected && selected.value){
-    document.getElementById('totalCount').innerText = selected.dataset.total;
-    document.getElementById('defCount').innerText = selected.dataset.def;
-    // 기본 입력 초기화
-    document.getElementById('doneInput').value = 0;
-    document.getElementById('progressInput').value = 0;
-    document.getElementById('delayInput').value = 0;
-    document.getElementById('planInput').value = 0;
-  } else {
-    document.getElementById('totalCount').innerText = '-';
-    document.getElementById('defCount').innerText = '-';
-  }
-});
-
-// 값 넣기 버튼
-document.getElementById('updateBtn').addEventListener('click', ()=>{
-  const schrId = document.getElementById('schrSelect').value;
-  if(!schrId) return alert("일정을 선택해주세요.");
-
-  const done = parseInt(document.getElementById('doneInput').value)||0;
-  const progress = parseInt(document.getElementById('progressInput').value)||0;
-  const delay = parseInt(document.getElementById('delayInput').value)||0;
-  const plan = parseInt(document.getElementById('planInput').value)||0;
-
-  // 선택한 일정 데이터 업데이트
-  const idx = scheduleData.findIndex(d=>d.schr_id===schrId);
-  if(idx>=0){
-    scheduleData[idx].doneCount = done;
-    scheduleData[idx].progressCount = progress;
-    scheduleData[idx].delayCount = delay;
-    scheduleData[idx].planCount = plan;
-  } else {
-    scheduleData.push({ schr_id: schrId, doneCount: done, progressCount: progress, delayCount: delay, planCount: plan, totalCount: parseInt(document.getElementById('totalCount').innerText) });
-  }
-
-  // 차트 데이터 갱신
-  statusChart.data.datasets[0].data = scheduleData.map(d=>d.doneCount);
-  statusChart.data.datasets[1].data = scheduleData.map(d=>d.progressCount);
-  statusChart.data.datasets[2].data = scheduleData.map(d=>d.delayCount);
-  statusChart.data.datasets[3].data = scheduleData.map(d=>d.planCount);
-  statusChart.update();
-});
-
-<!-- 불량률 도넛 차트 부분 -->
-<div class="donut-chart-container" style="--defect-rate: 72deg;">
-  <div class="donut-chart-label">20%</div>
-</div>
-<!-- 추후 가능하면 사용하기 상세보기-> 모달창
-일정 카드 클릭 이벤트 바인딩 (onclick or addEventListener)
-해당 일정 ID(schrId) Ajax로 조회 → 상세 데이터 가져와서 모달창 출력
-
-document.querySelectorAll(".schedule-item").forEach(item => {
-item.addEventListener("click", function() {
-  const schId = this.dataset.schId;
-  fetch(`/progress/detail/${schId}`)
-    .then(res => res.json())
-    .then(data => {
-      // 모달창에 데이터 채우기
-      document.getElementById("modal-title").innerText = data.schNo;
-      document.getElementById("modal-body").innerText = JSON.stringify(data);
-      $("#detailModal").modal("show");
-    });
-});
-});
--->
-
-
-<!--/*
-  종료임박순 5개 일정만 표시
-  <div th:each="schedule : ${schrTopList}">
-      <p>
-          <span th:text="${schedule.bpPartner}"></span>
-          | 진행률: <span th:text="${#numbers.formatDecimal(schedule.totalCount > 0 ? schedule.defCount*100.0/schedule.totalCount : 0, 0, 2)}"></span>%
-      </p>
-  </div>
-
-
-
-   차트 영역
-  <canvas id="myChart"></canvas>
-
-  <script>
-      const ctx = document.getElementById('myChart');
-
-      const labels = [
-          /* Thymeleaf 반복문으로 제품명/코드 삽입 */
-          /* 예시 */
-          <th:block th:each="p : ${progTop5}">'[[${p.itemCode}]]',</th:block>
-      ];
-      const dataValues = [
-          <th:block th:each="p : ${progTop5}">[[${p.progRate}]],</th:block>
-      ];
-
-      new Chart(ctx, {
-          type: 'bar',
-          data: {
-              labels: labels,
-              datasets: [{
-                  label: '작업 진행률',
-                  data: dataValues,
-                  backgroundColor: '#186aea'
-              }]
-          },
-          options: { responsive: true }
-      });
-    </script>
-    */-->
-
-
-
-
-
-<!--------------------------------------------------------------------------------------------------------------------->
-<!-- 일정 선택 및 상태 입력 -->
-<!-- 버튼 -->
-<button id="openModalBtn" class="submit-btn">임시 입력</button>
-<!-- 모달 -->
-<div id="inputModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-
-        <h3>일정 선택 및 상태 입력</h3>
-        <label for="schrSelect"><b>품질 점검 일정 선택:</b></label>
-        <select id="schrSelect">
-            <option value="">--------------------------- 일정 선택 ----------------------------</option>
-            <option th:each="s: ${schrList}"
-                    th:value="${s.schrId}"
-                    th:data-total="${s.totalCount}"
-                    th:data-def="${s.defCount}"
-                    th:text="${s.schNo} + ' : (' + ${s.itemCode} + ')'"></option>
-        </select>
-
-        <table>
-            <tr>
-                <th>전체</th><th>불량</th>
-            </tr>
-            <tr>
-                <td id="totalCount">-</td>
-                <td id="defCount">-</td>
-            </tr>
-        </table>
-
-        <table>
-            <tr>
-                <th style="background-color: rgba(75,192,192,0.8)">완료(C)</th>
-                <th style="background-color: rgba(54,162,235,0.8)">진행중(P)</th><br>
-                <th style="background-color: rgba(255,206,86,0.8)">지연(S)</th>
-                <th style="background-color: rgba(201,203,207,0.8)">대기(W)</th>
-            </tr>
-            <tr>
-                <td><input type="number" id="doneInput" value="0" min="0"></td>
-                <td><input type="number" id="progressInput" value="0" min="0"></td>
-                <td><input type="number" id="delayInput" value="0" min="0"></td>
-                <td><input type="number" id="stayInput" value="0" min="0"></td>
-            </tr>
-        </table>
-
-        <button class="submit-btn" id="updateBtn">값 넣기</button>
+        <!-- 카드별 누적막대 -->
+        <canvas th:attr="id='statusChartCard'+${index}" class="card-chart"></canvas>
+        <!-- 카드별 도넛 -->
+        <canvas th:attr="id='defDonutCard'+${index}" class="card-chart"></canvas>
     </div>
 </div>
 
-<!-- JS -->
-<script>
-    const modal = document.getElementById("inputModal");
-    const openBtn = document.getElementById("openModalBtn");
-    const closeBtn = document.querySelector(".close");
+<script th:inline="javascript">
+    const schrTop5Donut = /*[[${schrTop5Donut}]]*/ [];
 
-    // 열기
-    openBtn.onclick = () => modal.style.display = "block";
+    /* 카드별 차트 생성 */
+    /* schrTop5: 누적막대 데이터 / schrTop5Donut: 도넛 데이터 */
+    schrTop5.forEach((item, index)=>{
+        // 누적막대
+        const ctxBar = document.getElementById('statusChartCard'+index).getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['완료(C)','진행중(P)','지연(S)','예정(W)'],
+                datasets: [{
+                    label: item.schName,
+                    data: [item.doneCount, item.ingCount, item.delayCount, item.waitCount],
+                    backgroundColor:['rgba(75,192,192,0.8)','rgba(54,162,235,0.8)','rgba(255,206,86,0.8)','rgba(201,203,207,0.8)']
+                }]
+            },
+            options: {
+                responsive:true,
+                plugins:{ legend:{display:false}, datalabels:{
+                    color:'black', anchor:'center', align:'center', formatter:(value)=> value > 0 ? value+'개' : '' }
+                },
+                scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } }
+            },
+            plugins:[ChartDataLabels]
+        });
 
-    // 닫기 (X 버튼)
-    closeBtn.onclick = () => modal.style.display = "none";
-
-    // 바깥 클릭 시 닫기
-    window.onclick = (e) => {
-      if (e.target === modal) modal.style.display = "none";
-    };
+        // 도넛
+        const donutData = schrTop5Donut[index] || { defType: [], defCountType: [] };
+        const ctxDonut = document.getElementById('defDonutCard'+index).getContext('2d');
+        new Chart(ctxDonut, {
+            type:'doughnut',
+            data:{
+                labels: donutData.defType,
+                datasets:[{
+                    data: donutData.defCountType,
+                    backgroundColor:['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF']
+                }]
+            },
+            options:{ responsive:true, cutout:'60%', plugins:{ legend:{ position:'bottom' } } }
+        });
+    });
 </script>
 
 </body>

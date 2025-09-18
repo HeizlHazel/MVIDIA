@@ -8,10 +8,16 @@ import java.util.List;
 public interface ChartService {
 
     List<ScheduleRegistration> selectSchrList();
+
     List<ProgressChart> selectProgList();
 
     List<ScheduleRegistration> selectTop5Schr();
-    List<ScheduleRegistration> selectAllSchr();
+
+    List<ScheduleRegistration> selectTop5SchrDonut();
+
     List<ProgressChart> selectTop5Prog();
 
+    List<ScheduleRegistration> selectAllSchr();
+
+    List<ScheduleRegistration> selectAllSchrDonut();
 }

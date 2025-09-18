@@ -24,13 +24,20 @@ public class ChartController {
     @GetMapping("/clist.bo")
     public String chartboard(Model model){
 
-        List<ScheduleRegistration> schrList = cService.selectAllSchr();
         List<ScheduleRegistration> schrTop5 = cService.selectTop5Schr();
+        System.out.println("schrTop5 = " + schrTop5);
+        List<ScheduleRegistration> schrTop5Donut = cService.selectTop5SchrDonut();
         List<ProgressChart> progTop5 = cService.selectTop5Prog();
 
-        model.addAttribute("schrList", schrList);
+        List<ScheduleRegistration> schrList = cService.selectAllSchr();
+        List<ScheduleRegistration> schrDonutList = cService.selectAllSchrDonut();
+
         model.addAttribute("schrTop5", schrTop5);
+        model.addAttribute("schrTop5Donut", schrTop5Donut);
         model.addAttribute("progTop5", progTop5);
+
+        model.addAttribute("schrList", schrList);
+        model.addAttribute("schrDonutList", schrDonutList);
 
         return "product/chartListView";
     }
@@ -42,17 +49,27 @@ public class ChartController {
     public Map<String, Object> chartBoardAjax(){
 
         Map<String, Object> result = new HashMap<>();
-        result.put("progTop5", cService.selectTop5Prog());
+
         result.put("schrTop5", cService.selectTop5Schr());
+        result.put("schrTop5Donut", cService.selectTop5SchrDonut());
+        result.put("progTop5", cService.selectTop5Prog());
+
         result.put("schrList", cService.selectAllSchr());
+        result.put("schrDonutList", cService.selectAllSchrDonut());
+
         return result;
     }
 
     // 전체 일정 페이지
     @GetMapping("/schrList.bo")
     public String scheduleList(Model model){
+
         List<ScheduleRegistration> schrList = cService.selectAllSchr();
+        List<ScheduleRegistration> schrDonutList = cService.selectAllSchrDonut();
+
         model.addAttribute("schrList", schrList);
+        model.addAttribute("schrDonutList", schrDonutList);
+
         return "product/scheduleAllListView";
     }
 

@@ -16,5 +16,7 @@ public interface PermissionService {
     // 권한 update
     void updatePermission(String empNo, List<String> list);
 
+    // 권한 가져와서 세션에 저장
+    public List<Permission> getUserGrantedPermissions(String empNo);
 
 }

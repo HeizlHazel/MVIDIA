@@ -67,11 +67,13 @@ public class AttManageController {
 							  @RequestParam(value = "cpage", defaultValue = "1") int currentPage,
 							  @RequestParam(value = "keyword", required = false) String keyword,
 							  @RequestParam(value = "status", required = false) String status,
+							  @RequestParam(value = "type", required = false) String type,
 							  HttpSession session){
 		
 		HashMap<String, String> searchMap = new HashMap<>();
 		searchMap.put("keyword", keyword);
 		searchMap.put("status", status);
+		searchMap.put("type", type);
 		
 		Employee emp =  (Employee) session.getAttribute("loginEmp");
 		searchMap.put("empNo", emp.getEmpNo());
@@ -87,6 +89,11 @@ public class AttManageController {
 		model.addAttribute("pi", pi);
 		
 		return "/attManage/userVacationPage";
+	}
+	
+	@GetMapping("/inquiryCalendar.attManage")
+	public String inquirtCalendar(){
+		return "/calendar/inquiryCalendarPage";
 	}
 	
 	@PostMapping("/insertVacation.attManage")

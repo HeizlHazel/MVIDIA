@@ -8,6 +8,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -55,6 +56,21 @@ public class PermissionServiceImpl implements PermissionService {
                 pDao.insertEmpPermission(sqlSession, ep);
             }
         }
+    }
+
+    // 권한 가져와서 세션에 저장
+    @Override
+    public List<Permission> getUserGrantedPermissions(String empNo) {
+        List<Permission> allPerms = pDao.selectPermList(sqlSession, empNo);
+        List<Permission> grantedPerms = new ArrayList<>();
+
+        for (Permission perm : allPerms) {
+            if ("Y".equals(perm.getIsGranted())) {
+                grantedPerms.add(perm);
+            }
+        }
+
+        return grantedPerms;
     }
 
 }

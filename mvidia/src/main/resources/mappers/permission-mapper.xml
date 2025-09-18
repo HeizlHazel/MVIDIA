@@ -13,6 +13,7 @@
         <result column="perm_name" property="permName" />
         <result column="perm_code" property="permCode" />
         <result column="is_granted" property="isGranted" />
+        <result column="user_id" property="userId" />
     </resultMap>
 
     <select id="selectEmployee" resultMap="employeeResultSet">
@@ -61,5 +62,12 @@
         where user_id = #{userId} and perm_code = #{permCode}
         )
     </insert>
+
+    <select id="getEmpPermission" resultMap="permissionResultSet">
+        select perm_code
+        from tb_emp_permission
+        where user_id = #{userId}
+        and is_granted = 'Y'
+    </select>
 
 </mapper>

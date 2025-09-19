@@ -119,7 +119,7 @@
 
             <!-- 직책별 노출 예시: 부장 이상일 때만 조직도 -->
             <li sec:authorize="hasAnyRole('MANAGER','ADMIN')">
-                <a class="link" th:href="@{/org}">🧩 조직도</a>
+                <a class="link" th:href="@{/organizationalChart}">🧩 조직도</a>
             </li>
         </ul>
     </div>

@@ -8,13 +8,25 @@
 <head>
     <meta charset="UTF-8">
     <title>📰 증명서 조회/ 발급</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        body { font-family: "Malgun Gothic","Apple SD Gothic Neo",system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background-color: #f0f2f5; }
+        .certificate-page { display: none; }
+        .certificate-document {
+            max-width: 210mm; margin: 0 auto; padding: 20mm;
+            border: 1px solid #e5e7eb; background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        @page { size: A4; margin: 20mm; }
+        @media print { .actions { display: none; } .certificate-document { border: none; padding: 0; box-shadow: none; } }
+
+        /* 기존 스타일 병합 및 TailwindCSS 클래스로 대체 */
         .certificate{grid-column:2;grid-row:2; background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);}
         .certificate>.widget{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
         .page-title{font-size:20px;margin:0 0 12px 0}
         .stack{display:flex;gap:10px;flex-wrap:wrap}
         .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background-color:#0c197f ;color:#fff}
-        .certificate .btn:hover{color:#00BDA7;}
+        .certificate .btn:hover{background:#00BDA7;color:#fff;}
         .btn.alt{background:#0f7a90}
         .btn.warn{background:var(--warn)}
         .btn.danger{background:var(--danger)}
@@ -23,27 +35,346 @@
         .modal-body .btn:hover{background:#0050be; color:#fff;}
         .emp-info { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; background-color: #f0f4f7;}
         .emp-info .name, .emp-info .dept { font-weight: bold;}
-        .error-message { display: none; color: var(--danger); margin-top: 10px;}
+        .error-message { display: none; color: #ef4444; margin-top: 10px;}
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: #fff; padding: 24px; border-radius: 12px; max-width: 400px; width: 90%; position: relative; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 16px; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; }
     </style>
 </head>
 <body>
 <!-- 메인 컨텐츠 -->
-<div class="certificate">
+<div class="certificate" id="main-content">
     <h2 class="page-title">📰 증명서 조회/ 발급</h2>
     <div class="widget" id="home">
         <div class="stack">
-            <a class="btn" onclick="">재직 증명서</a>
-            <a class="btn" onclick="">경력 증명서</a>
-            <a class="btn" onclick="">급여 명세서</a>
-            <a class="btn ghost" th:href="@{/hr/hrMainPage}">
-                <i class="bi bi-arrow-return-left"></i>
-                메인으로
-            </a>
+            <a class="btn" onclick="openModal('employment')">재직 증명서</a>
+            <a class="btn" onclick="openModal('career')">경력 증명서</a>
+            <a class="btn" onclick="openModal('payslip')">급여 명세서</a>
+            <a class="btn ghost" href="/mainPage">메인으로</a>
         </div>
     </div>
 </div>
 
+<!-- 증명서 및 급여 명세서 렌더링 영역 -->
+<div id="certificate-container" class="certificate-page"></div>
 
+<!-- 공통 모달 -->
+<div class="modal-overlay" id="commonModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle"></h5>
+            <button type="button" class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="input-group">
+                <input id="empNo" class="form-control rounded-lg px-4 py-2 border w-full" type="text" placeholder="사번 입력 (예: 12345678)" maxlength="8" />
+            </div>
+            <div class="emp-info" id="empInfo">
+                <p><strong>이름:</strong> <span id="empName"></span></p>
+                <p><strong>직급:</strong> <span id="empRank"></span></p>
+                <p><strong>부서:</strong> <span id="empDept"></span></p>
+                <button class="btn mt-4" id="btnConfirmIssue">발급 진행</button>
+            </div>
+            <div class="emp-info hidden" id="payslipInfo">
+                <p><strong>발급년월:</strong> <span id="payslipDate"></span></p>
+                <button class="btn mt-4" id="btnConfirmPayslip">조회 진행</button>
+            </div>
+            <p class="error-message" id="errorMsg"></p>
+        </div>
+    </div>
+</div>
 
+<script>
+    // 현재 선택된 증명서 타입 (employment, career, payslip)
+    let currentCertificateType = '';
+
+    // 모달 열기 함수
+    function openModal(type) {
+        currentCertificateType = type;
+        document.getElementById('main-content').style.display = 'none';
+        document.getElementById('commonModal').style.display = 'flex';
+        document.getElementById('empNo').value = '';
+        document.getElementById('empInfo').style.display = 'none';
+        document.getElementById('payslipInfo').style.display = 'none';
+        document.getElementById('errorMsg').style.display = 'none';
+
+        let title = '';
+        if (type === 'employment') {
+            title = '재직 증명서 발급';
+            document.getElementById('empInfo').style.display = 'block';
+        } else if (type === 'career') {
+            title = '경력 증명서 발급';
+            document.getElementById('empInfo').style.display = 'block';
+        } else if (type === 'payslip') {
+            title = '급여 명세서 조회';
+            document.getElementById('payslipInfo').style.display = 'block';
+        }
+        document.getElementById('modalTitle').innerText = title;
+    }
+
+    // 모달 닫기 함수
+    function closeModal() {
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('commonModal').style.display = 'none';
+    }
+
+    // 사번 입력 시 동적 조회 (공통)
+    document.getElementById('empNo').addEventListener('input', async function() {
+        const empNo = this.value;
+        const infoSelector = document.getElementById('empInfo');
+        const payslipInfoSelector = document.getElementById('payslipInfo');
+        const errorSelector = document.getElementById('errorMsg');
+
+        infoSelector.style.display = 'none';
+        payslipInfoSelector.style.display = 'none';
+        errorSelector.style.display = 'none';
+
+        if (empNo.length === 8) {
+            try {
+                const response = await fetch(`/api/certificate/employee?empNo=${empNo}`);
+                const employee = await response.json();
+
+                if (response.ok && employee) {
+                    if (currentCertificateType === 'payslip') {
+                         payslipInfoSelector.style.display = 'block';
+                         document.getElementById('payslipDate').innerText = '2025년 08월 01일'; // 예제 데이터
+                    } else {
+                        infoSelector.style.display = 'block';
+                        document.getElementById('empName').innerText = employee.empName;
+                        document.getElementById('empRank').innerText = employee.jobName;
+                        document.getElementById('empDept').innerText = employee.deptName;
+                    }
+                } else {
+                    errorSelector.innerText = '사번이 올바르지 않습니다.';
+                    errorSelector.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error fetching employee data:', error);
+                errorSelector.innerText = '서버 통신 오류가 발생했습니다.';
+                errorSelector.style.display = 'block';
+            }
+        } else if (empNo.length > 8) {
+            errorSelector.innerText = '사번이 8자리를 초과했습니다.';
+            errorSelector.style.display = 'block';
+        }
+    });
+
+    // '발급 진행' 버튼 클릭 시 이벤트 (재직/경력)
+    document.getElementById('btnConfirmIssue').addEventListener('click', async function() {
+        const empNo = document.getElementById('empNo').value;
+        try {
+            const response = await fetch(`/api/certificate/employee?empNo=${empNo}`);
+            const employeeData = await response.json();
+            if (response.ok && employeeData) {
+                renderCertificatePage(employeeData, currentCertificateType);
+                closeModal();
+            } else {
+                document.getElementById('errorMsg').innerText = '데이터를 불러오는 데 실패했습니다.';
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error rendering certificate:', error);
+            document.getElementById('errorMsg').innerText = '페이지 생성 중 오류가 발생했습니다.';
+            document.getElementById('errorMsg').style.display = 'block';
+        }
+    });
+
+    // '조회 진행' 버튼 클릭 시 이벤트 (급여 명세서)
+    document.getElementById('btnConfirmPayslip').addEventListener('click', async function() {
+        const empNo = document.getElementById('empNo').value;
+         try {
+            const response = await fetch(`/api/certificate/payslip?empNo=${empNo}`);
+            const payslipData = await response.json();
+            if (response.ok && payslipData) {
+                renderPayslipPage(payslipData);
+                closeModal();
+            } else {
+                document.getElementById('errorMsg').innerText = '급여 명세서 데이터를 찾을 수 없습니다.';
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error fetching payslip:', error);
+            document.getElementById('errorMsg').innerText = '급여 명세서 조회 중 오류가 발생했습니다.';
+            document.getElementById('errorMsg').style.display = 'block';
+        }
+    });
+
+    // 재직증명서 HTML 템플릿
+    const employmentTemplate = (data) => `
+        <div class="actions flex justify-end gap-2 mb-2">
+            <button class="btn bg-blue-600 text-white hover:bg-blue-700 rounded-lg px-4 py-2" onclick="issueCertificate('employment', ${data.empNo})">발급</button>
+            <button class="btn bg-gray-500 text-white hover:bg-gray-600 rounded-lg px-4 py-2" onclick="window.print()">인쇄</button>
+            <button class="btn bg-gray-500 text-white hover:bg-gray-600 rounded-lg px-4 py-2" onclick="goBack()">돌아가기</button>
+        </div>
+        <section class="certificate-document p-8">
+            <h1 class="text-center text-3xl font-bold tracking-wide text-gray-800 mb-8">재직증명서</h1>
+            <table class="w-full border-collapse">
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left w-1/4 font-semibold">성명</th><td class="border border-gray-300 p-3">${data.empName}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">주민등록번호</th><td class="border border-gray-300 p-3">${data.rrn}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">주소</th><td class="border border-gray-300 p-3">${data.address}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">소속</th><td class="border border-gray-300 p-3">${data.deptName}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">직위</th><td class="border border-gray-300 p-3">${data.jobName}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">기간</th><td class="border border-gray-300 p-3">${data.hireDate} ~ 현재</td></tr>
+            </table>
+            <div class="mt-8 text-sm leading-relaxed">
+                상기와 같이 재직 중임을 증명함<br>
+                용&nbsp;&nbsp;도 : ${data.purpose}
+            </div>
+            <div class="mt-12 text-center">
+                <div class="date mb-4 text-lg font-semibold">${new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                <div class="company mt-4 text-sm leading-relaxed">
+                    주&nbsp;&nbsp;&nbsp;&nbsp;소 : ${data.companyAddress}<br>
+                    회 사 명 : ${data.companyName}<br>
+                    대 표 이 사 : ${data.ceoName} (인)
+                </div>
+            </div>
+            <div class="seal absolute bottom-8 right-8 w-16 h-16 border-2 border-dashed border-red-500 rounded-lg flex items-center justify-center text-red-500 font-bold text-xs">회사인</div>
+        </section>
+    `;
+
+    // 경력증명서 HTML 템플릿
+    const careerTemplate = (data) => `
+        <div class="actions flex justify-end gap-2 mb-2">
+            <button class="btn bg-blue-600 text-white hover:bg-blue-700 rounded-lg px-4 py-2" onclick="issueCertificate('career', ${data.empNo})">발급</button>
+            <button class="btn bg-gray-500 text-white hover:bg-gray-600 rounded-lg px-4 py-2" onclick="window.print()">인쇄</button>
+            <button class="btn bg-gray-500 text-white hover:bg-gray-600 rounded-lg px-4 py-2" onclick="goBack()">돌아가기</button>
+        </div>
+        <section class="certificate-document p-8">
+            <h1 class="text-center text-3xl font-bold tracking-wide text-gray-800 mb-8">경력증명서</h1>
+            <h2 class="section-title font-bold text-lg mt-8 mb-4">인적 사항</h2>
+            <table class="w-full border-collapse">
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left w-1/4 font-semibold">성명</th><td class="border border-gray-300 p-3">${data.empName}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">주민등록번호</th><td class="border border-gray-300 p-3">${data.rrn}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">전화번호</th><td class="border border-gray-300 p-3">${data.phone}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">주소</th><td class="border border-gray-300 p-3">${data.address}</td></tr>
+            </table>
+            <h2 class="section-title font-bold text-lg mt-8 mb-4">업체 정보</h2>
+            <table class="w-full border-collapse">
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left w-1/4 font-semibold">업체명</th><td class="border border-gray-300 p-3">${data.companyName}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">사업자등록번호</th><td class="border border-gray-300 p-3">${data.bizRegNo}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">전화번호</th><td class="border border-gray-300 p-3">${data.companyPhone}</td></tr>
+                <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">주소</th><td class="border border-gray-300 p-3">${data.companyAddress}</td></tr>
+            </table>
+            <h2 class="section-title font-bold text-lg mt-8 mb-4">경력 사항</h2>
+            <table class="w-full border-collapse text-center">
+                <thead><tr><th class="border border-gray-300 p-3 bg-gray-50 font-semibold">근무기간</th><th class="border border-gray-300 p-3 bg-gray-50 font-semibold">근무부서</th><th class="border border-gray-300 p-3 bg-gray-50 font-semibold">담당업무</th></tr></thead>
+                <tbody>
+                    ${data.careerRows.map(row => `<tr><td class="border border-gray-300 p-3">${row.start} ~ ${row.current ? '현재' : row.end}</td><td class="border border-gray-300 p-3">${row.department}</td><td class="border border-gray-300 p-3">${row.role}</td></tr>`).join('')}
+                </tbody>
+            </table>
+            <div class="grid grid-cols-2 gap-8 mt-8">
+                <table class="w-full border-collapse">
+                    <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">확인자 직위</th><td class="border border-gray-300 p-3">${data.confirmerPosition}</td></tr>
+                    <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">확인자 성명</th><td class="border border-gray-300 p-3">${data.confirmerName}</td></tr>
+                    <tr><th class="border border-gray-300 p-3 bg-gray-50 text-left font-semibold">용도</th><td class="border border-gray-300 p-3">${data.purpose}</td></tr>
+                </table>
+                <div class="issuer flex items-start justify-center gap-6 flex-wrap mt-8 text-sm leading-relaxed">
+                    <div class="company-block text-center">
+                        <div><strong class="font-bold">${new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}</strong></div>
+                        <div>회사명 : ${data.companyName}</div>
+                        <div>대표 : ${data.ceoName} (인)</div>
+                    </div>
+                    <div class="seal min-w-16 min-h-16 border-2 border-dashed border-red-500 rounded-lg flex items-center justify-center font-bold text-red-500 text-xs p-4">회사인</div>
+                </div>
+            </div>
+        </section>
+    `;
+
+    // 급여 명세서 HTML 템플릿
+    const payslipTemplate = (data) => `
+        <div class="actions flex justify-end gap-2 mb-2">
+            <button class="btn bg-blue-600 text-white hover:bg-blue-700 rounded-lg px-4 py-2" onclick="goBack()">돌아가기</button>
+        </div>
+        <section class="certificate-document p-8">
+            <h1 class="text-center text-3xl font-bold tracking-wide text-gray-800 mb-8">급여 명세서</h1>
+            <div class="grid grid-cols-2 gap-4 text-sm mb-6">
+                <div><span class="font-semibold">이름:</span> ${data.name}</div>
+                <div><span class="font-semibold">사번:</span> ${data.empNo}</div>
+                <div><span class="font-semibold">지급일:</span> ${data.payDate}</div>
+                <div><span class="font-semibold">직급:</span> ${data.position}</div>
+            </div>
+
+            <h2 class="section-title font-bold text-lg mt-8 mb-4">지급 내역</h2>
+            <table class="w-full border-collapse">
+                <thead><tr><th class="border border-gray-300 p-3 bg-gray-50 text-left">항목</th><th class="border border-gray-300 p-3 bg-gray-50 text-right">금액</th></tr></thead>
+                <tbody>
+                    <tr><td class="border border-gray-300 p-3">기본급</td><td class="border border-gray-300 p-3 text-right">${data.baseSalary.toLocaleString('ko-KR')}원</td></tr>
+                    <tr><td class="border border-gray-300 p-3">식대</td><td class="border border-gray-300 p-3 text-right">${data.mealAllowance.toLocaleString('ko-KR')}원</td></tr>
+                    <tr><td class="border border-gray-300 p-3">성과급</td><td class="border border-gray-300 p-3 text-right">${data.bonus.toLocaleString('ko-KR')}원</td></tr>
+                </tbody>
+                <tfoot>
+                    <tr><td class="border border-gray-300 p-3 font-bold">총 지급액</td><td class="border border-gray-300 p-3 font-bold text-right">${data.totalPay.toLocaleString('ko-KR')}원</td></tr>
+                </tfoot>
+            </table>
+
+            <h2 class="section-title font-bold text-lg mt-8 mb-4">공제 내역</h2>
+            <table class="w-full border-collapse">
+                <thead><tr><th class="border border-gray-300 p-3 bg-gray-50 text-left">항목</th><th class="border border-gray-300 p-3 bg-gray-50 text-right">금액</th></tr></thead>
+                <tbody>
+                    <tr><td class="border border-gray-300 p-3">국민연금</td><td class="border border-gray-300 p-3 text-right">${data.nationalPension.toLocaleString('ko-KR')}원</td></tr>
+                    <tr><td class="border border-gray-300 p-3">건강보험</td><td class="border border-gray-300 p-3 text-right">${data.healthInsurance.toLocaleString('ko-KR')}원</td></tr>
+                    <tr><td class="border border-gray-300 p-3">고용보험</td><td class="border border-gray-300 p-3 text-right">${data.employmentInsurance.toLocaleString('ko-KR')}원</td></tr>
+                    <tr><td class="border border-gray-300 p-3">소득세</td><td class="border border-gray-300 p-3 text-right">${data.incomeTax.toLocaleString('ko-KR')}원</td></tr>
+                </tbody>
+                <tfoot>
+                    <tr><td class="border border-gray-300 p-3 font-bold">총 공제액</td><td class="border border-gray-300 p-3 font-bold text-right">${data.totalDeduction.toLocaleString('ko-KR')}원</td></tr>
+                </tfoot>
+            </table>
+
+            <div class="mt-8 text-center text-2xl font-bold">
+                실수령액: ${data.netPay.toLocaleString('ko-KR')}원
+            </div>
+        </section>
+    `;
+
+    function renderCertificatePage(data, type) {
+        const container = document.getElementById('certificate-container');
+        container.style.display = 'block';
+        let html = '';
+        if (type === 'employment') {
+            html = employmentTemplate(data);
+        } else if (type === 'career') {
+            html = careerTemplate(data);
+        }
+        container.innerHTML = html;
+    }
+
+    function renderPayslipPage(data) {
+        const container = document.getElementById('certificate-container');
+        container.style.display = 'block';
+        container.innerHTML = payslipTemplate(data);
+    }
+
+    // 발급 버튼 클릭 시 백엔드 호출
+    async function issueCertificate(type, empNo) {
+        const issueData = {
+            type: type,
+            empNo: empNo
+        };
+        try {
+            const response = await fetch('/api/certificate/issue', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(issueData)
+            });
+            const result = await response.json();
+            if (response.ok) {
+                alert('증명서가 성공적으로 발급되어 노션에 저장되었습니다.');
+            } else {
+                alert('증명서 발급에 실패했습니다: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Issue failed:', error);
+            alert('증명서 발급 중 오류가 발생했습니다.');
+        }
+    }
+
+    // 돌아가기 버튼
+    function goBack() {
+        document.getElementById('certificate-container').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+    }
+</script>
 </body>
 </html>

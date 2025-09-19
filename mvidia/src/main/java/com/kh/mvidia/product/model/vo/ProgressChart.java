@@ -17,5 +17,6 @@ public class ProgressChart { // 작업진행현황 테이블
     private Date startDate; // 작업_시작예정일
     private Date endDate;   // 작업_종료예정일
     private Double progRate;  // 작업_진행량
+    private String schName;
 
 }

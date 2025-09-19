@@ -25,7 +25,6 @@ public class ChartController {
     public String chartboard(Model model){
 
         List<ScheduleRegistration> schrTop5 = cService.selectTop5Schr();
-        System.out.println("schrTop5 = " + schrTop5);
         List<ScheduleRegistration> schrTop5Donut = cService.selectTop5SchrDonut();
         List<ProgressChart> progTop5 = cService.selectTop5Prog();
 

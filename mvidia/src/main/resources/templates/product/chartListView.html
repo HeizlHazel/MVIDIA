@@ -10,104 +10,494 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);}
-        .modal-content { background: #fff; margin: 10% auto; padding: 20px; border-radius: 12px; width: 900px;}
-        .close { float: right; font-size: 24px; cursor: pointer;}
-        input[type=number] { width: 60px; }
-        select { width: 100%; }
-        table { width: 100%; margin-top: 10px; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 5px; text-align: center; }
-        th { background-color: #f0f0f0; }
-        .submit-btn { margin-top: 10px; padding: 5px 10px; }
-        .card-container { display:flex; gap:10px; flex-wrap:wrap; }
-        .schedule-card { border:1px solid #ccc; padding:10px; border-radius:8px; width:250px; }
-        .card-chart { height:150px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            padding: 30px;
+        }
+
+        .section h2 {
+            color: #34495e;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        /* 상단 세로 막대바 영역 */
+        .top-chart-container {
+            height: 400px;
+            position: relative;
+        }
+
+        /* 하단 카드 그리드 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .progress-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            color: #2f4f4f;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            overflow: hidden;
+        }
+
+        .progress-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .progress-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-container {
+            margin-bottom: 10px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00b894, #00cec9);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        .date-range {
+            text-align: center;
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 8px;
+        }
+
+        .charts-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            height: 250px;
+        }
+
+        .bar-chart-container {
+            flex: 2;
+            position: relative;
+        }
+
+        .donut-chart-container {
+            flex: 1;
+            height: 75.5%;
+            position: relative;
+
+        }
+
+        .donut-title {
+            color: #2f4f4f;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 50px;
+        }
     </style>
 </head>
 <body>
-<h1>🛠️ 작업진행현황</h1>
+<div class="container">
+    <div class="header">
+        <h1>작업진행현황</h1>
+        <p>종료임박순 Top5 일정별 진행현황을 확인하세요</p>
+        <a href="/schrList.bo">더보기</a>
+    </div>
 
-<h5>현재 진행 중인 일정 전체 진행도</h5>
-<div class="chart-container">
-    <canvas id="progressChart"></canvas>
-</div>
+    <!-- 상단: 현재 진행 중인 일정 전체 진행도 (세로 막대바) -->
+    <div class="section">
+        <h2>현재 진행 중인 일정 전체 진행도 (종료임박순 Top5)</h2>
+        <div class="top-chart-container">
+            <canvas id="topProgressChart"></canvas>
+        </div>
+    </div>
 
-<script th:inline="javascript">
-    const progTop5 = /*[[${progTop5}]]*/ [];
-    const labels = progTop5.map(p => p.taskId);
-    const dataValues = progTop5.map(p => p.progRate);
-
-    new Chart(document.getElementById('progressChart'), {
-        type: 'bar',
-        data: { labels: labels, datasets: [{ label: '진행률 (%)', data: dataValues, backgroundColor: '#36A2EB' }] },
-        options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, max:100, ticks:{callback: v=>v+'%'} } } }
-    });
-</script>
-
-<a th:href="@{/schrList.bo}">더보기</a>
-
-<h3>종료 임박 일정 TOP 5</h3>
-<div class="card-container">
-    <div th:each="item,index : ${schrTop5}" class="schedule-card">
-        <h4 th:text="${item.schName}">일정명</h4>
-        <p><b>업체명:</b> <span th:text="${item.bpPartner}">업체명</span></p>
-        <p><b>진행률:</b>
-            <span th:text="${item.totalCount>0 ? (item.doneCount*100/item.totalCount) + '%' : '0%'}">0%</span>
-        </p>
-        <p><b>시작일:</b> <span th:text="${#dates.format(item.startDate,'yyyy-MM-dd')}">2025-01-01</span></p>
-        <p><b>종료일:</b> <span th:text="${#dates.format(item.endDate,'yyyy-MM-dd')}">2025-01-05</span></p>
-
-        <!-- 카드별 누적막대 -->
-        <canvas th:attr="id='statusChartCard'+${index}" class="card-chart"></canvas>
-        <!-- 카드별 도넛 -->
-        <canvas th:attr="id='defDonutCard'+${index}" class="card-chart"></canvas>
+    <!-- 하단: 일정별 상세 진행 현황 (카드 형식) -->
+    <div class="section">
+        <h2>일정별 상세 진행 현황 (종료임박순 Top5)</h2>
+        <div id="cardsContainer" class="cards-grid">
+            <div class="loading">데이터를 불러오는 중...</div>
+        </div>
     </div>
 </div>
 
 <script th:inline="javascript">
-    const schrTop5Donut = /*[[${schrTop5Donut}]]*/ [];
+    // Controller에서 전달받은 실제 데이터 사용 (변경됨: 샘플데이터 대신 서버 데이터 사용)
+    const progTop5 = /*[[${progTop5}]]*/ [];
+    const schrTop5 = /*[[${schrTop5}]]*/ [];
 
-    /* 카드별 차트 생성 */
-    /* schrTop5: 누적막대 데이터 / schrTop5Donut: 도넛 데이터 */
-    schrTop5.forEach((item, index)=>{
-        // 누적막대
-        const ctxBar = document.getElementById('statusChartCard'+index).getContext('2d');
-        new Chart(ctxBar, {
+    // 1. 상단 세로 막대바 차트 생성
+    function createTopProgressChart() {
+        const ctx = document.getElementById('topProgressChart').getContext('2d');
+
+        const labels = progTop5.map(p => p.schName);
+        const progressData = progTop5.map(p => p.progRate);
+
+        new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['완료(C)','진행중(P)','지연(S)','예정(W)'],
+                labels: labels,
                 datasets: [{
-                    label: item.schName,
-                    data: [item.doneCount, item.ingCount, item.delayCount, item.waitCount],
-                    backgroundColor:['rgba(75,192,192,0.8)','rgba(54,162,235,0.8)','rgba(255,206,86,0.8)','rgba(201,203,207,0.8)']
+                    label: '진행률 (%)',
+                    data: progressData,
+                    backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
                 }]
             },
             options: {
-                responsive:true,
-                plugins:{ legend:{display:false}, datalabels:{
-                    color:'black', anchor:'center', align:'center', formatter:(value)=> value > 0 ? value+'개' : '' }
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false},
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const dataIndex = context.dataIndex;
+                                const item = progTop5[dataIndex];
+                                return [
+                                    `진행률: ${context.parsed.y}%`,
+                                    `기간: ${item.startDate} ~ ${item.endDate}`
+                                ];
+                            }
+                        }
+                    }
                 },
-                scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true } }
-            },
-            plugins:[ChartDataLabels]
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    },
+                    x: { grid: { display: false }}
+                },
+                plugins: [ChartDataLabels]
+            }
+
+        });
+    }
+
+    // 2. 하단 카드들 생성
+    function createProgressCards() {
+        const container = document.getElementById('cardsContainer');
+        container.innerHTML = '';
+
+        if (!schrTop5 || schrTop5.length === 0) {
+        container.innerHTML = '<div class="loading">데이터가 없습니다.</div>';
+        return;
+        }
+
+        // 변경됨: 실제 schrTop5 데이터 사용
+        schrTop5.forEach((schedule, index) => {
+            // 전체 진행률 계산
+            const progressRate = schedule.totalCount > 0
+                ? Math.round((schedule.doneCount / schedule.totalCount) * 100)
+                : 0;
+
+            // 카드 HTML 생성
+            const cardHTML = `
+                <div class="progress-card">
+                    <div class="card-header">
+                        <div class="card-title">${schedule.schName}</div>
+
+                        <div class="progress-info">
+                            <div class="progress-bar-container">
+                                <div class="progress-label">
+                                    <span>전체 진행률</span>
+                                    <span>${progressRate}%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${progressRate}%"></div>
+                                </div>
+                                <div class="date-range">
+                                    ${schedule.startDate} ~ ${schedule.endDate}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-row">
+                        <div class="bar-chart-container">
+                            <canvas id="statusBar_${index}"></canvas>
+                        </div>
+                        <div class="donut-chart-container">
+                            <div class="donut-title">불량 검사 현황</div>
+                            <canvas id="qualityDonut_${index}"></canvas>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML += cardHTML;
         });
 
-        // 도넛
-        const donutData = schrTop5Donut[index] || { defType: [], defCountType: [] };
-        const ctxDonut = document.getElementById('defDonutCard'+index).getContext('2d');
-        new Chart(ctxDonut, {
-            type:'doughnut',
-            data:{
-                labels: donutData.defType,
-                datasets:[{
-                    data: donutData.defCountType,
-                    backgroundColor:['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF']
+        // 차트들을 DOM이 생성된 후에 렌더링
+        setTimeout(() => {
+            // 변경됨: 실제 schrTop5 데이터 사용
+            schrTop5.forEach((d, index) => {
+                createStatusBarChart(d, index);
+                createQualityDonutChart(d, index);
+            });
+        }, 100);
+    }
+
+    // 3. 상태별 누적 가로 막대바 차트 생성
+    function createStatusBarChart(d, index) {
+        const ctx = document.getElementById(`statusBar_${index}`).getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['작업 진행 상태'],
+                datasets: [
+                    {
+                        label: '완료',
+                        data: [d.doneCount],
+                        barThickness: 50,
+                        backgroundColor: 'rgba(46, 204, 113, 0.8)',
+                        borderColor: 'rgba(46, 204, 113, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '진행중',
+                        data: [d.ingCount],
+                        barThickness: 50,
+                        backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '지연',
+                        data: [d.delayCount],
+                        barThickness: 50,
+                        backgroundColor: 'rgba(241, 196, 15, 0.8)',
+                        borderColor: 'rgba(241, 196, 15, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '대기',
+                        data: [d.waitCount],
+                        barThickness: 50,
+                        backgroundColor: 'rgba(149, 165, 166, 0.8)',
+                        borderColor: 'rgba(149, 165, 166, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels:{
+                            usePointStyle:true,
+                            pointStyle:'circle',
+                            boxWidth:8,
+                            boxHeight:8,
+                            padding:10,
+                            font:{size:11}
+                        }
+                    },
+                    datalabels:{
+                        color:'black',
+                        anchor:'center',
+                        align:'center',
+                        offset:2,
+                        formatter:(value, context)=>{
+                            const idx = context.dataIndex;
+                            const total = schrTop5[idx].totalCount;
+                            const done = schrTop5[idx].doneCount;
+                            const progRate = total>0?Math.round(done*100/total):0;
+                            return progRate+'%';
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: {
+                            color: 'rgba(255,255,255,0.8)',
+                            font: { size: 10 },
+                            display: false
+                        },
+                        grid: { color: 'rgba(255,255,255,0.2)' }
+                    },
+                    y: {
+                        stacked: true,
+                        ticks: {
+                            color: 'rgba(255,255,255,0.8)',
+                            font: { size: 10 },
+                            display: false
+                        },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    // 4. 품질검사 도넛 차트 생성
+    function createQualityDonutChart(d, index) {
+        const ctx = document.getElementById(`qualityDonut_${index}`).getContext('2d');
+
+        const normalCount = d.totalCount - d.defCount;
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['정상', '불량'],
+                datasets: [{
+                    data: [normalCount, d.defCount],
+                    backgroundColor: [
+                        'rgba(46, 204, 113, 0.8)',
+                        'rgba(231, 76, 60, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(46, 204, 113, 1)',
+                        'rgba(231, 76, 60, 1)'
+                    ],
+                    borderWidth: 2
                 }]
             },
-            options:{ responsive:true, cutout:'60%', plugins:{ legend:{ position:'bottom' } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels:{
+                            usePointStyle:true,
+                            pointStyle:'circle',
+                            boxWidth:8,
+                            boxHeight:8,
+                            padding:10,
+                            font:{size:11}
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed * 100) / total).toFixed(1);
+                                return `${context.label}: ${context.parsed}개 (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '40%'
+            }
         });
-    });
-</script>
+    }
 
+    // 페이지 로드 시 차트들 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        // 상단 세로 막대바 차트 생성
+        createTopProgressChart();
+
+        // 하단 카드들 생성
+        createProgressCards();
+    });
+
+    // 실제 프로젝트에서는 이 함수로 서버 데이터 가져오기
+    function loadDataFromServer() {
+        // Ajax 호출 예시
+        /*
+        fetch('/cplist.bo')
+            .then(response => response.json())
+            .then(data => {
+                // 받은 데이터로 차트 업데이트
+                updateChartsWithServerData(data);
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+            });
+        */
+    }
+</script>
 </body>
 </html>

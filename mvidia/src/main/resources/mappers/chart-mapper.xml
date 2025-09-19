@@ -34,6 +34,7 @@
         <result column="start_date" property="startDate" />
         <result column="end_date" property="endDate" />
         <result column="prog_rate" property="progRate" />
+        <result column="sch_name" property="schName" />
     </resultMap>
     
     <resultMap id="DefTypeResultSet" type="ScheduleRegistration">
@@ -62,13 +63,18 @@
 
     <select id="selectProgressChart" resultMap="ProgressResultSet">
         select
-               task_code
-             , task_id
-             , item_code
-             , start_date
-             , end_date
-             , prog_rate
-          from tb_progress_chart
+               p.task_code
+             , p.task_id
+             , p.item_code
+             , p.start_date
+             , p.end_date
+             , p.prog_rate
+             , s.sch_name
+          from tb_progress_chart p
+          left
+          join tb_schedule_registration sr on p.schr_id = sr.schr_id
+          left
+          join tb_schedule s on sr.sch_no = s.sch_no
     </select>
 
     <!-- 개별 일정 top5 누적상태별 막대바 그래프 -->
@@ -137,21 +143,24 @@
                       p.task_code
                     , p.task_id
                     , p.item_code
-                    , s.schr_id
-                    , s.start_date
-                    , s.end_date
-                    , case when s.total_count > 0
-                      then round( nvl(sum(case when q.check_status='C' then 1 else 0 end),0) * 100.0 / s.total_count, 2 )
+                    , s.sch_name
+                    , sr.start_date
+                    , sr.end_date
+                    , case when sr.total_count > 0
+                      then round( nvl(sum(case when q.check_status='C' then 1 else 0 end),0) * 100.0 / sr.total_count, 2 )
                       else 0
                       end as prog_rate
                  from tb_progress_chart p
-                 join tb_schedule_registration s on p.task_id = s.schr_id
                  left
-                 join tb_quality_check q on s.schr_id = q.schr_id
+                 join tb_schedule_registration sr on p.task_id = sr.schr_id
+                 left
+                 join tb_schedule s on sr.sch_no = s.sch_no
+                 left
+                 join tb_quality_check q on sr.schr_id = q.schr_id
                 group
-                   by p.task_code, p.task_id, p.item_code, s.schr_id, s.start_date, s.end_date, s.total_count
+                   by p.task_code, p.task_id, p.item_code, s.sch_name, sr.start_date, sr.end_date, sr.total_count
                 order
-                   by s.end_date
+                   by sr.end_date
                )
          where rownum &lt;= 5
     </select>
@@ -159,19 +168,18 @@
     <!-- 개별 일정 전체 누적상태별막대(더보기 클릭-> 페이지 이동) -->
     <select id="selectAllSchr" resultMap="ChartResultSet">
         select
-             s.schr_id as schrId
-             , s.sch_no as schNo
+             s.schr_id
+             , s.sch_no
              , sc.sch_name as schName
-             , s.cat_code as catCode
-             , s.bp_partner as bpPartner
-             , s.emp_no as empNo
-             , s.start_date as startDate
-             , s.end_date as endDate
-             , s.color_id as colorId
-             , s.details as details
-             , s.total_count as totalCount
-             , s.def_count as defCount
-             , sc.sch_name as schName
+             , s.cat_code
+             , s.bp_partner
+             , s.emp_no
+             , s.start_date
+             , s.end_date
+             , s.color_id
+             , s.details
+             , s.total_count
+             , s.def_count
              , sum(case when q.check_status='C' then q.def_count else 0 end) as doneCount
              , sum(case when q.check_status='P' then q.def_count else 0 end) as ingCount
              , sum(case when q.check_status='S' then q.def_count else 0 end) as delayCount
@@ -193,16 +201,17 @@
     <!-- 개별 일정 전체 누적상태별 불량 도넛 (더보기 클릭-> 페이지 이동) -->
     <select id="selectAllSchrDonut" resultType="ScheduleRegistration">
         select
-               d.def_type
-             , sum(nvl(q.def_count, 0)) as def_count_type
+               s.bp_partner as bpPartner
+             , d.def_type as defType
+             , sum(nvl(q.def_count, 0)) as defCountType
           from tb_quality_check q
           left
           join tb_schedule_registration s on q.schr_id = s.schr_id
           left
           join tb_defective_type d on q.def_code = d.def_code
          group
-            by d.def_type
+            by s.bp_partner, d.def_type
          order
-            by d.def_type
+            by s.bp_partner, d.def_type
     </select>
  </mapper>

@@ -276,7 +276,7 @@ public class ApprovalServiceImpl implements ApprovalService {
                     .collect(Collectors.toList());
         } else if ("completed".equals(filter)) {
             return myApprovalDocs.stream()
-                    .filter(item -> "승인".equals(item.getStatus()) || "반려".equals(item.getStatus()))
+                    .filter(item -> "승인".equals(item.getStatus()))
                     .collect(Collectors.toList());
         }
 
@@ -288,7 +288,7 @@ public class ApprovalServiceImpl implements ApprovalService {
      */
     public int getPendingApprovalCount(Employee loginEmp) {
         if (loginEmp == null) {
-            return 0;1
+            return 0;
         }
 
         String currentUser = loginEmp.getEmpLName() + loginEmp.getEmpName();
@@ -319,7 +319,7 @@ public class ApprovalServiceImpl implements ApprovalService {
                     switch (filter) {
                         case "pending": return "대기".equals(item.getStatus());
                         case "approved": return "승인".equals(item.getStatus());
-                        case "rejected": return "반료".equals(item.getStatus());
+                        case "rejected": return "반려".equals(item.getStatus());
                         default: return true;
                     }
                 })

@@ -141,21 +141,52 @@ public class ApprovalController {
         return aService.getApprovalDetail(pageId);
     }
 
-    // 결재 승인
+//    // 결재 승인
+//    @ResponseBody
+//    @PostMapping("/approval/approve/{pageId}")
+//    public String approveApproval(@PathVariable String pageId, HttpSession session) {
+//        aService.updateApprovalStatus(pageId, "승인");
+//        return "success";
+//    }
+//
+//    // 결재 반려
+//    @ResponseBody
+//    @PostMapping("/approval/reject/{pageId}")
+//    public String rejectApproval(@PathVariable String pageId) {
+//        aService.updateApprovalStatus(pageId, "반려");
+//        return "success";
+//    }
+
     @ResponseBody
     @PostMapping("/approval/approve/{pageId}")
-    public String approveApproval(@PathVariable String pageId) {
-        aService.updateApprovalStatus(pageId, "승인");
-        return "success";
+    public Map<String, Object> approveApproval(@PathVariable String pageId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            aService.updateApprovalStatus(pageId, "승인");
+            result.put("success", true);
+            result.put("message", "승인 처리되었습니다.");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "승인 처리 중 오류가 발생했습니다.");
+        }
+        return result;
     }
 
-    // 결재 반려
     @ResponseBody
     @PostMapping("/approval/reject/{pageId}")
-    public String rejectApproval(@PathVariable String pageId) {
-        aService.updateApprovalStatus(pageId, "반료");
-        return "success";
+    public Map<String, Object> rejectApproval(@PathVariable String pageId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            aService.updateApprovalStatus(pageId, "반려");
+            result.put("success", true);
+            result.put("message", "반려 처리되었습니다.");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "반려 처리 중 오류가 발생했습니다.");
+        }
+        return result;
     }
+
 
     // 실시간 대기 건수 조회
     @GetMapping("api/approval/pending-count")

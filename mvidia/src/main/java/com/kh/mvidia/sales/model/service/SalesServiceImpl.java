@@ -6,7 +6,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SalesServiceImpl implements SalesService {
@@ -33,7 +35,44 @@ public class SalesServiceImpl implements SalesService {
     }
 
     @Override
-    public int mergeQuarterlySales(String year) {
-        return SalesDao.mergeQuarterlySales(sqlSession, year);
+    public void mergeQuarterlySales(String year) {
+        SalesDao.mergeQuarterlySales(sqlSession, year);
     }
+
+    @Override
+    public Map<String, Long> getQuarterlyProductRevenue(String year, int quarter) {
+        List<Sales> salesList = getQuarterlySales(year);
+
+        Map<String, Long> map = new HashMap<>();
+        for (Sales s : salesList) {
+            if (Integer.parseInt(s.getQuarter()) == quarter) {
+                long sales = Long.parseLong(s.getTotalSales());
+                map.merge(s.getProdName(), sales, Long::sum);
+            }
+        }
+        return map;
+    }
+    @Override
+    public Map<String, Object> getQuarterlySummary(String year, int quarter) {
+        List<Sales> salesList = getQuarterlySales(year);
+
+        long totalSales = 0;
+        long totalProfit = 0;
+
+        for (Sales s : salesList) {
+            if (Integer.parseInt(s.getQuarter()) == quarter) {
+                totalSales += Long.parseLong(s.getTotalSales());
+                totalProfit += Long.parseLong(s.getOpProfit());
+            }
+        }
+
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("totalSales", totalSales);
+        summary.put("totalProfit", totalProfit);
+        summary.put("profitRate", totalSales > 0 ? (double) totalProfit / totalSales * 100 : 0.0);
+
+        return summary;
+    }
+
+
 }

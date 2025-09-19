@@ -35,8 +35,6 @@ public class NotionController {
                                             @RequestParam String payDate) {
 
         try {
-            // 데이터 조회 전 파라미터 검증
-            System.out.println("🔍 파라미터 확인: empNo=" + empNo + ", payDate=" + payDate);
 
             Map<String, Object> param = new HashMap<>();
             param.put("empNo", empNo);
@@ -44,7 +42,6 @@ public class NotionController {
             Salary salary = financeService.getSalary(param).get(0);
 
             if (salary == null) {
-                System.out.println("급여 데이터 없음");
 
                 return ResponseEntity.ok(Map.of(
                         "status", "fail",
@@ -53,8 +50,6 @@ public class NotionController {
             }
 
             List<Tax> taxList = financeService.getTaxesByEmpAndMonth(empNo, payDate);
-            System.out.println("💰 세금 데이터: " + (taxList != null ? taxList.size() : 0));
-
             notionService.insertPayrollToNotion(salary, taxList);
 
             return ResponseEntity.ok().body(Map.of(
@@ -65,9 +60,6 @@ public class NotionController {
             ));
 
         } catch (Exception e) {
-            System.err.println("❌ exportToNotion 오류 발생:");
-            e.printStackTrace();
-
             return ResponseEntity.internalServerError().body(Map.of(
                     "status", "error",
                     "message", "노션 업로드 중 오류가 발생했습니다: " + e.getMessage(),
@@ -82,13 +74,8 @@ public class NotionController {
     public ResponseEntity<?> debugData(@RequestParam String empNo,
                                        @RequestParam String payDate) {
         try {
-            System.out.println("🔍 데이터 디버깅 시작:");
-            System.out.println("   - 요청 사원번호: [" + empNo + "]");
-            System.out.println("   - 요청 급여년월: [" + payDate + "]");
-
             // 급여 데이터 조회
             Salary salary = financeService.getSalaryByEmpAndMonth(empNo, payDate);
-
             // 세금 데이터 조회
             List<Tax> taxList = financeService.getTaxesByEmpAndMonth(empNo, payDate);
 
@@ -119,39 +106,10 @@ public class NotionController {
             return ResponseEntity.ok(debugInfo);
 
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of(
                     "error", e.getMessage(),
                     "type", e.getClass().getSimpleName()
             ));
         }
     }
-
-    // 전체 급여 데이터 목록 조회 (데이터 확인용)
-    @GetMapping("/list-salary-data")
-    @ResponseBody
-    public ResponseEntity<?> listSalaryData() {
-        try {
-            // FinanceService에 전체 목록 조회 메소드가 있다면 사용
-            // 없다면 임시로 몇 가지 샘플 데이터로 확인
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "이 엔드포인트는 데이터베이스의 급여 데이터 목록을 확인하기 위한 것입니다.",
-                    "suggestion", "데이터베이스에서 직접 다음 쿼리를 실행해보세요:",
-                    "queries", Arrays.asList(
-                            "SELECT emp_no, pay_date, emp_name FROM salary WHERE emp_no LIKE '%22010001%'",
-                            "SELECT DISTINCT emp_no, pay_date FROM salary ORDER BY pay_date DESC LIMIT 10",
-                            "SELECT COUNT(*) FROM salary WHERE emp_no = '22010001'",
-                            "SELECT * FROM salary WHERE pay_date LIKE '2025-08%'"
-                    )
-            ));
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of(
-                    "error", e.getMessage()
-            ));
-        }
-    }
-
-
 }

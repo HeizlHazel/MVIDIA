@@ -6,14 +6,13 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>재고 현황</title>
+    <title>재고 현황 조회</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </head>
 <style>
-    /* 카드 영역 기본 스타일 */
     .custom-card {
         border: 1px solid #ddd;
         border-radius: 6px;
@@ -21,7 +20,7 @@
         background-color: #fff;
         margin-top: 20px;
     }
-    /* 검색창 + 버튼 배치 */
+
     #searchForm {
         display: flex;
         align-items: center;
@@ -29,7 +28,7 @@
         margin-bottom: 15px;
     }
     #keyword {
-        flex: 1;
+        width: 250px;
     }
     #status {
         width: 120px;
@@ -39,11 +38,13 @@
         font-weight: bold;
     }
 </style>
-</head>
 <body>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>부품 재고 현황</h2>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#printModal">
+        <i class="bi bi-printer"></i> 입출고 입력
+    </button>
 </div>
 
 <div class="custom-card">
@@ -59,13 +60,11 @@
         <button type="button" class="btn btn-secondary" onclick="searchComponent()">검색</button>
     </form>
 
-    <!-- 상태 집계 -->
     <div class="status-summary">
         <span class="text-success">정상: <span th:text="${normalCnt}"></span> 개</span> /
         <span class="text-danger">부족: <span th:text="${lowCnt}"></span> 개</span>
     </div>
 
-    <!-- 테이블 -->
     <div class="table-responsive">
         <table class="table table-bordered text-center table-hover">
             <thead class="table-primary">
@@ -96,30 +95,7 @@
     </div>
 </div>
 
-<script>
-    // Ajax 검색
-    function searchComponent() {
-        $.ajax({
-            url: "/finance/inventory/search",
-            type: "get",
-            data: {
-                keyword: $("#keyword").val(),
-                status: $("#status").val()
-            },
-            success: function (data) {
-                $("#componentTable").html(data);
-            }
-        });
-    }
 
-    // 엔터로 검색 가능
-    $(document).ready(function () {
-        $("#searchForm").on("submit", function(e) {
-            e.preventDefault();
-            searchComponent();
-        });
-    });
-</script>
-
+<script src="/js/layout.js"></script>
 </body>
 </html>

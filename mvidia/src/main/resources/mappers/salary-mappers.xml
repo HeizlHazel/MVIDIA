@@ -10,6 +10,7 @@
         <result column="salary" property="salary"/>
         <result column="ovPrice" property="ovPrice"/>
         <result column="bonus" property="bonus"/>
+        <result column="total_pay" property="totalPay"/>
         <result column="emp_name" property="empName"/>
         <result column="emp_lname" property="empLname"/>
         <result column="birthDay" property="birthDay"/>
@@ -30,6 +31,7 @@
         <result column="emp_no" property="empNo"/>
     </resultMap>
 
+    <!-- 사원 검색 담당 | 노션 업데이트 시 사원의 수당+세금+개인정보 등록용-->
     <select id="selectSalary" parameterType="map" resultType="Salary">
         select
                to_char(s.pay_date, 'YYYY-MM') as payDate
@@ -40,9 +42,9 @@
              , (s.salary *
                nvl(s.bonus, 0) / 100)         as bonusAmt
              , nvl(s.deduct_amt, 0) as deductAmt
-             , (s.salary + nvl(s.ov_price,0) + nvl(s.bonus,0)
-               - nvl(s.deduct_amt,0))         as netPay
-             , emp_Lname || e.emp_name         as empName
+             , (s.salary + nvl(s.ov_price,0) + (s.salary * nvl(s.bonus,0) / 100))
+               - s.deduct_amt                 as netPay
+             , e.emp_lname || e.emp_name      as empName
              , to_char(
                e.birthday, 'YYYY-MM-DD')      as birthDay
              , e.dept_code                    as deptCode
@@ -99,27 +101,32 @@
           join tb_job j on e.job_code = j.job_code
           left join tb_account a on s.emp_no = a.emp_no
           left join tb_bank b on a.bank_id = b.bank_id
+    </select>
 
-        <where>
-            <if test="yearMonth != null and yearMonth != ''">
-                and to_char(s.pay_date, 'YYYY-MM') = #{yearMonth}
-            </if>
-            <if test="empNo != null and empNo != ''">
-                and s.emp_no = #{empNo}
-            </if>
-            <if test="deptCode != null and deptCode != ''">
-                and e.dept_code = #{deptCode}
-            </if>
-            <if test="jobCode != null and jobCode != ''">
-                and e.job_code = #{jobCode}
-            </if>
-            <if test="empName != null and empName != ''">
-                e.emp_lname || e.emp_name LIKE '%' || #{empName} || '%'
-            </if>
-        </where>
+    <select id="selectAllSalary" resultType="Salary">
+        SELECT
+        to_char(s.pay_date, 'YYYY-MM') as payDate
+        , s.emp_no                       AS empNo
+        , s.salary                       AS salary
+        , nvl(s.ov_price, 0)             AS ovPrice
+        , (s.salary * nvl(s.bonus, 0) / 100) AS bonusAmt
+        , nvl(s.deduct_amt, 0)           AS deductAmt
+        , s.net_pay                      AS netPay
+        , s.total_pay                    AS totalPay
+        , e.emp_lname || e.emp_name      AS empName
+        , e.dept_code                    AS deptCode
+        , d.dept_name                    AS deptName
+        , e.job_code                     AS jobCode
+        , j.job_name                     AS jobName
+        FROM tb_salary s
+        JOIN tb_employee e ON s.emp_no = e.emp_no
+        JOIN tb_department d ON e.dept_code = d.dept_code
+        JOIN tb_job j ON e.job_code = j.job_code
+        ORDER BY TO_DATE(s.pay_date, 'YYYY-MM') DESC, e.emp_no
     </select>
 
 
+    <!-- tb_salary_over에 추가수당(사원별) 없을시 종류별 insert 있을시 update -->
     <update id="upsertSalaryOver">
          merge into tb_salary_over t
          using
@@ -144,6 +151,7 @@
         values (d.emp_no, d.pay_date, d.ov_code, d.amount)
     </update>
 
+    <!-- tb_salary_tax에 세금(사원별) 없을시 종류별 insert 있을시 update -->
     <update id="upsertSalaryTax">
          merge into tb_salary_tax t
          using
@@ -183,6 +191,7 @@
              )
     </update>
 
+    <!-- 공제액 db 업데이트-->
     <update id="updateDeductAmt" parameterType="map">
         update tb_salary
            set deduct_amt = #{deductAmt}
@@ -190,6 +199,7 @@
            and to_char(pay_date, 'YYYY-MM') = #{yearMonth}
     </update>
 
+    <!-- 추가 수당 db 업데이트 -->
     <update id="updateOvPrice">
         update tb_salary
            set ov_price = #{ovPrice}
@@ -197,6 +207,7 @@
            and to_char(pay_date, 'YYYY-MM') = #{yearMonth}
     </update>
 
+    <!-- 사원별 한달 세금 계산 -->
     <select id="selectTaxesByEmpAndMonth" parameterType="map" resultType="Tax">
         select tax_code                     as taxCode
              , emp_no                       as empNo
@@ -207,6 +218,7 @@
            and to_char(pay_date, 'YYYY-MM') = #{payDate}
     </select>
 
+    <!-- 사원별 한달 추가수당 계산-->
     <select id="selectAttendanceByMonth" resultMap="attendanceResultSet">
         select att_no
         , emp_no

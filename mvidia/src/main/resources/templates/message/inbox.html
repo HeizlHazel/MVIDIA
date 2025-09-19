@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>쪽지 수신함</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .msg-table th, .msg-table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .msg-table td.title {
+            text-align: left;
+            cursor: pointer;
+        }
+        .badge-unread {
+            background-color: #0050be;
+            color: white;
+            font-size: 11px;
+            margin-left: 6px;
+            padding: 3px 6px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h3>📥 받은 쪽지함</h3>
+    <hr>
+
+    <table class="table table-bordered table-hover msg-table">
+        <thead class="thead-light">
+        <tr>
+            <th style="width: 60px;">번호</th>
+            <th style="width: 150px;">보낸 사람</th>
+            <th>제목</th>
+            <th style="width: 180px;">보낸 날짜</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="msg, iterStat : ${messageList}"
+            th:classappend="${msg.readYn == 'N'} ? 'table-primary'">
+            <td th:text="${iterStat.count}"></td>
+            <td th:text="${msg.senderName}"></td>
+            <td class="title"
+                data-toggle="modal"
+                data-target="#msgDetailModal"
+                th:data-title="${msg.title}"
+                th:data-content="${msg.content}"
+                th:data-sender="${msg.senderName}"
+                th:data-date="${msg.sendDate}">
+                <span th:text="${msg.title}"></span>
+                <span th:if="${msg.readYn == 'N'}" class="badge-unread">새 쪽지</span>
+            </td>
+            <td th:text="${#dates.format(msg.sendDate, 'yyyy-MM-dd HH:mm')}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(messageList)}">
+            <td colspan="4">받은 쪽지가 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- 모달 -->
+<div class="modal fade" id="msgDetailModal" tabindex="-1" role="dialog" aria-labelledby="msgDetailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="msgDetailLabel">쪽지 상세보기</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><b>보낸 사람:</b> <span id="modalSender"></span></p>
+                <p><b>보낸 날짜:</b> <span id="modalDate"></span></p>
+                <hr>
+                <h5 id="modalTitle"></h5>
+                <p id="modalContent" style="white-space: pre-line;"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $('#msgDetailModal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget);
+        let title = button.data('title');
+        let content = button.data('content');
+        let sender = button.data('sender');
+        let date = button.data('date');
+
+        $('#modalTitle').text(title);
+        $('#modalContent').text(content);
+        $('#modalSender').text(sender);
+        $('#modalDate').text(date);
+    });
+</script>
+</body>
+</html>

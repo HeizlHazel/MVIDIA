@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +24,32 @@ public class FinanceServiceImpl implements FinanceService {
     private FinanceDao financeDao;
     @Autowired
     private ParameterNamesModule parameterNamesModule;
+
+
+
+    @Override
+    public List<Salary> getFilteredSalary(String yearMonth, String deptCode, String jobCode, String keyword) {
+
+        Map<String, Object> param = new HashMap<>();
+        param.put("yearMonth", yearMonth);
+        param.put("deptCode", deptCode);
+        param.put("jobCode", jobCode);
+        param.put("empName", keyword);
+
+        List<Salary> allList = financeDao.selectSalary(sqlSession, param);
+
+        return allList.stream()
+                .filter(s -> yearMonth == null || yearMonth.isEmpty()
+                        || (s.getPayDate() != null && s.getPayDate().startsWith(yearMonth)))
+                .filter(s -> deptCode == null || deptCode.isEmpty()
+                        || s.getDeptCode().equals(deptCode))
+                .filter(s -> jobCode == null || jobCode.isEmpty()
+                        || s.getJobCode().equals(jobCode))
+                .filter(s -> keyword == null || keyword.isEmpty()
+                        || s.getEmpNo().contains(keyword)
+                        || (s.getEmpName() != null && s.getEmpName().contains(keyword)))
+                .toList();
+    }
 
     @Override
     public Salary getSalaryByEmpAndMonth(String empNo, String payDate) {
@@ -50,7 +75,7 @@ public class FinanceServiceImpl implements FinanceService {
             return result;
 
         } catch (Exception e) {
-            System.err.println("❌ [FinanceService] 쿼리 실행 중 오류:");
+            System.err.println("[FinanceService] 쿼리 실행 중 오류:");
             e.printStackTrace();
             return null;
         }
@@ -71,10 +96,10 @@ public class FinanceServiceImpl implements FinanceService {
             List<Attendance> records =
                     financeDao.selectAttendanceByEmpMonth(sqlSession, s.getEmpNo(), yearMonth);
 
-            int extendedAmt = calculateExtendedPay(baseHourly, records, yearMonth);
-            int nightAmt    = calculateNightPay(baseHourly, records, yearMonth);
-            int weekendAmt  = calculateWeekendPay(baseHourly, records, yearMonth);
-            int tripAmt     = calculateTripPay(records, yearMonth);
+            int extendedAmt = calculateExtendedPay(baseHourly, records);
+            int nightAmt    = calculateNightPay(baseHourly, records);
+            int weekendAmt  = calculateWeekendPay(baseHourly, records);
+            int tripAmt     = calculateTripPay(records);
 
             upsertOvertimes(s, yearMonth , extendedAmt, nightAmt, weekendAmt, tripAmt);
 
@@ -123,18 +148,14 @@ public class FinanceServiceImpl implements FinanceService {
             financeDao.updateDeductAmt(sqlSession, s.getEmpNo(), yearMonth, deductAmt);
             System.out.println("세금 반영: " + s.getEmpNo() + ", " + yearMonth
                     + " NP=" + taxNP + " HI=" + taxHI + " UE=" + taxUE + " IC=" + taxIC + " LS=" + taxLS);
-            System.out.println("👀 근태 조회: empNo=" + s.getEmpNo() + ", yearMonth=" + yearMonth + ", records=" + records.size());
+            System.out.println("근태 조회: empNo=" + s.getEmpNo() + ", yearMonth=" + yearMonth + ", records=" + records.size());
             for (Attendance att : records) {
                 System.out.println("   - attDate=" + att.getAttDate() +
                         ", leavingTime=" + att.getLeavingTime() +
                         ", status=" + att.getAttStatus());
             }
-
-
-
         }
-
-        return salaryList;
+        return financeDao.selectSalary(sqlSession, param);
     }
 
 
@@ -151,86 +172,82 @@ public class FinanceServiceImpl implements FinanceService {
         financeDao.upsertSalaryOver(sqlSession, s.getEmpNo(), yearMonth, "OV0004", tripAmt);
     }
 
-    private int calculateExtendedPay(int baseHourly, List<Attendance> records, String yearMonth) {
+    private LocalDateTime parseAttendanceOutTime(Attendance att) {
+        if (att.getAttDate() == null || att.getLeavingTime() == null) return null;
+        try {
+            LocalDate date = LocalDate.parse(att.getAttDate());
+            LocalTime leave = LocalTime.parse(att.getLeavingTime());
+            return LocalDateTime.of(date, leave);
+        } catch (Exception e) {
+            System.err.println("Attendance 파싱 오류: {}" + att);
+            return null;
+        }
+    }
+
+    private int calculateExtendedPay(int baseHourly, List<Attendance> records) {
         int extendedAmt = 0;
         for (Attendance att : records) {
-            if (att.getAttDate() == null || att.getLeavingTime() == null) continue;
-
-            if (!att.getAttDate().startsWith(yearMonth)) continue;
-
-            try{
-                LocalDate date = LocalDate.parse(att.getAttDate());
-                LocalTime leave = LocalTime.parse(att.getLeavingTime());
-                LocalDateTime out = LocalDateTime.of(date, leave);
-
-                DayOfWeek day = date.getDayOfWeek();
-                if (day == DayOfWeek.SUNDAY ||
-                        (day == DayOfWeek.MONDAY && out.isBefore(date.atTime(6,0)))) {
-                    continue;
-                }
-
-                LocalDateTime sixPM = date.atTime(18, 0);
-                LocalDateTime tenPM = date.atTime(22, 0);
-
-                if (out.isAfter(sixPM)) {
-                    LocalDateTime end = out.isBefore(tenPM) ? out : tenPM;
-                    long hours = Duration.between(sixPM, end).toHours();
-                    extendedAmt += (int) (baseHourly * hours);
-                }
-            } catch (Exception e) {
-                System.err.println("ExtendedPay 파싱 오류: " + att);
+            LocalDateTime out = parseAttendanceOutTime(att);
+            if (out == null) {
+                continue;
             }
 
+            LocalDate date = out.toLocalDate();
+            DayOfWeek day = date.getDayOfWeek();
+            if (day == DayOfWeek.SUNDAY ||
+                    (day == DayOfWeek.MONDAY && out.isBefore(date.atTime(6,0)))) {
+                continue;
+            }
+
+            LocalDateTime sixPM = date.atTime(18, 0);
+            LocalDateTime tenPM = date.atTime(22, 0);
+
+            if (out.isAfter(sixPM)) {
+                LocalDateTime end = out.isBefore(tenPM) ? out : tenPM;
+                long hours = Duration.between(sixPM, end).toHours();
+                extendedAmt += (int) (baseHourly * hours);
+            }
         }
         return extendedAmt;
     }
 
-    private int calculateNightPay(int baseHourly, List<Attendance> records, String yearMonth) {
+    private int calculateNightPay(int baseHourly, List<Attendance> records) {
         int nightAmt = 0;
-        YearMonth ym = YearMonth.parse(yearMonth, DateTimeFormatter.ofPattern("yyyy-MM"));
-        LocalDate nextMonthFirst = ym.plusMonths(1).atDay(1);
-        LocalDateTime nextMonthLimit = nextMonthFirst.atTime(6, 0);
 
         for (Attendance att : records) {
-            if (att.getAttDate() == null || att.getLeavingTime() == null) continue;
+            LocalDateTime out = parseAttendanceOutTime(att);
+            if (out == null) {
+                continue;
+            }
 
-            try {
-                LocalDate date = LocalDate.parse(att.getAttDate());
-                LocalTime leave = LocalTime.parse(att.getLeavingTime());
-                LocalDateTime out = LocalDateTime.of(date, leave);
+            LocalDate date = LocalDate.parse(att.getAttDate());
+            DayOfWeek day = date.getDayOfWeek();
+            if (day == DayOfWeek.SUNDAY ||
+                    (day == DayOfWeek.MONDAY && out.isBefore(date.atTime(6,0)))) {
+                continue;
+            }
 
-                DayOfWeek day = date.getDayOfWeek();
-                if (day == DayOfWeek.SUNDAY ||
-                        (day == DayOfWeek.MONDAY && out.isBefore(date.atTime(6,0)))) {
-                    continue;
-                }
+            LocalDateTime tenPM = date.atTime(22, 0);
+            LocalDateTime sixAM = date.plusDays(1).atTime(6, 0);
 
-                LocalDateTime tenPM = date.atTime(22, 0);
-                LocalDateTime sixAM = date.plusDays(1).atTime(6, 0);
-
-                if (out.isAfter(tenPM)) {
-                    LocalDateTime end = out.isBefore(sixAM) ? out : sixAM;
-                    long hours = Duration.between(tenPM, end).toHours();
-                    nightAmt += (int) (baseHourly * hours * 1.5);
-                }
-            } catch (Exception e) {
-                System.err.println("ExtendedPay 파싱 오류: " + att);
+            if (out.isAfter(tenPM)) {
+                LocalDateTime end = out.isBefore(sixAM) ? out : sixAM;
+                long hours = Duration.between(tenPM, end).toHours();
+                nightAmt += (int) (baseHourly * hours * 1.5);
             }
         }
         return nightAmt;
     }
 
-    private int calculateWeekendPay(int baseHourly, List<Attendance> records, String yearMonth) {
+    private int calculateWeekendPay(int baseHourly, List<Attendance> records) {
         int weekendAmt = 0;
             for (Attendance att : records) {
-                if (att.getAttDate() == null || att.getLeavingTime() == null) continue;
-                if (!att.getAttDate().startsWith(yearMonth)) continue;
+                LocalDateTime out = parseAttendanceOutTime(att);
+                if (out == null) continue;
 
-                LocalDate date = LocalDate.parse(att.getAttDate());
-                LocalTime leave = LocalTime.parse(att.getLeavingTime());
-                LocalDateTime out = LocalDateTime.of(date, leave);
-
+                LocalDate date = out.toLocalDate();
                 DayOfWeek day = date.getDayOfWeek();
+
                 if (day == DayOfWeek.SUNDAY) {
                     long hours = Duration.between(date.atTime(9, 0), out).toHours();
                     weekendAmt += (int) (baseHourly * hours * 1.5);
@@ -239,17 +256,13 @@ public class FinanceServiceImpl implements FinanceService {
         return weekendAmt;
     }
 
-    private int calculateTripPay(List<Attendance> records, String yearMonth) {
-        int tripAmt = 0;
+    private int calculateTripPay(List<Attendance> records) {
         int dailyAllowance = 50000;
-        for (Attendance att : records) {
-            if ("X".equals(att.getAttStatus())) {
-                if (att.getAttDate() == null || att.getAttDate().startsWith(yearMonth)) {
-                    tripAmt += dailyAllowance;
-                }
-            }
-        }
-        return tripAmt;
+
+        long tripDays = records.stream()
+                .filter(att -> "X".equals(att.getAttStatus()))
+                .count();
+        return (int)(tripDays * dailyAllowance);
     }
 
     @Override
@@ -257,8 +270,49 @@ public class FinanceServiceImpl implements FinanceService {
         return financeDao.getAllComponents();
     }
 
-    @Override
-    public List<Comp> searchComponents(String keyword) {
-        return financeDao.searchComponents(keyword);
+    private static final Map<String, Integer> MIN_QTY_MAP = new HashMap<>();
+    static {
+        MIN_QTY_MAP.put("CP0001", 400);
+        MIN_QTY_MAP.put("CP0002", 100);
+        MIN_QTY_MAP.put("CP0003", 60);
+        MIN_QTY_MAP.put("CP0004", 80);
+        MIN_QTY_MAP.put("CP0005", 200);
     }
+
+    private int getMinQty(String cpCode) {
+        return MIN_QTY_MAP.getOrDefault(cpCode, 0);
+    }
+
+
+    @Override
+    public List<Comp> searchComponents(String keyword, String localCode, String status) {
+
+        List<Comp> allList = financeDao.searchComponents(sqlSession);
+
+        List<Comp> filtered = allList.stream()
+                .filter(c -> keyword == null || keyword.isEmpty()
+                        || (c.getCpName() != null && c.getCpName().toLowerCase().contains(keyword.toLowerCase()))
+                        || (c.getCpCode() != null && c.getCpCode().toLowerCase().contains(keyword.toLowerCase())))
+                .toList();
+
+        // 2. localCode 필터
+        filtered = filtered.stream()
+                .filter(c -> localCode == null || localCode.isEmpty()
+                        || (c.getLocalCode() != null && c.getLocalCode().equals(localCode)))
+                .toList();
+
+        // 3. status 필터 (정상/부족)
+        if ("normal".equals(status)) {
+            filtered = filtered.stream()
+                    .filter(c -> Integer.parseInt(c.getQty()) >= getMinQty(c.getCpCode()))
+                    .toList();
+        } else if ("low".equals(status)) {
+            filtered = filtered.stream()
+                    .filter(c -> Integer.parseInt(c.getQty()) < getMinQty(c.getCpCode()))
+                    .toList();
+        }
+
+        return filtered;
+    }
+
 }

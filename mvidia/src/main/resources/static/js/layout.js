@@ -78,22 +78,52 @@ function sendPayroll() {
         });
 }
 
-// 급여 검색 (Ajax)
+// 사원들 급여 검색
 function searchPayroll() {
     $.ajax({
-        url: "/finance/payroll",   // 컨트롤러 그대로 호출
+        url: "/finance/payroll/search",
         type: "get",
         data: {
             yearMonth: $("#yearMonth").val(),
             deptCode: $("#deptCode").val(),
             jobCode: $("#jobCode").val(),
-            empName: $("#empName").val()
+            empName:$("#empName").val()
         },
         success: function (data) {
-            console.log("응답 도착:", data);
-            const newTable = $(data).find(".table-responsive").html();
-            $(".table-responsive").html(newTable);
+            var newContent = $(data).filter(".table-responsive");
+            $(".table-responsive").replaceWith(newContent);
         }
     });
 }
 
+$(document).ready(function () {
+    $("#empName").on("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();  // 폼 submit 막고
+            searchPayroll();     // 검색 실행
+        }
+    });
+});
+
+    // Ajax 검색
+function searchComponent() {
+    $.ajax({
+        url: "/finance/inventory/search",
+        type: "get",
+        data: {
+            keyword: $("#keyword").val(),
+            status: $("#status").val()
+        },
+        success: function (data) {
+            $("#componentTable").html(data);
+        }
+    });
+}
+
+    // 엔터로 검색 가능
+    $(document).ready(function () {
+    $("#searchForm").on("submit", function(e) {
+        e.preventDefault();
+        searchComponent();
+    });
+});

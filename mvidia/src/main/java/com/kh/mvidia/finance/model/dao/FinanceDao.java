@@ -33,45 +33,39 @@ public class FinanceDao {
                 Map.of("empNo", empNo, "yearMonth", yearMonth));
     }
 
-    public int updateOvPrice(SqlSession sqlSession, String empNo, String yearMonth, int ovPrice) {
-        return sqlSession.update("salaryMapper.updateOvPrice",
+    public void updateOvPrice(SqlSession sqlSession, String empNo, String yearMonth, int ovPrice) {
+        sqlSession.update("salaryMapper.updateOvPrice",
                 Map.of("empNo", empNo, "yearMonth", yearMonth, "ovPrice", ovPrice));
     }
 
-    public int upsertSalaryOver(SqlSession sqlSession, String empNo, String yearMonth, String ovCode, int amount) {
-        return sqlSession.update("salaryMapper.upsertSalaryOver",
-                Map.of("empNo", empNo, "yearMonth", yearMonth,
+    public void updateDeductAmt(SqlSession sqlSession, String empNo, String yearMonth, int deductAmt) {
+        sqlSession.update("salaryMapper.updateDeductAmt",
+                Map.of("empNo", empNo, "yearMonth", yearMonth, "deductAmt", deductAmt));
+    }
+
+    public void upsertSalaryOver(SqlSession sqlSession, String empNo, String yearMonth, String ovCode, int amount) {
+         sqlSession.update("salaryMapper.upsertSalaryOver",
+                 Map.of("empNo", empNo, "yearMonth", yearMonth,
                         "ovCode", ovCode, "amount", amount));
     }
 
-    public int selectDeductByEmpMonth(SqlSession sqlSession, String empNo, String yearMonth) {
-        return sqlSession.selectOne("salaryMapper.selectDeductByEmpMonth",
-                Map.of("empNo", empNo, "yearMonth", yearMonth));
-    }
-
-    public int upsertSalaryTax(SqlSession sqlSession, String empNo, String yearMonth, String taxCode, int amount) {
-        return sqlSession.update("salaryMapper.upsertSalaryTax",
+    public void upsertSalaryTax(SqlSession sqlSession, String empNo, String yearMonth, String taxCode, int amount) {
+        sqlSession.update("salaryMapper.upsertSalaryTax",
                 Map.of("empNo", empNo, "yearMonth", yearMonth,
                         "taxCode", taxCode, "amount", amount));
     }
-
 
     public List<Tax> selectTaxesByEmpAndMonth(SqlSession sqlSession, String empNo, String yearMonth) {
         return sqlSession.selectList("salaryMapper.selectTaxesByEmpAndMonth",
                 Map.of("empNo", empNo, "yearMonth", yearMonth));
     }
 
-    public int updateDeductAmt(SqlSession sqlSession, String empNo, String yearMonth, int deductAmt) {
-        return sqlSession.update("salaryMapper.updateDeductAmt",
-                Map.of("empNo", empNo, "yearMonth", yearMonth, "deductAmt", deductAmt));
-    }
-
     public List<Comp> getAllComponents() {
         return sqlSession.selectList("componentMapper.getAllComponents");
     }
 
-    public List<Comp> searchComponents(String keyword) {
-        return sqlSession.selectList("componentMapper.searchComponents", keyword);
+    public List<Comp> searchComponents(SqlSession sqlSession) {
+        return sqlSession.selectList("componentMapper.searchComponents");
     }
 
 }

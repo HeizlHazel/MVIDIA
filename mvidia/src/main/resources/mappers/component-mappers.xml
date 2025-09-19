@@ -22,8 +22,6 @@
     <select id="searchComponents" parameterType="string" resultMap="compResultMap">
         select cp_code, cp_name, price, qty, local_code
           from tb_component
-         where lower(cp_name) like '%' || lower(#{keyword}) || '%'
-            or lower(cp_code) like '%' || lower(#{keyword}) || '%'
          order by cp_code
     </select>
 </mapper>

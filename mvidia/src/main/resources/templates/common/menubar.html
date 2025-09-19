@@ -51,7 +51,7 @@
                 <div class="submenu">
                     <a th:href="@{/approvalform}">결재 신청</a>
                     <a th:href="@{/approvalbox}">내 문서함</a>
-                    <th:block th:if="${session.grantedPerms.contains('PERM0001')}">
+                    <th:block th:if="${session.grantedPerms.contains('PERM0002')}">
                         <a th:href="@{/approvalmanage}">결재 승인함</a>
                     </th:block>
                 </div>
@@ -67,9 +67,11 @@
             </li>
 
             <!-- 직책별 노출 예시: 부장 이상일 때만 조직도 -->
+            <!-- <th:block th:if="${session.grantedPerms.contains('PERM0003')}"> -->
             <li sec:authorize="hasAnyRole('MANAGER','ADMIN')">
                 <a class="link" th:href="@{/org}">🧩 조직도</a>
             </li>
+            <!-- </th:block> -->
 
             <th:block th:if="${session.loginEmp.deptCode == 'D1'}">
                 <li>
@@ -110,7 +112,7 @@
                 </li>
             </th:block>
 
-            <th:block th:if="${session.loginEmp.deptCode == 'D4'}">
+            <th:block th:if="${session.grantedPerms.contains('PERM0001')}">
                 <li>
                     <div class="link" data-toggle>⚙ 시스템 관리</div>
                     <div class="submenu">

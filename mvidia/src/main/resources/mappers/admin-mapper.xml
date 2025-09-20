@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="adminMapper">
+
+    <resultMap id="employeeResultSet" type="Employee">
+        <result column="emp_no" property="empNo" />
+        <result column="emp_lname" property="empLName" />
+        <result column="emp_name" property="empName" />
+        <result column="dept_name" property="deptName" />
+    </resultMap>
+
+    <resultMap id="permissionResultSet" type="Permission">
+        <result column="perm_name" property="permName" />
+        <result column="perm_code" property="permCode" />
+        <result column="is_granted" property="isGranted" />
+        <result column="user_id" property="userId" />
+    </resultMap>
+
+    <select id="selectEmployee" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_lname
+             , emp_name
+             , dept_name
+          from tb_employee
+          join tb_department using(dept_code)
+         where emp_no = #{empNo}
+    </select>
+
+    <select id="selectPermissionList" resultMap="permissionResultSet">
+        select
+               p.perm_name
+             , p.perm_code
+             , nvl(ep.is_granted, 'N') as is_granted
+          from tb_permission p
+     left join tb_emp_permission ep
+            on p.perm_code = ep.perm_code
+           and ep.user_id = #{empNo}
+         order
+            by p.perm_code
+    </select>
+
+    <update id="updateEmpPermission">
+        update tb_emp_permission
+           set is_granted = 'Y'
+         where user_id = #{userId}
+           and perm_code = #{permCode}
+    </update>
+
+    <insert id="insertEmpPermission">
+        insert
+          into tb_emp_permission
+          (
+            user_id
+          , perm_code
+          , is_granted
+          )
+        select #{userId}, #{permCode}, #{isGranted}
+        from dual
+        where not exists(
+        select 1 from tb_emp_permission
+        where user_id = #{userId} and perm_code = #{permCode}
+        )
+    </insert>
+
+    <select id="getEmpPermission" resultMap="permissionResultSet">
+        select perm_code
+        from tb_emp_permission
+        where user_id = #{userId}
+        and is_granted = 'Y'
+    </select>
+
+    <insert id="insertApprovalLog" parameterType="map">
+        insert
+          into tb_system_log
+          (
+           log_type
+          , target_id
+          , target_name
+          , actor_id
+          , action
+          , reason
+          )
+        values
+          (
+            #{logType}
+          , #{targetId}
+          , #{targetName}
+          , #{actorId}
+          , #{action}
+          , #{reason}
+          )
+    </insert>
+
+    <insert id="insertPermissionLog" parameterType="map">
+        insert
+          into tb_system_log
+          (
+            log_type
+          , target_id
+          , target_name
+          , actor_id
+          , action
+          , reason
+          )
+        values
+          (
+            #{logType}
+          , #{targetId}
+          , #{targetName}
+          , #{actorId}
+          , #{action}
+          , #{reason}
+          )
+    </insert>
+
+</mapper>

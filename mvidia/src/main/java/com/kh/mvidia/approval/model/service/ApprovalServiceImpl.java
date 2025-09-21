@@ -2,7 +2,7 @@ package com.kh.mvidia.approval.model.service;
 
 import com.kh.mvidia.approval.model.dto.ApprovalDetail;
 import com.kh.mvidia.approval.model.dto.ApprovalItem;
-import com.kh.mvidia.notion.dto.NotionPageResult;
+import com.kh.mvidia.approval.model.dto.NotionPageResult;
 import com.kh.mvidia.employee.model.vo.Employee;
 import com.kh.mvidia.permission.model.dao.PermissionDao;
 import kong.unirest.HttpResponse;
@@ -10,6 +10,7 @@ import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONObject;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,9 @@ public class ApprovalServiceImpl implements ApprovalService {
     @Autowired
     private PermissionDao pDao;
 
+    @Autowired
+    private SqlSessionTemplate sqlSession;
+
     private static final Map<String, String> CATEGORY_MAP = Map.of(
             "expense", "지출결의",
             "purchase", "구매요청",
@@ -44,7 +48,7 @@ public class ApprovalServiceImpl implements ApprovalService {
 
     // 전자결재 등록
     @Override
-    public HttpResponse<JsonNode> addPage(String writer, String dept, String date, String title, String approval, String details, String category) {
+    public HttpResponse<JsonNode> addPage(String writer, String dept, String date, String title, String approval, String details, String category, String empNo) {
         String categoryMap = CATEGORY_MAP.getOrDefault(category, "기타결재");
         String url = "https://api.notion.com/v1/pages";
 
@@ -61,8 +65,9 @@ public class ApprovalServiceImpl implements ApprovalService {
         properties.put("구분", Map.of("select", Map.of("name", categoryMap)));
 
         // 작성자(text 속성)
+        String writerWithEmpNo = writer + "(" + empNo + ")";
         properties.put("작성자", Map.of("rich_text",
-                List.of(Map.of("text", Map.of("content", writer)))));
+                List.of(Map.of("text", Map.of("content", writerWithEmpNo)))));
 
         // 부서 정보(text 속성)
         properties.put("부서", Map.of("rich_text",
@@ -100,7 +105,7 @@ public class ApprovalServiceImpl implements ApprovalService {
         return response;
     }
 
-    // 노션 API 호출 - 전체 문서 조회(페이징) - 핵심 메서드
+    // 노션 API 호출 - 전체 문서 조회(페이징)
     @Override
     public NotionPageResult getDatabaseWithPaging(String cursor, int pageSize) {
         String url = "https://api.notion.com/v1/databases/" + database_id + "/query";
@@ -232,7 +237,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     // ===================== 필터링 메서드들 - 통합 =====================
 
     /**
-     * 내가 작성한 문서 조회 (문서함용)
+     * 내가 작성한 문서 조회
      */
     public List<ApprovalItem> getMyDocuments(Employee loginEmp, String filter) {
         if (loginEmp == null) {
@@ -243,7 +248,12 @@ public class ApprovalServiceImpl implements ApprovalService {
         NotionPageResult allData = getDatabaseWithPaging("", 1000); // 전체 조회
 
         List<ApprovalItem> myDocuments = allData.getResults().stream()
-                .filter(item -> currentUser.equals(item.getWriter()))
+                .filter(item -> {
+                    String writer = item.getWriter();
+                    // "정가온(EMP001)" 형태와 "정가온" 모두 매칭되도록 수정
+                    return currentUser.equals(writer) ||
+                            (writer != null && writer.startsWith(currentUser + "("));
+                })
                 .collect(Collectors.toList());
 
         // 필터 적용
@@ -251,7 +261,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     }
 
     /**
-     * 내가 결재해야 할 문서 조회 (승인함용)
+     * 내가 결재해야 할 문서 조회
      */
     public List<ApprovalItem> getMyApprovalDocuments(Employee loginEmp, String filter) {
         if (loginEmp == null) {
@@ -302,6 +312,83 @@ public class ApprovalServiceImpl implements ApprovalService {
                     return isMyApproval && isPending;
                 })
                 .count();
+    }
+
+    // 승인/반려 사유 댓글에 추가
+    private void addNotionComment(String pageId, String actorName, String action, String reason) {
+        String url = "https://api.notion.com/v1/comments";
+
+        // 댓글 내용 구성
+        String commentText = String.format("[%s] %s\n%s",
+                action.equals("APPROVE") ? "승인" : "반려",
+                actorName,
+                reason != null && !reason.isEmpty() ? reason : "사유 없음"
+        );
+
+        System.out.println("노션 댓글 추가 시도 - PageID: " + pageId);
+        System.out.println("댓글 내용: " + commentText);
+
+        JSONObject body = new JSONObject();
+        body.put("parent", Map.of("page_id", pageId));
+        body.put("rich_text", List.of(
+                Map.of("text", Map.of("content", commentText))
+        ));
+
+        try {
+            HttpResponse<JsonNode> response = Unirest.post(url)
+                    .header("Authorization", "Bearer " + token)
+                    .header("Notion-Version", "2022-06-28")
+                    .header("Content-Type", "application/json")
+                    .body(body)
+                    .asJson();
+
+            System.out.println("노션 댓글 API 응답: " + response.getStatus());
+            System.out.println("응답 내용: " + response.getBody());
+
+
+            if (response.getStatus() != 200) {
+                System.err.println("노션 댓글 추가 실패: " + response.getStatus());
+            }
+        } catch (Exception e) {
+            System.err.println("노션 댓글 추가 중 오류: " + e.getMessage());
+        }
+    }
+
+    // 로그 저장 메서드
+    @Override
+    public void saveApprovalLog(String pageId, String actorId, String actorName, String action, String reason) {
+        System.out.println("saveApprovalLog 메서드 시작");
+
+        try {
+            // 노션에서 문서 정보 가져오기
+            ApprovalDetail detail = getApprovalDetail(pageId);
+
+            // 작성자에서 사번 추출
+            String requesterId = extractEmpNo(detail.getWriter());
+
+            // DB 로그 저장 - 파라미터 수정
+            Map<String, Object> params = new HashMap<>();
+            params.put("logType", "APPROVAL");
+            params.put("targetId", requesterId);           // 신청자 사번
+            params.put("targetName", detail.getTitle());   // 문서 제목
+            params.put("actorId", actorId);               // 처리자 사번
+            params.put("action", action);
+            params.put("reason", reason);
+            params.put("notionDocId", pageId);            // 노션 문서 ID 추가
+
+            System.out.println("=== saveApprovalLog 디버깅 ===");
+            System.out.println("pageId: " + pageId);
+            System.out.println("notionDocId param: " + pageId);
+
+            int result = pDao.insertApprovalLog(sqlSession, params);
+
+            // 노션 댓글 저장
+            addNotionComment(pageId, actorName, action, reason);
+
+        } catch (Exception e) {
+            System.err.println("saveApprovalLog에서 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // ===================== 유틸리티 메서드들 =====================
@@ -437,5 +524,18 @@ public class ApprovalServiceImpl implements ApprovalService {
         }
 
         return items;
+    }
+
+    // 사번 추출
+    private String extractEmpNo(String writerText) {
+        // "정가온(EMP001)" -> "EMP001" 추출
+        if (writerText != null && writerText.contains("(") && writerText.contains(")")) {
+            int start = writerText.lastIndexOf("(");
+            int end = writerText.lastIndexOf(")");
+            if (start != -1 && end > start) {
+                return writerText.substring(start + 1, end);
+            }
+        }
+        return writerText; // 사번 추출 실패 시 전체 텍스트 반환
     }
 }

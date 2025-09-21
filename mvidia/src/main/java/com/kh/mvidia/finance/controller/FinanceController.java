@@ -4,25 +4,22 @@ import com.kh.mvidia.finance.model.service.FinanceService;
 import com.kh.mvidia.finance.model.vo.Comp;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.kh.mvidia.sales.model.service.SalesService;
+import com.kh.mvidia.sales.model.vo.Sales;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.io.OutputStream;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/finance")
@@ -33,15 +30,18 @@ public class FinanceController {
 
     @Autowired
     private TemplateEngine templateEngine;
+
     @Autowired
     private SalesService salesService;
 
+    /** 메인 대시보드 */
     @GetMapping("/main")
     public String mainPage(Model model) {
         LocalDate now = LocalDate.now();
         String year = String.valueOf(now.getYear());
         String yearMonth = now.format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
+        // ✅ 급여 관련 데이터
         List<Salary> salaryList = financeService.getFilteredSalary(yearMonth, null, null, null);
         int empCount = salaryList.size();
         int totalNetPay = salaryList.stream()
@@ -54,32 +54,58 @@ public class FinanceController {
         model.addAttribute("avgNetPay", avgNetPay);
         model.addAttribute("thisMonth", yearMonth);
 
-        // 현재 분기 계산
+        // ✅ 현재 분기 계산
         int month = now.getMonthValue();
         int quarter = (month - 1) / 3 + 1;
 
-        Map<String, Object> revenueSummary =
-                salesService.getQuarterlySummary(year, quarter);
+        Map<String, Object> revenueSummary = salesService.getQuarterlySummary(year, quarter);
         model.addAttribute("revenueSummary", revenueSummary);
         model.addAttribute("year", year);
         model.addAttribute("quarter", quarter);
 
-        // 부품 현황
+        // ✅ 부품 현황
         List<Comp> compList = financeService.getAllComponents();
         applyMinQtyAndStatus(compList, model);
+
         List<Comp> lowList = compList.stream()
-                .filter(c -> Integer.parseInt(c.getQty()) < getMinQty(c.getCpCode()))
+                .filter(c -> Integer.parseInt(c.getQty()) < Integer.parseInt(c.getMinQty()))
                 .toList();
         model.addAttribute("lowList", lowList);
 
-        // 현재 분기 상세 수익 (제품별)
-        Map<String, Long> productRevenueMap =
-                salesService.getQuarterlyProductRevenue(year, quarter);
-        model.addAttribute("productRevenueMap", productRevenueMap);
+        // ✅ 제품별 수익 순위 Top3
+        Map<String, Long> productRevenueMap = salesService.getQuarterlyProductRevenue(year, quarter);
+        List<Map.Entry<String, Long>> productRevenueTop3 = productRevenueMap.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(3)
+                .collect(Collectors.toList());
+        model.addAttribute("productRevenueTop3", productRevenueTop3);
+
+        // ✅ 연간 매출/영업이익 (억 단위)
+        List<Sales> yearlySalesList = salesService.getQuarterlySales(year);
+
+        double[] totalSalesArr = new double[4];
+        double[] totalProfitArr = new double[4];
+        long ytd = 0;
+
+        for (Sales s : yearlySalesList) {
+            int qIndex = Integer.parseInt(s.getQuarter()) - 1;
+            long sales = Long.parseLong(s.getTotalSales());
+            long profit = Long.parseLong(s.getOpProfit());
+
+            totalSalesArr[qIndex] += sales / 100000000.0;
+            totalProfitArr[qIndex] += profit / 100000000.0;
+
+            ytd += sales;
+        }
+
+        model.addAttribute("totalSales", totalSalesArr);
+        model.addAttribute("totalProfits", totalProfitArr);
+        model.addAttribute("ytd", ytd / 100000000);
 
         return "finance/main";
     }
 
+    /** 급여 현황 페이지 */
     @GetMapping("/payroll")
     public String salary(
             @RequestParam(required = false) String yearMonth,
@@ -89,27 +115,12 @@ public class FinanceController {
             Model model) {
 
         String nowYearMonth = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM"));
-
-        String dbYearMonth;
-
-        if (yearMonth == null || yearMonth.isEmpty()) {
-            dbYearMonth = nowYearMonth;
-        } else {
-            dbYearMonth = yearMonth;
-        }
-
-        String viewYearMonth = dbYearMonth;
-
-        Map<String, Object> param = new HashMap<>();
-        param.put("yearMonth", dbYearMonth);
-        param.put("deptCode", deptCode);
-        param.put("jobCode", jobCode);
-        param.put("empName", empName);
+        String dbYearMonth = (yearMonth == null || yearMonth.isEmpty()) ? nowYearMonth : yearMonth;
 
         List<Salary> salaryList = financeService.getFilteredSalary(dbYearMonth, deptCode, jobCode, empName);
 
         model.addAttribute("salaryList", salaryList);
-        model.addAttribute("yearMonth", viewYearMonth);
+        model.addAttribute("yearMonth", dbYearMonth);
         model.addAttribute("deptCode", deptCode);
         model.addAttribute("jobCode", jobCode);
         model.addAttribute("empName", empName);
@@ -117,6 +128,7 @@ public class FinanceController {
         return "finance/payroll";
     }
 
+    /** 급여명세서 PDF 다운로드 */
     @GetMapping("/salary-pdf")
     public void exportSalaryPdf(
             @RequestParam String empNo,
@@ -146,44 +158,20 @@ public class FinanceController {
         }
     }
 
-    @GetMapping("/searchSalary")
-    @ResponseBody
-    public List<Salary> searchSalary(
-            @RequestParam(required = false) String yearMonth,
-            @RequestParam(required = false) String deptCode,
-            @RequestParam(required = false) String jobCode,
-            @RequestParam(required = false) String keyword) {
-
-        return financeService.getFilteredSalary(yearMonth, deptCode, jobCode, keyword);
-        }
-
-    private static final Map<String, Integer> MIN_QTY_MAP = new HashMap<>();
-    static {
-        MIN_QTY_MAP.put("CP0001", 400);
-        MIN_QTY_MAP.put("CP0002", 100);
-        MIN_QTY_MAP.put("CP0003", 60);
-        MIN_QTY_MAP.put("CP0004", 80);
-        MIN_QTY_MAP.put("CP0005", 200);
-    }
-
-    public int getMinQty(String cpCode) {
-        return MIN_QTY_MAP.getOrDefault(cpCode, 0);
-    }
-
+    /** 재고 현황 적용 */
     private void applyMinQtyAndStatus(List<Comp> compList, Model model) {
         int normalCnt = 0;
         int lowCnt = 0;
-
         Map<String, String> statusMap = new HashMap<>();
 
-        for(Comp c : compList) {
-            int minQty = getMinQty((c.getCpCode()));
+        for (Comp c : compList) {
             int qty = Integer.parseInt(c.getQty());
+            int minQty = Integer.parseInt(c.getMinQty());
 
             if (qty >= minQty) {
                 statusMap.put(c.getCpCode(), "정상");
                 normalCnt++;
-            } else  {
+            } else {
                 statusMap.put(c.getCpCode(), "부족");
                 lowCnt++;
             }
@@ -194,29 +182,40 @@ public class FinanceController {
         model.addAttribute("statusMap", statusMap);
     }
 
+    /** 재고 현황 페이지 */
     @GetMapping("/inventory")
     public String inventory(Model model) {
         List<Comp> compList = financeService.getAllComponents();
         applyMinQtyAndStatus(compList, model);
         model.addAttribute("compList", compList);
+
+        // 창고 코드 → 이름 매핑
+        Map<String, String> localCodeMap = new HashMap<>();
+        localCodeMap.put("100", "서울창고");
+        localCodeMap.put("110", "부산창고");
+        localCodeMap.put("300", "대전창고");
+        localCodeMap.put("400", "광주창고");
+        model.addAttribute("localCodeMap", localCodeMap);
+
         return "finance/inventory";
     }
 
+    /** 재고 검색 (Ajax) */
     @GetMapping("/inventory/search")
-    public String searchInventory(@RequestParam(value = "keyword", defaultValue = "") String keyword,
-                                  @RequestParam(value = "status", defaultValue = "") String status,
-                                  @RequestParam(value = "localCode", required = false) String localCode,
-                                  Model model) {
+    public String searchInventory(
+            @RequestParam(value = "keyword", defaultValue = "") String keyword,
+            @RequestParam(value = "status", defaultValue = "") String status,
+            @RequestParam(value = "localCode", required = false) String localCode,
+            Model model) {
 
-        List<Comp> compList =  financeService.searchComponents(keyword, localCode, status);
-
-        // 상태별 필터링
+        List<Comp> compList = financeService.searchComponents(keyword, localCode, status);
         applyMinQtyAndStatus(compList, model);
-
         model.addAttribute("compList", compList);
+
         return "finance/inventory :: componentTableFrag";
     }
 
+    /** 급여 Ajax 검색 */
     @GetMapping("/payroll/search")
     public String searchPayrollFragment(
             @RequestParam(required = false) String yearMonth,
@@ -230,7 +229,24 @@ public class FinanceController {
         return "finance/payroll :: salaryTableFrag";
     }
 
+    /** 전체 부품 조회 (Ajax) */
+    @GetMapping("/getComponents")
+    @ResponseBody
+    public List<Comp> getComponents() {
+        return financeService.getAllComponents();
+    }
 
+    /** 재고 수정 (입출고) */
+    @PostMapping("/updateStock")
+    @ResponseBody
+    public String updateStock(@RequestParam String cpCode,
+                              @RequestParam int qty,
+                              @RequestParam String type) {
+        int result = financeService.updateStock(cpCode, qty, type);
 
+        if (result == -1) {
+            return "not_enough"; // 출고 불가
+        }
+        return result > 0 ? "success" : "fail";
+    }
 }
-

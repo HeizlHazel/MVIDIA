@@ -166,6 +166,13 @@ public class NotionServiceImpl implements NotionService {
 
             JSONObject properties = new JSONObject();
 
+            // === [디버깅 로그] ERP 데이터 출력 ===
+            System.out.println("[DEBUG] Salary 객체 내용:");
+            System.out.println("empNo=" + salary.getEmpNo());
+            System.out.println("empName=" + salary.getEmpName());
+            System.out.println("payDate=" + salary.getPayDate());
+            System.out.println("netPay=" + salary.getNetPay());
+
             // 명세서 이름 (title)
             properties.put("명세서 구분", new JSONObject()
                     .put("title", new JSONArray().put(new JSONObject()
@@ -177,9 +184,12 @@ public class NotionServiceImpl implements NotionService {
                     .put("rich_text", new JSONArray().put(new JSONObject()
                             .put("text", new JSONObject().put("content", salary.getEmpName())))));
 
+
             String workedMonth = salary.getPayDate();
             java.time.YearMonth ym = java.time.YearMonth.parse(workedMonth);
             java.time.LocalDate payDateForNotion = ym.plusMonths(1).atDay(9);
+
+            System.out.println("[DEBUG] 변환된 지급일(LocalDate): " + payDateForNotion);
 
             properties.put("지급일", new JSONObject()
                     .put("date", new JSONObject().put("start", payDateForNotion.toString())));
@@ -203,6 +213,10 @@ public class NotionServiceImpl implements NotionService {
             JSONObject body = new JSONObject()
                     .put("parent", parent)
                     .put("properties", properties);
+
+            // === [디버깅 로그] Notion 요청 Body 출력 ===
+            System.out.println("[DEBUG] Notion API 요청 Body:");
+            System.out.println(body.toString(2)); // pretty print
 
             HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
             RestTemplate restTemplate = new RestTemplate();

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>발신함</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .custom {
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            background: #ffffff;
+        }
+
+        .message-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .message-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .receiver-count {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>
+        <span class="material-symbols-outlined" style="font-size: 44px;">outbox</span>
+        발신함
+    </h2>
+    <div>
+        <button type="button" class="btn btn-primary mr-2" onclick="location.href='/message/compose'">
+            <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+            쪽지 쓰기
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="location.href='/message/inbox'">
+            <span class="material-symbols-outlined" style="font-size: 16px;">inbox</span>
+            수신함
+        </button>
+    </div>
+</div>
+
+<div class="card custom p-4 mt-3">
+    <div class="table-responsive">
+        <table class="table table-bordered text-center table-hover">
+            <thead class="table-primary">
+            <tr>
+                <th width="10%">번호</th>
+                <th width="40%">제목</th>
+                <th width="15%">수신자</th>
+                <th width="20%">발송 날짜</th>
+                <th width="15%">관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="msg : ${messages}" class="message-row">
+                <td th:text="${msg.msgId}"></td>
+                <td class="text-left pl-3">
+                    <span th:text="${msg.title}"></span>
+                </td>
+                <td>
+                    <!-- 수신자가 1명일 때 -->
+                    <span th:if="${msg.receiverCount == 1}"
+                          th:text="${msg.firstReceiverName}"></span>
+
+                    <!-- 수신자가 2명 이상일 때 -->
+                    <span th:if="${msg.receiverCount > 1}"
+                          th:text="${msg.firstReceiverName + ' 외 ' + (msg.receiverCount - 1) + '명'}"></span>
+
+                    <!-- 수신자가 없을 때 -->
+                    <span th:if="${msg.receiverCount == 0}">수신자 없음</span>
+                </td>
+                <td th:text="${msg.sendDate}"></td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-primary"
+                            th:attr="onclick=|viewSentMessage('${msg.msgId}')|">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                        보기
+                    </button>
+                </td>
+            </tr>
+
+            <!-- 메시지가 없을 때 -->
+            <tr th:if="${#lists.isEmpty(messages)}">
+                <td colspan="5" class="text-muted py-5">
+                    <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.5;">outbox</span>
+                    <br>
+                    발송한 쪽지가 없습니다.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 페이징 -->
+    <div class="d-flex justify-content-center mt-3" th:if="${totalPages > 1}">
+        <nav aria-label="페이지 네비게이션">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/message/outbox(page=${currentPage - 1})}">이전</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/message/outbox(page=${i})}" th:text="${i}"></a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                    <a class="page-link" th:href="@{/message/outbox(page=${currentPage + 1})}">다음</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- 발송 메시지 상세보기 모달 -->
+<div class="modal fade" id="sentMessageModal" tabindex="-1" role="dialog" aria-labelledby="sentMessageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sentMessageModalLabel">발송 메시지</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="sentMessageContent">
+                <!-- Ajax로 내용을 로드 -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function formatKoreanDate(dateStr) {
+        dateStr = dateStr.replace(/\.0$/, '');
+
+        const date = new Date(dateStr);
+        return date.toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: 'long',   // "9월"
+            day: 'numeric',  // "7일"
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true     // 오전/오후 표시
+        });
+    }
+    // 발송 메시지 상세보기
+    function viewSentMessage(msgId) {
+        $.ajax({
+            url: '/message/sent-detail',
+            method: 'GET',
+            data: { msgId: msgId },
+            success: function(response) {
+                console.log(response);
+                let content = `
+                <div class="mb-3">
+                    <strong>제목:</strong> ${response.title}
+                </div>
+                <div class="mb-3">
+                    <strong>발송일시:</strong> ${formatKoreanDate(response.sendDate)}
+                </div>
+                <div class="mb-3">
+                    <strong>수신자:</strong>
+                    <div class="mt-2">
+            `;
+
+                response.receivers.forEach(function(receiver) {
+                    content += `
+                    <span class="badge badge-info mr-1 mb-1">
+                        ${receiver.empName} (${receiver.empNo})
+                    </span>
+                `;
+                });
+
+                content += `
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <strong>내용:</strong>
+                    <div class="mt-2 p-3" style="background-color: #f8f9fa; border-radius: 5px;">
+                        ${response.content.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+
+                $('#sentMessageContent').html(content);
+                $('#sentMessageModal').modal('show');
+            },
+            error: function() {
+                alert('메시지를 불러오는 중 오류가 발생했습니다.');
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

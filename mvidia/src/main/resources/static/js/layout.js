@@ -53,7 +53,7 @@ function sendPayroll() {
         return;
     }
 
-    const payDate = payMonth; // yyyy-MM 그대로 전달
+    const payDate = payMonth.substring(0, 7); // yyyy-MM 그대로 전달
 
     fetch(`/payroll/export-notion?empNo=${empNo}&payDate=${payDate}`)
         .then(response => {
@@ -127,3 +127,52 @@ function searchComponent() {
         searchComponent();
     });
 });
+
+    $(function () {
+    // 서버에서 compList 가져오기 (AJAX)
+    $.ajax({
+        url: "/finance/getComponents",
+        method: "GET",
+        success: function(data) {
+            let items = data.map(c => ({
+                label: c.cpCode + " - " + c.cpName,
+                value: c.cpCode
+            }));
+
+            $("#cpCode").autocomplete({
+                source: items,
+                minLength: 1,
+                appendTo: "#printModal",
+                select: function(event, ui) {
+                    $("#cpCode").val(ui.item.value); // 선택 시 cpCode 값만 입력됨
+                    return false;
+                }
+            });
+        }
+    });
+});
+
+function saveStock() {
+    let formData = $("#stockForm").serialize();
+
+    $.post("/finance/updateStock", formData, function(res) {
+        if (res === "success") {
+            alert("변경이 완료되었습니다!");
+            location.reload();
+        } else if (res === "not_enough") {
+            alert("더이상 출고할 수 없습니다! (재고 부족)");
+        } else {
+            alert("DB 업데이트 실패! (응답: " + res + ")");
+        }
+    }).fail(function(xhr, status, error) {
+        console.error("서버 오류:", error);
+        alert("서버 오류가 발생했습니다.");
+    });
+}
+
+
+
+
+
+
+

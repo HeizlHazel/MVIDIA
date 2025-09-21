@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>쪽지 작성</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+
+    <style>
+        .custom {
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            background: #ffffff;
+        }
+
+        .receiver-tag {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .receiver-tag .remove-btn {
+            margin-left: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .employee-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .employee-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .employee-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .employee-item:last-child {
+            border-bottom: none;
+        }
+
+        .char-count {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>
+        <span class="material-symbols-outlined" style="font-size: 44px;">edit</span>
+        쪽지 작성
+    </h2>
+    <div>
+        <button type="button" class="btn btn-secondary" onclick="history.back()">
+            <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
+            목록으로
+        </button>
+    </div>
+</div>
+
+<div class="card custom p-4 mt-3">
+    <form id="composeForm">
+        <!-- 임시 발신자 설정 (실제로는 세션에서 가져옴) -->
+        <input type="hidden" id="senderNo" name="senderNo" value="22010001">
+
+        <div class="form-group">
+            <label for="receiverSearch">수신자</label>
+            <input type="text" class="form-control" id="receiverSearch" placeholder="사원명 또는 사번을 입력하세요" autocomplete="off">
+            <div id="employeeList" class="employee-list mt-1"></div>
+            <div id="selectedReceivers" class="mt-2"></div>
+            <small class="form-text text-muted">여러 명에게 보낼 수 있습니다. 사원을 검색하여 추가하세요.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="title">제목 <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="title" name="title" required maxlength="100">
+            <div class="d-flex justify-content-end">
+                <span class="char-count" id="titleCount">0/100</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="content">내용 <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="content" name="content" rows="10" required maxlength="1000" placeholder="메시지 내용을 입력하세요"></textarea>
+            <div class="d-flex justify-content-end">
+                <span class="char-count" id="contentCount">0/1000</span>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button type="button" class="btn btn-secondary mr-2" onclick="resetForm()">
+                <span class="material-symbols-outlined" style="font-size: 16px;">refresh</span>
+                초기화
+            </button>
+            <button type="button" class="btn btn-primary" onclick="sendMessage()">
+                <span class="material-symbols-outlined" style="font-size: 16px;">send</span>
+                전송
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    let selectedReceivers = []; // 선택된 수신자 목록
+    let searchTimeout; // 검색 지연을 위한 타이머
+
+    $(document).ready(function() {
+        // 제목 글자 수 카운트
+        $('#title').on('input', function() {
+            const length = $(this).val().length;
+            $('#titleCount').text(length + '/100');
+        });
+
+        // 내용 글자 수 카운트
+        $('#content').on('input', function() {
+            const length = $(this).val().length;
+            $('#contentCount').text(length + '/1000');
+        });
+
+        // 수신자 검색
+        $('#receiverSearch').on('input', function() {
+            const keyword = $(this).val().trim();
+
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            if (keyword.length >= 2) {
+                searchTimeout = setTimeout(() => {
+                    searchEmployees(keyword);
+                }, 300);
+            } else {
+                $('#employeeList').hide().empty();
+            }
+        });
+
+        // 검색창 외부 클릭 시 목록 숨기기
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('#receiverSearch, #employeeList').length) {
+                $('#employeeList').hide();
+            }
+        });
+    });
+
+    $("#receiverSearch").autocomplete({
+        source: function(request, response) {
+            $.ajax({
+                url: "/message/search-employees",
+                method: "GET",
+                data: { keyword: request.term },
+                success: function(data) {
+                    console.log("검색 결과:", data);
+                    response($.map(data, function(emp) {
+                        return {
+                            label: emp.empName + " (" + emp.empNo + ") - " + (emp.deptName || "") + " " + (emp.jobName || ""),
+                            value: emp.empName, // 입력창에 채워질 값
+                            empNo: emp.empNo,
+                            empName: emp.empName,
+                            deptName: emp.deptName,
+                            jobName: emp.jobName
+                        };
+                    }));
+                },
+                error: function() {
+                    console.error("자동완성 검색 실패");
+                }
+            });
+        },
+        minLength: 2, // 2글자 이상 입력 시 실행
+        select: function(event, ui) {
+            // 수신자 추가
+            addReceiver(ui.item.empNo, ui.item.empName, ui.item.deptName, ui.item.jobName);
+            $(this).val(""); // 선택 후 입력창 비우기
+            return false;
+        }
+    });
+
+    // 사원 검색 함수
+    function searchEmployees(keyword) {
+        $.ajax({
+            url: '/message/search-employees',
+            method: 'GET',
+            data: { keyword: keyword },
+            success: function(employees) {
+                displayEmployeeList(employees);
+            },
+            error: function() {
+                console.error('사원 검색 중 오류 발생');
+            }
+        });
+    }
+
+    // 검색 결과 표시
+    function displayEmployeeList(employees) {
+        const $list = $('#employeeList');
+        $list.empty();
+
+        if (employees.length === 0) {
+            $list.append('<div class="employee-item text-muted">검색 결과가 없습니다.</div>');
+        } else {
+            employees.forEach(function(emp) {
+                // 이미 선택된 사원은 제외
+                if (!selectedReceivers.some(r => r.empNo === emp.empNo)) {
+                    $list.append(`
+                      <div class="employee-item"
+                           onclick='addReceiver(${JSON.stringify(emp.empNo)}, ${JSON.stringify(emp.empName)}, ${JSON.stringify(emp.deptName || "")}, ${JSON.stringify(emp.jobName || "")})'>
+                          <strong>${emp.empName}</strong> (${emp.empNo})
+                          <br><small class="text-muted">${emp.deptName || ''} ${emp.jobName || ''}</small>
+                      </div>
+                    `);
+                }
+            });
+        }
+
+        $list.show();
+    }
+
+    // 수신자 추가
+    function addReceiver(empNo, empName, deptName, jobName) {
+        const receiver = {
+            empNo: empNo,
+            empName: empName,
+            deptName: deptName,
+            jobName: jobName
+        };
+
+        selectedReceivers.push(receiver);
+        updateReceiverDisplay();
+
+        $('#receiverSearch').val('');
+        $('#employeeList').hide();
+    }
+
+    // 수신자 표시 업데이트
+    function updateReceiverDisplay() {
+        const $container = $('#selectedReceivers');
+        $container.empty();
+
+        selectedReceivers.forEach(function(receiver, index) {
+            $container.append(`
+            <span class="receiver-tag">
+                ${receiver.empName} (${receiver.empNo})
+                <span class="remove-btn" onclick="removeReceiver(${index})">&times;</span>
+            </span>
+        `);
+        });
+    }
+
+    // 수신자 제거
+    function removeReceiver(index) {
+        selectedReceivers.splice(index, 1);
+        updateReceiverDisplay();
+    }
+
+    // 폼 초기화
+    function resetForm() {
+        if (confirm('작성 중인 내용이 모두 삭제됩니다. 계속하시겠습니까?')) {
+            $('#composeForm')[0].reset();
+            selectedReceivers = [];
+            updateReceiverDisplay();
+            $('#titleCount').text('0/100');
+            $('#contentCount').text('0/1000');
+        }
+    }
+
+    // 메시지 전송
+    function sendMessage() {
+        const title = $('#title').val().trim();
+        const content = $('#content').val().trim();
+
+        // 유효성 검사
+        if (selectedReceivers.length === 0) {
+            alert('수신자를 선택해주세요.');
+            return;
+        }
+
+        if (!title) {
+            alert('제목을 입력해주세요.');
+            $('#title').focus();
+            return;
+        }
+
+        if (!content) {
+            alert('내용을 입력해주세요.');
+            $('#content').focus();
+            return;
+        }
+
+        const messageData = {
+            senderNo: $('#senderNo').val(), // 임시로 설정된 값
+            receivers: selectedReceivers.map(r => r.empNo),
+            title: title,
+            content: content
+        };
+
+        // 전송 버튼 비활성화
+        const $sendBtn = $('button[onclick="sendMessage()"]');
+        $sendBtn.prop('disabled', true).text('전송 중...');
+
+        $.ajax({
+            url: '/message/send',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(messageData),
+            success: function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    location.href = '/message/inbox';
+                } else {
+                    alert('전송 실패: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('시스템 오류가 발생했습니다. 다시 시도해주세요.');
+            },
+            complete: function() {
+                $sendBtn.prop('disabled', false).html('<span class="material-symbols-outlined" style="font-size: 16px;">send</span> 전송');
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

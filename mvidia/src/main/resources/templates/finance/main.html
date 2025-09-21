@@ -48,6 +48,12 @@
         .row {
             margin-bottom: 20px;
         }
+
+        /* 차트 캔버스 고정 높이 */
+        #yearlyChart {
+            height: 300px !important;
+            max-height: 300px;
+        }
     </style>
 </head>
 <body>
@@ -108,54 +114,72 @@
                 <p><b th:text="|${normalCnt}개|">0개</b> 정상</p>
                 <p><b th:text="|${lowCnt}개|">0개</b> 부족</p>
                 <small class="text-muted">※ 실시간 재고 기준</small>
-                <div th:if="${#lists.isEmpty(lowList) == false}">
+                <div th:if="${lowList != null and !#lists.isEmpty(lowList)}">
                     <hr>
                     <p class="text-danger fw-bold">부족 품목:</p>
                     <ul>
-                        <li th:each="c : ${lowList}" th:text="${c.cpName} + ' (' + c.qty + '개)'"></li>
+                        <li th:each="c : ${lowList}">
+                            <span th:text="${c.cpName}"></span>
+                            (<span th:text="${c.qty}"></span>개)
+                        </li>
                     </ul>
+                </div>
+
+                <!-- 부족 품목이 없을 때 -->
+                <div th:if="${lowList == null or #lists.isEmpty(lowList)}">
+                    <p class="text-success">현재 부족 품목이 없습니다 !!</p>
                 </div>
             </div>
         </div>
 
-        <!-- 제품별 분기 수익 그래프 -->
+        <!-- 연간 수익 그래프 -->
         <div class="col-md-6">
             <div class="dashboard-card">
-                <h2>📈 제품별 분기 수익 (단위: 억원)</h2>
-                <canvas id="productChart" style="height:300px"></canvas>
+                <h2>📊 2025년 연간 수익 (분기별)</h2>
+                <canvas id="yearlyChart"></canvas>
             </div>
         </div>
     </div>
 </div>
 
 <script th:inline="javascript">
-    const productRevenueMap = /*[[${productRevenueMap}]]*/ {};
-    const year = /*[[${year}]]*/ 2025;
+    const totalSales = /*[[${totalSales}]]*/ [];
+    const totalProfits = /*[[${totalProfits}]]*/ [];
 
-    const labels = Object.keys(productRevenueMap);
-    const values = Object.values(productRevenueMap).map(v => v / 100000000.0);
-
-    new Chart(document.getElementById("productChart"), {
+    new Chart(document.getElementById("yearlyChart"), {
         type: "bar",
         data: {
-            labels: labels,
-            datasets: [{
-                label: "매출액",
-                data: values,
-                backgroundColor: "rgba(0, 80, 190, 0.7)"
-            }]
+            labels: ["1분기", "2분기", "3분기", "4분기"],
+            datasets: [
+                {
+                    label: "총매출",
+                    data: totalSales,
+                    backgroundColor: "rgba(0, 80, 190, 0.7)",
+                    yAxisID: "y",
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.8
+                },
+                {
+                    label: "영업이익",
+                    data: totalProfits,
+                    type: "line",
+                    borderColor: "orange",
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: "orange",
+                    fill: false,
+                    yAxisID: "y1"
+                }
+            ]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false, /* 고정 높이 준 상태에서 비율 유지 X */
             plugins: {
-                title: {
-                    display: true,
-                    text: year + "년 " + /*[[${quarter}]]*/ 1 + "분기 제품별 매출"
-                },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return context.label + ": " + context.raw.toFixed(1) + "억";
+                            return context.dataset.label + ": " + context.raw.toFixed(1) + "억";
                         }
                     }
                 }
@@ -163,11 +187,21 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: "매출 (억원)" }
+                    max: 4000,   // ← 매출 축을 4000억으로 고정
+                    title: {display: true, text: "매출 (억원)"},
+                    ticks: {callback: val => val + "억"}
+                },
+                y1: {
+                    beginAtZero: true,
+                    max: 2000,   // ← 영업이익 축을 2000억으로 고정
+                    position: "right",
+                    title: {display: true, text: "영업이익 (억원)"},
+                    ticks: {callback: val => val + "억"}
                 }
             }
         }
     });
 </script>
+
 </body>
 </html>

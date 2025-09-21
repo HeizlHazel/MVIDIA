@@ -36,7 +36,7 @@ public class FinanceServiceImpl implements FinanceService {
         param.put("jobCode", jobCode);
         param.put("empName", keyword);
 
-        List<Salary> allList = financeDao.selectSalary(sqlSession, param);
+        List<Salary> allList = financeDao.selectAllSalary(sqlSession, param);
 
         return allList.stream()
                 .filter(s -> yearMonth == null || yearMonth.isEmpty()
@@ -155,7 +155,7 @@ public class FinanceServiceImpl implements FinanceService {
                         ", status=" + att.getAttStatus());
             }
         }
-        return financeDao.selectSalary(sqlSession, param);
+        return salaryList;
     }
 
 
@@ -270,49 +270,52 @@ public class FinanceServiceImpl implements FinanceService {
         return financeDao.getAllComponents();
     }
 
-    private static final Map<String, Integer> MIN_QTY_MAP = new HashMap<>();
-    static {
-        MIN_QTY_MAP.put("CP0001", 400);
-        MIN_QTY_MAP.put("CP0002", 100);
-        MIN_QTY_MAP.put("CP0003", 60);
-        MIN_QTY_MAP.put("CP0004", 80);
-        MIN_QTY_MAP.put("CP0005", 200);
-    }
-
-    private int getMinQty(String cpCode) {
-        return MIN_QTY_MAP.getOrDefault(cpCode, 0);
-    }
-
-
     @Override
     public List<Comp> searchComponents(String keyword, String localCode, String status) {
-
         List<Comp> allList = financeDao.searchComponents(sqlSession);
 
-        List<Comp> filtered = allList.stream()
+        return allList.stream()
                 .filter(c -> keyword == null || keyword.isEmpty()
                         || (c.getCpName() != null && c.getCpName().toLowerCase().contains(keyword.toLowerCase()))
                         || (c.getCpCode() != null && c.getCpCode().toLowerCase().contains(keyword.toLowerCase())))
-                .toList();
-
-        // 2. localCode 필터
-        filtered = filtered.stream()
                 .filter(c -> localCode == null || localCode.isEmpty()
                         || (c.getLocalCode() != null && c.getLocalCode().equals(localCode)))
+                // 3. 정상/부족 필터
+                .filter(c -> {
+                    if ("normal".equals(status)) {
+                        return Integer.parseInt(c.getQty()) >= Integer.parseInt(c.getMinQty());
+                    } else if ("low".equals(status)) {
+                        return Integer.parseInt(c.getQty()) < Integer.parseInt(c.getMinQty());
+                    }
+                    return true; // status 없으면 전체
+                })
                 .toList();
-
-        // 3. status 필터 (정상/부족)
-        if ("normal".equals(status)) {
-            filtered = filtered.stream()
-                    .filter(c -> Integer.parseInt(c.getQty()) >= getMinQty(c.getCpCode()))
-                    .toList();
-        } else if ("low".equals(status)) {
-            filtered = filtered.stream()
-                    .filter(c -> Integer.parseInt(c.getQty()) < getMinQty(c.getCpCode()))
-                    .toList();
-        }
-
-        return filtered;
     }
 
+    private static final Map<String, String> LOCAL_CODE_MAP = Map.of(
+            "100", "서울창고",
+            "110", "부산창고",
+            "300", "대전창고",
+            "400", "광주창고"
+    );
+
+    @Override
+    public int updateStock(String cpCode, int qty, String type) {
+        if ("IN".equals(type)) {
+            return sqlSession.update("componentMapper.increaseStock",
+                    Map.of("cpCode", cpCode, "qty", qty));
+        } else {
+            // 출고 → 현재 재고 확인
+            Integer currentQty = sqlSession.selectOne("componentMapper.getCurrentQty", cpCode);
+            if (currentQty == null) currentQty = 0;
+
+            if (currentQty < qty) {
+                // 출고 불가
+                return -1;  // 출고 불가능 신호
+            }
+
+            return sqlSession.update("componentMapper.decreaseStock",
+                    Map.of("cpCode", cpCode, "qty", qty));
+        }
+    }
 }

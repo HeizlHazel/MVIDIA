@@ -23,6 +23,10 @@ public class FinanceDao {
         return sqlSession.selectList("salaryMapper.selectSalary", param);
     }
 
+    public List<Salary> selectAllSalary(SqlSession sqlSession, Map<String, Object> param) {
+        return sqlSession.selectList("salaryMapper.selectAllSalary", param);
+    }
+
     public Salary selectSalaryByEmpAndMonth(SqlSession sqlSession, Map<String, Object> param) {
         List<Salary> list = sqlSession.selectList("salaryMapper.selectSalary", param);
         return list.isEmpty() ? null : list.get(0);

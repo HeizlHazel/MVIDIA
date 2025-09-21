@@ -6,81 +6,139 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>쪽지 수신함</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>수신함</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <style>
-        .msg-table th, .msg-table td {
-            text-align: center;
-            vertical-align: middle;
+        .custom {
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            background: #ffffff;
         }
-        .msg-table td.title {
-            text-align: left;
+        .message-row {
             cursor: pointer;
+            transition: background-color 0.2s ease;
         }
-        .badge-unread {
-            background-color: #0050be;
-            color: white;
-            font-size: 11px;
-            margin-left: 6px;
-            padding: 3px 6px;
-            border-radius: 6px;
+        .message-row:hover {
+            background-color: #f8f9fa;
+        }
+        .important {
+            color: #dc3545;
         }
     </style>
 </head>
-<body>
-<div class="container mt-4">
-    <h3>📥 받은 쪽지함</h3>
-    <hr>
+<script>
+    const CURRENT_USER_NO = /*[[${session.empNo}]]*/ '22010001'; // 임시 값
+</script>
 
-    <table class="table table-bordered table-hover msg-table">
-        <thead class="thead-light">
-        <tr>
-            <th style="width: 60px;">번호</th>
-            <th style="width: 150px;">보낸 사람</th>
-            <th>제목</th>
-            <th style="width: 180px;">보낸 날짜</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="msg, iterStat : ${messageList}"
-            th:classappend="${msg.readYn == 'N'} ? 'table-primary'">
-            <td th:text="${iterStat.count}"></td>
-            <td th:text="${msg.senderName}"></td>
-            <td class="title"
-                data-toggle="modal"
-                data-target="#msgDetailModal"
-                th:data-title="${msg.title}"
-                th:data-content="${msg.content}"
-                th:data-sender="${msg.senderName}"
-                th:data-date="${msg.sendDate}">
-                <span th:text="${msg.title}"></span>
-                <span th:if="${msg.readYn == 'N'}" class="badge-unread">새 쪽지</span>
-            </td>
-            <td th:text="${#dates.format(msg.sendDate, 'yyyy-MM-dd HH:mm')}"></td>
-        </tr>
-        <tr th:if="${#lists.isEmpty(messageList)}">
-            <td colspan="4">받은 쪽지가 없습니다.</td>
-        </tr>
-        </tbody>
-    </table>
+<body>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>
+        <span class="material-symbols-outlined" style="font-size: 44px;">mail</span>
+        수신함
+    </h2>
+    <div>
+        <button type="button" class="btn btn-primary mr-2" onclick="location.href='/message/compose'">
+            <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+            쪽지 쓰기
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="location.href='/message/outbox'">
+            <span class="material-symbols-outlined" style="font-size: 16px;">outbox</span>
+            발신함
+        </button>
+    </div>
 </div>
 
-<!-- 모달 -->
-<div class="modal fade" id="msgDetailModal" tabindex="-1" role="dialog" aria-labelledby="msgDetailLabel" aria-hidden="true">
+<div class="card custom p-4 mt-3">
+    <div class="d-flex justify-content-end mb-3">
+        <select class="form-control form-control-sm d-inline-block" style="width: auto;"
+                onchange="location.href='/message/inbox?filter=' + this.value">
+            <option value="all" th:selected="${filter == 'all'}">전체</option>
+            <option value="unread" th:selected="${filter == 'unread'}">안읽음</option>
+            <option value="read" th:selected="${filter == 'read'}">읽음</option>
+            <option value="important" th:selected="${filter == 'important'}">중요</option>
+        </select>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered text-center table-hover">
+            <thead class="table-primary">
+            <tr>
+                <th width="10%">번호</th>
+                <th width="20%">보낸 사람</th>
+                <th width="30%">제목</th>
+                <th width="10%">읽음 여부</th>
+                <th width="10%">중요 여부</th>
+                <th width="10%">날짜</th>
+                <th width="20%">관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="msg : ${messages}" class="message-row" th:attr="data-msgid=${msg.msgId}">
+                <td th:text="${msg.msgId}"></td>
+                <td th:text="${msg.senderName != null ? msg.senderName : msg.senderNo}"></td>
+                <td class="text-left pl-3">
+                    <span th:if="${msg.importYn == 'Z'}" class="material-symbols-outlined important mr-1" style="font-size: 16px;">star</span>
+                    <span th:text="${msg.title}"></span>
+                </td>
+                <td th:text="${msg.readYn == 'S' ? '읽음' : '안읽음'}"></td>
+                <td th:text="${msg.importYn == 'Z' ? '중요' : '일반'}"></td>
+                <td th:text="${#dates.format(msg.sendDate, 'yyyy-MM-dd')}"></td>
+
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-primary view-btn" th:attr="data-msgid=${msg.msgId}">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                        보기
+                    </button>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(messages)}">
+                <td colspan="7" class="text-muted py-5">
+                    <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.5;">mail</span>
+                    <br>
+                    받은 쪽지가 없습니다.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 페이징 -->
+    <div class="d-flex justify-content-center mt-3" th:if="${totalPages > 1}">
+        <nav aria-label="페이지 네비게이션">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/message/inbox(page=${currentPage - 1})}">이전</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(1, totalPages)}"
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/message/inbox(page=${i})}" th:text="${i}"></a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                    <a class="page-link" th:href="@{/message/inbox(page=${currentPage + 1})}">다음</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- 수신 메시지 상세보기 모달 -->
+<div class="modal fade" id="inboxMessageModal" tabindex="-1" role="dialog" aria-labelledby="inboxMessageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="msgDetailLabel">쪽지 상세보기</h5>
+                <h5 class="modal-title" id="inboxMessageModalLabel">쪽지 상세</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <p><b>보낸 사람:</b> <span id="modalSender"></span></p>
-                <p><b>보낸 날짜:</b> <span id="modalDate"></span></p>
-                <hr>
-                <h5 id="modalTitle"></h5>
-                <p id="modalContent" style="white-space: pre-line;"></p>
+            <div class="modal-body" id="inboxMessageContent">
+                <!-- Ajax로 내용을 로드 -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
@@ -89,20 +147,135 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
-    $('#msgDetailModal').on('show.bs.modal', function (event) {
-        let button = $(event.relatedTarget);
-        let title = button.data('title');
-        let content = button.data('content');
-        let sender = button.data('sender');
-        let date = button.data('date');
+    // 안전한 날짜 포맷팅 함수
+    function formatSafeDate(dateValue) {
+        if (!dateValue) return '날짜 정보 없음';
 
-        $('#modalTitle').text(title);
-        $('#modalContent').text(content);
-        $('#modalSender').text(sender);
-        $('#modalDate').text(date);
+        try {
+            // 다양한 형태의 날짜 처리
+            let date;
+
+            if (typeof dateValue === 'string') {
+                dateValue = dateValue.replace(/\.0$/, ''); // .0 제거
+                date = new Date(dateValue);
+            } else if (typeof dateValue === 'number') {
+                date = new Date(dateValue);
+            } else {
+                date = new Date(dateValue);
+            }
+
+            // Invalid Date 체크
+            if (isNaN(date.getTime())) {
+                console.warn('Invalid date:', dateValue);
+                return '날짜 형식 오류';
+            }
+
+            return date.toLocaleString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+        } catch (error) {
+            console.error('Date formatting error:', error);
+            return '날짜 처리 오류';
+        }
+    }
+
+    // 안전한 값 체크 함수
+    function safeValue(value, defaultValue = '정보 없음') {
+        return (value !== null && value !== undefined && value !== '') ? value : defaultValue;
+    }
+
+    // 모달 열기 전에 내용 초기화
+    $('#inboxMessageModal').on('show.bs.modal', function(event){
+        const modal = $(this);
+        modal.find('.modal-body').html('<div class="text-center text-muted">로딩 중...</div>');
+    });
+
+
+    // 버튼 클릭 시 모달 열기
+    $(document).on('click', '.view-btn', function(e){
+        e.stopPropagation();
+        const msgId = $(this).data('msgid');
+
+        if (!msgId) {
+            alert('메시지 ID가 없습니다.');
+            return;
+        }
+
+        $('#inboxMessageModal').modal('show');
+
+        $.ajax({
+            url: '/message/read-ajax',
+            method: 'GET',
+            data: { msgId: msgId,
+                receiverNo: CURRENT_USER_NO
+            },
+
+            success: function(response) {
+                console.log('AJAX Response:', response); // 디버깅용
+
+                if (!response) {
+                    $('#inboxMessageContent').html(`
+                        <div class="alert alert-danger">
+                            <strong>오류!</strong> 서버에서 응답을 받지 못했습니다.
+                        </div>
+                    `);
+                    return;
+                }
+
+                // 안전한 데이터 추출
+                const title = safeValue(response.title, '제목 없음');
+                const senderName = safeValue(response.senderName, '알 수 없는 발신자');
+                const sendDate = formatSafeDate(response.sendDate);
+                const content = safeValue(response.content, '내용이 없습니다.');
+
+                let contentHtml = `
+                    <div class="mb-3">
+                        <strong>제목:</strong>
+                        <span class="ml-2">${title}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>보낸 사람:</strong>
+                        <span class="ml-2">${senderName}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>발송일시:</strong>
+                        <span class="ml-2">${sendDate}</span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>내용:</strong>
+                        <div class="mt-2 p-3" style="background-color: #f8f9fa; border-radius: 5px; min-height: 100px; white-space: pre-wrap;">${content.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+
+                $('#inboxMessageContent').html(contentHtml);
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', {xhr, status, error});
+
+                let errorMessage = '쪽지를 불러오는 중 오류가 발생했습니다.';
+
+                if (status === 'timeout') {
+                    errorMessage = '서버 응답 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.';
+                } else if (xhr.status === 404) {
+                    errorMessage = '요청한 쪽지를 찾을 수 없습니다.';
+                } else if (xhr.status === 500) {
+                    errorMessage = '서버 내부 오류가 발생했습니다.';
+                }
+
+                $('#inboxMessageContent').html(`
+                    <div class="alert alert-danger">
+                        <strong>오류!</strong> ${errorMessage}
+                        <br><small>오류 코드: ${xhr.status} ${status}</small>
+                    </div>
+                `);
+            }
+        });
     });
 </script>
 </body>

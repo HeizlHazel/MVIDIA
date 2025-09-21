@@ -20,7 +20,7 @@
         <result column="job_name" property="jobName"/>
         <result property="accountNo" column="accountNo"/>
         <result property="bankName" column="bankName"/>
-        <result property="accountFormat" column="account_format"/>
+        <result property="accountFormat" column="acct_format"/>
     </resultMap>
 
     <resultMap id="attendanceResultSet" type="Attendance">
@@ -101,6 +101,8 @@
           join tb_job j on e.job_code = j.job_code
           left join tb_account a on s.emp_no = a.emp_no
           left join tb_bank b on a.bank_id = b.bank_id
+        WHERE s.emp_no = #{empNo}
+        AND TO_CHAR(s.pay_date, 'YYYY-MM') = #{yearMonth}
     </select>
 
     <select id="selectAllSalary" resultType="Salary">
@@ -111,8 +113,9 @@
         , nvl(s.ov_price, 0)             AS ovPrice
         , (s.salary * nvl(s.bonus, 0) / 100) AS bonusAmt
         , nvl(s.deduct_amt, 0)           AS deductAmt
-        , s.net_pay                      AS netPay
-        , s.total_pay                    AS totalPay
+        , (s.salary + nvl(s.ov_price,0) + (s.salary * nvl(s.bonus,0) / 100))
+        - s.deduct_amt                 as netPay
+        , (s.salary + nvl(s.ov_price,0) + (s.salary * nvl(s.bonus,0) / 100)) as totalPay
         , e.emp_lname || e.emp_name      AS empName
         , e.dept_code                    AS deptCode
         , d.dept_name                    AS deptName
@@ -122,7 +125,6 @@
         JOIN tb_employee e ON s.emp_no = e.emp_no
         JOIN tb_department d ON e.dept_code = d.dept_code
         JOIN tb_job j ON e.job_code = j.job_code
-        ORDER BY TO_DATE(s.pay_date, 'YYYY-MM') DESC, e.emp_no
     </select>
 
 
@@ -132,7 +134,7 @@
          using
              (
             select #{empNo} as emp_no
-                 , (select max(pay_date)
+                 , (select pay_date
               from tb_salary
              where emp_no = #{empNo}
                and to_char(pay_date,'YYYY-MM') = #{yearMonth}
@@ -157,7 +159,7 @@
          using
              (
                select #{empNo} as emp_no
-             , (select max(pay_date)
+             , (select pay_date
                   from tb_salary
                  where emp_no = #{empNo}
                    and to_char(pay_date,'YYYY-MM') = #{yearMonth}

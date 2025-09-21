@@ -15,6 +15,7 @@ public class Attendance {
     private String arrivingTime;
     private String leavingTime;
     private String attStatus;
+    private String minQty;
 
 
 }

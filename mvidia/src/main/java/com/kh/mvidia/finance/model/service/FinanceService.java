@@ -21,4 +21,5 @@ public interface FinanceService {
 
     List<Comp> searchComponents(String keyword, String localCode, String status);;
 
+    int updateStock(String cpCode, int qty, String type);
 }

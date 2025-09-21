@@ -13,15 +13,36 @@
         <result property="minQty" column="min_qty"/>
     </resultMap>
 
+    <!-- 번호를 창고이름 변환-->
     <select id="getAllComponents" resultMap="compResultMap">
-        select cp_code, cp_name, price, qty, local_code
+        select cp_code, cp_name, price, qty, local_code, min_qty
+        from tb_component
+        order by cp_code
+    </select>
+
+    <select id="searchComponents" parameterType="string" resultMap="compResultMap">
+        select cp_code, cp_name, price, qty, local_code, min_qty
           from tb_component
          order by cp_code
     </select>
 
-    <select id="searchComponents" parameterType="string" resultMap="compResultMap">
-        select cp_code, cp_name, price, qty, local_code
-          from tb_component
-         order by cp_code
+    <update id="increaseStock">
+        UPDATE tb_component
+        SET qty = qty + #{qty}
+        WHERE cp_code = #{cpCode}
+    </update>
+
+    <update id="decreaseStock">
+        UPDATE tb_component
+        SET qty = qty - #{qty}
+        WHERE cp_code = #{cpCode}
+    </update>
+
+    <select id="getCurrentQty" parameterType="string" resultType="int">
+        SELECT qty
+        FROM tb_component
+        WHERE cp_code = #{cpCode}
     </select>
+
+
 </mapper>

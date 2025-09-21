@@ -13,4 +13,5 @@ public class Comp {
     private String price;
     private String qty;
     private String localCode;
+    private String minQty;
 }

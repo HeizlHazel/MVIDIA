@@ -39,18 +39,28 @@ public class NotionController {
             Map<String, Object> param = new HashMap<>();
             param.put("empNo", empNo);
             param.put("yearMonth", payDate);
-            Salary salary = financeService.getSalary(param).get(0);
+            System.out.println("조회 파라미터: " + param);
 
-            if (salary == null) {
-
+            List<Salary> salaryList = financeService.getSalary(param);
+            if (salaryList == null || salaryList.isEmpty()) {
+                System.out.println("⚠️ 급여 데이터 없음 (empNo=" + empNo + ", payDate=" + payDate + ")");
                 return ResponseEntity.ok(Map.of(
                         "status", "fail",
-                        "message", "급여 데이터가 없습니다"
+                        "message", "해당 지급월의 급여 데이터가 없습니다."
                 ));
             }
 
+            Salary salary = salaryList.get(0);
+            System.out.println("급여 데이터 확인: empNo=" + salary.getEmpNo() +
+                    ", empName=" + salary.getEmpName() +
+                    ", payDate=" + salary.getPayDate() +
+                    ", netPay=" + salary.getNetPay());
+
             List<Tax> taxList = financeService.getTaxesByEmpAndMonth(empNo, payDate);
+
+            System.out.println("노션 업로드 시작...");
             notionService.insertPayrollToNotion(salary, taxList);
+            System.out.println("노션 업로드 완료 ✅");
 
             return ResponseEntity.ok().body(Map.of(
                     "status", "success",
@@ -60,6 +70,8 @@ public class NotionController {
             ));
 
         } catch (Exception e) {
+            System.out.println("❌ [오류 발생] " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body(Map.of(
                     "status", "error",
                     "message", "노션 업로드 중 오류가 발생했습니다: " + e.getMessage(),

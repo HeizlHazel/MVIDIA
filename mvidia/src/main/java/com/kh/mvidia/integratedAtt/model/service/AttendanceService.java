@@ -17,4 +17,12 @@ public interface AttendanceService {
 	int updateAttendance(Attendance att);
 	
 	ArrayList<Attendance> selectEmpAttendanceList(PageInfo pi, HashMap<String, String> searchMap);
+
+    Attendance selectToday(String empNo);
+
+    public int checkInUpsert(String empNo);
+
+    public int checkOut(String empNo);
+
+    public Attendance selectTodayTimes(String empNo);
 }

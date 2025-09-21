@@ -31,4 +31,20 @@ public class AttendanceDao {
 	public ArrayList<Attendance> selectEmpAttendanceList(SqlSessionTemplate sqlSession, HashMap<String, Object> paramMap){
 		return (ArrayList)sqlSession.selectList("attendanceMapper.selectEmpAttendanceList",paramMap);
 	}
+
+    public Attendance selectToday(SqlSessionTemplate sqlSession, String empNo) {
+        return sqlSession.selectOne("attendanceMapper.selectToday", empNo);
+    }
+
+    public int checkInUpsert(SqlSessionTemplate sqlSession, String empNo) {
+        return sqlSession.insert("attendanceMapper.checkInUpsert", empNo);
+    }
+
+    public int checkOut(SqlSessionTemplate sqlSession, String empNo) {
+        return sqlSession.update("attendanceMapper.checkOut", empNo);
+    }
+
+    public Attendance selectTodayTimes(SqlSessionTemplate sqlSession, String empNo) {
+        return sqlSession.selectOne("attendanceMapper.selectTodayTimes", empNo);
+    }
 }

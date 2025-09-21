@@ -114,6 +114,58 @@
                    by att_no desc
     </select>
 
+    <select id="selectToday" parameterType="string" resultMap="attendanceResultSet">
+        SELECT
+               ATT_NO
+             , EMP_NO
+             , ATT_DATE
+             , ARRIVING_TIME
+             , LEAVING_TIME
+             , ATT_STATUS
+          FROM TB_ATTENDANCE
+         WHERE EMP_NO = #{empNo}
+           AND ATT_DATE = TRUNC(SYSDATE)
+    </select>
+
+
+    <update id="checkInUpsert">
+        INSERT
+          INTO TB_ATTENDANCE
+             (
+               ATT_NO
+             , EMP_NO
+             , HRM_NO
+             , ATT_DATE
+             , ARRIVING_TIME
+             , ATT_STATUS)
+        VALUES
+             (
+               ('ATT' || LPAD(SEQ_ATT_NO.NEXTVAL, 4, '0')
+               , #{empNo}
+               , '22010001'
+               , TRUNC(SYSDATE)
+               , SYSDATE
+               , 'N'
+            )
+    </update>
+
+    <update id="checkOut">
+        UPDATE TB_ATTENDANCE
+           SET LEAVING_TIME = SYSDATE
+         WHERE EMP_NO = #{empNo}
+           AND ATT_DATE = TRUNC(SYSDATE)
+           AND LEAVING_TIME IS NULL
+    </update>
+
+    <select id="selectTodayTimes"  resultMap="attendanceResultSet">
+        SELECT
+               TO_CHAR(ARRIVING_TIME, 'HH24:MI') AS arriving
+             , TO_CHAR(LEAVING_TIME,  'HH24:MI') AS leaving
+          FROM TB_ATTENDANCE
+         WHERE EMP_NO = #{empNo}
+           AND ATT_DATE = TRUNC(SYSDATE)
+    </select>
+
 
 
 </mapper>

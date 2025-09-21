@@ -8,164 +8,34 @@
     <meta charset="UTF-8">
     <title>MVIDIA ERP</title>
     <style>
-        /* 기존 CSS는 유지 */
-        .tb {
-            height: 64px;
-            background: #002B39;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
-        }
+        .tb{height:64px;background:#002B39;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+        .logo{display:flex;align-items:center;gap:10px;font-weight:800;cursor:pointer}
+        .logo-img{width:40px;height:40px;object-fit:contain;margin-right:10px;display:block}
+        .top-right{display:flex;align-items:center;gap:16px}
+        .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 10px;font-variant-numeric:tabular-nums;font-weight:700}
+        .session-box{display:flex;align-items:center;gap:8px}
+        .mini-btn{height:30px;background:transparent;color:#fff;border:1px solid #000;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:50%}
+        .mini-btn:hover{background:rgba(255,255,255,.12)}
+        .countdown{min-width:78px;padding:6px 10px;text-align:center;font-weight:800;background:#1F4551;border-color:#1F4551;border-radius:999px}
+        .logout{border-radius:999px;background:#dc3545;border-color:#dc3545}
+        .extend{border-radius:999px;background:#6C757D;border-color:#6C757D}
 
-        .logo-img {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            margin-right: 10px;
-            display: block;
-        }
-
-        .tb .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .top-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .pill {
-            background: rgba(255, 255, 255, .12);
-            border: 1px solid rgba(255, 255, 255, .2);
-            border-radius: 999px;
-            padding: 6px 10px;
-            font-variant-numeric: tabular-nums;
-            font-weight: 700;
-        }
-
-        .session-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .mini-btn {
-            height: 30px;
-            background: transparent;
-            color: #fff;
-            border: 1px solid #000000;
-            padding: 6px 10px;
-            border-radius: 999px;
-            cursor: pointer;
-            line-height: 50%;
-        }
-
-        .mini-btn:hover {
-            background: rgba(255, 255, 255, .12);
-        }
-
-        .countdown {
-            min-width: 78px;
-            padding: 6px 10px;
-            font-variant-numeric: tabular-nums;
-            text-align: center;
-            font-weight: 800;
-            background-color: #1F4551;
-            border-color: #1F4551;
-            border-radius: 999px;
-        }
-
-        .logout {
-            border-radius: 999px;
-            background: #dc3545;
-            border-color: #dc3545;
-        }
-
-        .extend {
-            border-radius: 999px;
-            background-color: #6C757D;
-            border-color: #6C757D;
-        }
-
-        /* 동적으로 추가될 버튼을 위한 스타일 */
-        .checkin-btn {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-        .checkout-btn {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-
-        .icon {
-            position: relative;
-            font-size: 20px;
-            padding: 8px;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 9px;
-            background: #ff4444;
-            display: grid;
-            place-items: center;
-            font-size: 10px;
-        }
-
-        .tb .profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
-
-        .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #e1e9ee;
-        }
-
-        .pf {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid #ddd;
-        }
-
-        .meta {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.5;
-        }
-
-        .meta .name {
-            font-weight: 600;
-            font-size: 15px;
-            text-align: center;
-        }
-
-        .meta .dept {
-            font-size: 11px;
-            opacity: .9;
-            text-align: center;
-        }
+        /* 출퇴근 위젯 */
+        .att-box{display:flex;align-items:center;gap:8px}
+        .checkin-btn{background:#28a745;border-color:#28a745}
+        .checkout-btn{background:#007bff;border-color:#007bff}
+        .chip{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 10px;font-weight:700}
+        .chip.green{background:rgba(40,167,69,.2)}
+        .chip.orange{background:rgba(255,193,7,.25)}
+        .chip.red{background:rgba(220,53,69,.25)}
+        .chip span{font-variant-numeric:tabular-nums}
+        .icon{position:relative;font-size:20px;padding:8px;border-radius:50%;cursor:pointer}
+        .badge{position:absolute;top:0;right:0;min-width:18px;height:18px;border-radius:9px;background:#ff4444;display:grid;place-items:center;font-size:10px}
+        .profile{display:flex;align-items:center;gap:10px;cursor:pointer}
+        .pf{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #ddd}
+        .meta{display:flex;flex-direction:column;line-height:1.5}
+        .meta .name{font-weight:600;font-size:15px;text-align:center}
+        .meta .dept{font-size:11px;opacity:.9;text-align:center}
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
@@ -258,30 +128,24 @@
         },
     };
 </script>
-<th:block th:if="${alertMsg != null}">
-    <script th:inline="javascript">
-        alertify.alert([[${alertMsg}]]);
-    </script>
-</th:block>
-
-<div th:fragment="header (sessionSeconds=3600, logoPath=@{/images/mVIDIA_2-Photoroom.png})" class="tb">
-    <div class="logo" onclick="clickLogo()">
+<div th:fragment="header (sessionSeconds=3600)" class="tb">
+    <div class="logo" onclick="location.href='/mainPage'">
         <img class="logo-img" th:src="@{/images/MVIDIA_Logo.png}" alt="MVIDIA 로고">
         <div>MVIDIA · ERP</div>
     </div>
 
     <div class="top-right">
+        <!-- 세션/로그아웃 -->
         <div class="session-box" aria-label="세션 제어">
-            <span id="sessionCountdown" class="countdown"
-                  th:attr="data-seconds=${sessionSeconds?:0}"
-                  th:text="${#numbers.formatInteger((sessionSeconds?:0)/60, 2)} + ':'
-                  + ${#numbers.formatInteger((sessionSeconds?:0)%60, 2)}">
-                60:00
-            </span>
+      <span id="sessionCountdown" class="countdown"
+            th:attr="data-seconds=${sessionSeconds?:0}"
+            th:text="${#numbers.formatInteger((sessionSeconds?:0)/60, 2)} + ':' + ${#numbers.formatInteger((sessionSeconds?:0)%60, 2)}">
+        60:00
+      </span>
 
             <form id="extendForm" th:action="@{/session/extend}" method="post" class="extend">
                 <input type="hidden" name="_csrf" th:value="${_csrf?.token}"/>
-                <button class="mini-btn extend-btn" type="submit">연장</button>
+                <button class="mini-btn" type="submit">연장</button>
             </form>
 
             <form id="logoutForm" th:action="@{/logout.emp}" method="post" class="logout">
@@ -290,37 +154,130 @@
             </form>
         </div>
 
-        <div class="icon" id="messageIcon" title="쪽지">📧<span class="badge" id="messageCount"
-                                                             th:text="${messageCount?:0}">0</span></div>
-        <div class="icon" id="notificationIcon" title="알림">🔔<span class="badge" id="notificationCount"
-                                                                  th:text="${notificationCount?:0}">0</span></div>
+        <!-- ✅ 출퇴근 위젯 -->
+        <div class="att-box" aria-label="출퇴근 제어">
+            <button id="btnCheckin"  class="mini-btn checkin-btn"  type="button" title="출근">출근</button>
+            <button id="btnCheckout" class="mini-btn checkout-btn" type="button" title="퇴근">퇴근</button>
 
-        <div class="profile" onclick="clickProf()">
+            <!-- 오늘 시간 표시 -->
+            <span id="attTimes" class="pill" title="오늘 출/퇴근">--:-- / --:--</span>
+
+            <!-- 상태 칩: N/T/E -->
+            <span id="attStatusChip" class="chip" title="근태 상태">-</span>
+        </div>
+
+        <!-- 프로필 -->
+        <div class="profile" onclick="location.href='/myPage/profile'">
             <div class="avatar">
                 <th:block th:unless="${session.loginEmp.changeName != null}">
                     <img id="profile-preview" class="pf" th:src="@{/images/default_profile.png}" alt="기본 프로필">
                 </th:block>
                 <th:block th:if="${session.loginEmp.changeName != null}">
-                    <img id="profile-preview" th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}"
-                         alt="프로필 사진" class="pf">
+                    <img id="profile-preview" th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="pf">
                 </th:block>
             </div>
             <div class="meta">
-                <div class="name" id="userName" th:text="|${session.loginEmp.empLName}${session.loginEmp.empName}|"></div>
-                <div class="dept" id="userDept" th:text="${session.loginEmp.deptName}"></div>
+                <div class="name" th:text="|${session.loginEmp.empLName}${session.loginEmp.empName}|"></div>
+                <div class="dept" th:text="${session.loginEmp.deptName}"></div>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    function clickLogo() {
-        location.href = "/mainPage";
+<!-- 알림 메시지 -->
+<th:block th:if="${alertMsg != null}">
+    <script th:inline="javascript">alertify.alert([[${alertMsg}]]);</script>
+</th:block>
+
+<!-- ✅ 출퇴근 JS -->
+<script th:inline="javascript">
+    // CSRF
+    const CSRF_HEADER = /*[[${_csrf?.headerName}]]*/ 'X-CSRF-TOKEN';
+    const CSRF_TOKEN  = /*[[${_csrf?.token}]]*/ '';
+
+    $.ajaxSetup({ beforeSend: function(xhr){ if(CSRF_TOKEN){ xhr.setRequestHeader(CSRF_HEADER, CSRF_TOKEN); } } });
+
+    function setTimes(arriving, leaving){
+      $('#attTimes').text((arriving || '--:--') + ' / ' + (leaving || '--:--'));
     }
 
-    function clickProf() {
-        location.href = "/myPage/profile";
+    function setStatusChip(status){
+      const chip = $('#attStatusChip');
+      chip.removeClass('green orange red').text('-');
+      if(!status){ return; }
+      if(status === 'N'){ chip.addClass('green').text('정상'); }
+      else if(status === 'T'){ chip.addClass('red').text('지각'); }
+      else if(status === 'E'){ chip.addClass('orange').text('조퇴'); }
+      else { chip.text(status); }
     }
+
+    function applyButtonStates(arriving, leaving){
+      // 출근이 찍혀 있으면 출근 버튼 비활성
+      $('#btnCheckin').prop('disabled', !!arriving);
+      // 퇴근이 찍혀 있으면 퇴근 버튼 비활성
+      $('#btnCheckout').prop('disabled', !!leaving);
+    }
+
+    // 출근
+    $('#btnCheckin').on('click', function(){
+      const $btn = $(this).prop('disabled', true);
+      $.post('/api/att/checkin')
+        .done(function(res){
+          setTimes(res.arriving, res.leaving);
+          setStatusChip(res.status);
+          applyButtonStates(res.arriving, res.leaving);
+
+          if(res.duplicated){
+            alertify.message(res.message || '이미 출근 처리됨');
+          }else{
+            if(res.status === 'T') alertify.error('지각 처리');
+            else alertify.success('출근 처리 완료');
+          }
+        })
+        .fail(function(){
+          alertify.error('출근 처리 실패');
+        })
+        .always(function(){
+          // 실패했거나 아직 출근 미기록이면 다시 활성화
+          if($('#attTimes').text().startsWith('--:--')) $btn.prop('disabled', false);
+        });
+    });
+
+    // 퇴근
+    $('#btnCheckout').on('click', function(){
+      const $btn = $(this).prop('disabled', true);
+      $.post('/api/att/checkout')
+        .done(function(res){
+          if(res.message && res.message.indexOf('출근 기록이 없습니다') > -1){
+            alertify.message(res.message);
+            $btn.prop('disabled', false);
+            return;
+          }
+          setTimes(res.arriving, res.leaving);
+          setStatusChip(res.status);
+          applyButtonStates(res.arriving, res.leaving);
+
+          if(res.status === 'E') alertify.message('조퇴 처리');
+          else alertify.success('퇴근 처리 완료');
+        })
+        .fail(function(){
+          alertify.error('퇴근 처리 실패');
+          $btn.prop('disabled', false);
+        });
+    });
+
+    // 초기 상태 로딩 (선택: GET /api/att/today 구현 시)
+    $(function(){
+      $.getJSON('/api/att/today')
+        .done(function(res){
+          setTimes(res.arriving, res.leaving);
+          setStatusChip(res.status);
+          applyButtonStates(res.arriving, res.leaving);
+        })
+        .fail(function(){
+          // GET 엔드포인트가 없으면 조용히 무시
+        });
+    });
 </script>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>

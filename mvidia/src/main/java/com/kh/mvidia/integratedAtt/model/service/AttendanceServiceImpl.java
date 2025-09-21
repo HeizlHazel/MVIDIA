@@ -49,6 +49,26 @@ public class AttendanceServiceImpl implements AttendanceService{
 		paramMap.put("searchMap", searchMap);
 		return attDao.selectEmpAttendanceList(sqlSession,paramMap);
 	}
-	
+
+    @Override
+    public Attendance selectToday(String empNo) {
+        return attDao.selectToday(sqlSession, empNo);
+    }
+
+    @Override
+    public int checkInUpsert(String empNo) {
+        return attDao.checkInUpsert(sqlSession,empNo);
+    }
+
+    @Override
+    public int checkOut(String empNo) {
+        return attDao.checkOut(sqlSession,empNo);
+    }
+
+    @Override
+    public Attendance selectTodayTimes(String empNo) {
+        return attDao.selectTodayTimes(sqlSession,empNo);
+    }
+
 
 }

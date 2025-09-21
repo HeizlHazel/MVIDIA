@@ -24,6 +24,7 @@
     </style>
 </head>
 <body>
+
     <div th:fragment="menubar" class="sb">
         <ul class="menu" id="sideMenu">
             <li>
@@ -38,13 +39,13 @@
                 </div>
             </li>
 
-            <li>
-                <div class="link" data-toggle>🕒 근태관리</div>
-                <div class="submenu">
-                    <a th:href="@{/attend/main}">근태 메인</a>
-                    <a th:href="@{/attend/vacation}">휴가 신청</a>
-                </div>
-            </li>
+        <li>
+            <div class="link" data-toggle>🕒 근태관리</div>
+            <div class="submenu">
+                <a th:href="@{/attend/main}">근태 메인</a>
+                <a th:href="@{/attend/vacation}">휴가 신청</a>
+            </div>
+        </li>
 
             <li>
                 <div class="link" data-toggle>📝 전자결재</div>
@@ -57,15 +58,16 @@
                 </div>
             </li>
 
-            <li>
-                <div class="link" data-toggle>✉️ 쪽지</div>
-                <div class="submenu">
-                    <a th:href="@{/message/inbox}">수신함</a>
-                    <a th:href="@{/message/outbox}">발신함</a>
-                    <a th:href="@{/message/compose}">쪽지 보내기</a>
-                </div>
-            </li>
+        <li>
+            <div class="link" data-toggle>✉️ 쪽지</div>
+            <div class="submenu">
+                <a th:href="@{/message/inbox}">수신함</a>
+                <a th:href="@{/message/outbox}">발신함</a>
+                <a th:href="@{/message/compose}">쪽지 보내기</a>
+            </div>
+        </li>
 
+<<<<<<< HEAD
             <!-- 직책별 노출 예시: 부장 이상일 때만 조직도 -->
             <!-- <th:block th:if="${session.grantedPerms.contains('PERM0003')}"> -->
             <li sec:authorize="hasAnyRole('MANAGER','ADMIN')">
@@ -103,11 +105,11 @@
                 <li>
                     <div class="link" data-toggle>🧭 생산품질관리팀</div>
                     <div class="submenu">
-                        <a th:href="@{/hr/hrMainPage}">생산품질관리팀 메인</a>
-                        <a th:href="@{/hr/empAccount.hr}">사원 계정 생성/수정/삭제</a>
-                        <a th:href="@{/hr/integrated}">인사 통합 관리</a>
-                        <a th:href="@{/hr/attendance}">근태/휴가 통합</a>
-                        <a th:href="@{/hr/cert}">증명서 조회/발급</a>
+                        <a th:href="@{/prodDashBoard.bo}">생산품질관리팀 대시보드</a>
+                        <a th:href="@{/plist.bo}">제품 현황 조회</a>
+                        <a th:href="@{/dlist.bo}">불량 제품 등록 조회</a>
+                        <a th:href="@{/clist.bo}">실시간 품질 모니터링 시스템</a>
+                        <a th:href="@{/hr/cert}">점검 일정 관리</a>
                     </div>
                 </li>
             </th:block>

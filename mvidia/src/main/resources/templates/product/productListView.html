@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>productListView</title>
+</head>
+<body>
+
+<div class="content">
+    <h2>생산 제품 조회 </h2>
+</div>
+
+<form id="searchForm" autocomplete="off">
+    <input type="text" name="keyword" id="searchBox"
+           placeholder="제품코드 또는 제품명을 검색하시오."
+           th:value="${keyword}" list="productList">
+    <datalist id="productList">
+        <option th:each="p : ${list}" th:value="${p.prodCode} + ' | ' + ${p.prodName}"></option>
+    </datalist>
+    <button type="submit">검색</button>
+</form>
+
+<!-- 별도 파일의 프래그먼트 사용 - 중복 없음! -->
+<div id="tableArea" th:include="~{fragments/productTable :: prodTable}"></div>
+
+<script>
+    document.querySelector("#searchForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const keyword = form.keyword.value;
+
+        fetch(`/plist.bo?keyword=${encodeURIComponent(keyword)}&ajax=true`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        })
+        .then(resp => resp.text())
+        .then(html => {
+            document.querySelector("#tableArea").innerHTML = html;
+        });
+    });
+</script>
+
+<!-- 페이징 -->
+<div id="pagingArea">
+    <ul class="pagination">
+        <li th:classappend="${pi.currentPage == 1} ? 'disabled'">
+            <a th:href="@{|plist.bo?cpage=${pi.currentPage > 1 ? pi.currentPage-1 : 1}&keyword=${keyword}|}">이전</a>
+        </li>
+        <li th:each="pageNum : ${#numbers.sequence(pi.startPage, pi.endPage)}"
+            th:classappend="${pageNum == pi.currentPage} ? 'active'">
+            <a th:href="@{|plist.bo?cpage=${pageNum}&keyword=${keyword}|}" th:text="${pageNum}"></a>
+        </li>
+        <li th:classappend="${pi.currentPage == pi.maxPage} ? 'disabled'">
+            <a th:href="@{|plist.bo?cpage=${pi.currentPage < pi.maxPage ? pi.currentPage+1 : pi.maxPage}&keyword=${keyword}|}">다음</a>
+        </li>
+    </ul>
+</div>
+</body>
+</html>

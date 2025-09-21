@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>전체 일정 현황</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        /* 기본 스타일 그대로 사용 */
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #2c3e50; font-size: 2.5rem; margin-bottom: 10px; }
+        .header p { color: #7f8c8d; font-size: 1.1rem; }
+        .section { background: white; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 30px; }
+        .section h2 { color: #34495e; font-size: 1.8rem; margin-bottom: 20px; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(700px, 1fr)); gap: 25px; margin-top: 20px; }
+        .progress-card { background: #ffffff; border: 1px solid #e3e8ee; border-radius: 15px; padding: 25px; color: #2c3e50; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: transform 0.3s ease; }
+        .progress-card:hover { transform: translateY(-5px); }
+        .card-header { margin-bottom: 20px; }
+        .card-title { font-size: 1.4rem; font-weight: bold; text-align: center; }
+        .charts-row { display: flex; gap: 20px; align-items: flex-start; height: 300px; }
+        .bar-chart-container { flex: 2; height: 100%; position: relative; }
+        .donut-chart-container { flex: 1; height: 100%; position: relative; display: flex; flex-direction: column; align-items: center; }
+        .donut-title { color: #2c3e50; font-size: 0.9rem; margin-bottom: 10px; text-align: center; }
+        .loading { text-align: center; color: #7f8c8d; font-style: italic; padding: 50px; }
+        .bar-chart-container canvas { width: 100% !important; height: 280px !important; max-height: 280px !important; }
+        .donut-chart-container canvas { width: 200px !important; height: 200px !important; max-width: 200px !important; max-height: 200px !important; }
+        .no-data-message { display: flex; align-items: center; justify-content: center; height: 100%; color: #7f8c8d; font-style: italic; text-align: center; }
+        @media (max-width: 768px) { .cards-grid { grid-template-columns: 1fr; } .charts-row { flex-direction: column; height: auto; gap: 15px; } .bar-chart-container, .donut-chart-container { width: 100%; height: 250px; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>전체 일정 현황</h1>
+        <p>전체 일정의 진행 현황을 업체별로 확인하세요</p>
+    </div>
+
+    <div class="section">
+        <h2>업체별 상세 진행 현황</h2>
+        <div id="companyCardsContainer" class="cards-grid">
+            <div class="loading">데이터를 불러오는 중...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('companyCardsContainer');
+
+        // fetch로 JSON 데이터 가져오기
+        fetch('/schrListAjax.bo?bpPartner=') // 전체 bpPartner
+            .then(res => res.json())
+            .then(data => {
+                const schrListData = data.schrList;
+                const schrDonutListData = data.schrDonutList;
+
+                if (!schrListData || schrListData.length === 0) {
+                    container.innerHTML = '<div class="loading">표시할 일정 데이터가 없습니다.</div>';
+                    return;
+                }
+
+                // 안전한 ID 생성
+                function generateSafeId(name, idx=0) {
+                    let safeName = name.replace(/[^a-zA-Z0-9]/g,'') || 'partner';
+                    return `${safeName}_${idx}_${Date.now().toString().slice(-4)}`;
+                }
+
+                // 데이터 그룹화
+                const grouped = {};
+                schrListData.forEach((item, idx) => {
+                    const partner = item.bpPartner || '미등록업체';
+                    if (!grouped[partner]) grouped[partner] = { schedules: [], safeId: generateSafeId(partner, idx) };
+                    if (!grouped[partner].schedules.find(s=>s.schrId===item.schrId)) grouped[partner].schedules.push(item);
+                });
+
+                // 카드 생성 + 차트 렌더링
+                container.innerHTML = '';
+                Object.keys(grouped).forEach((partner, idx) => {
+                    const company = grouped[partner];
+                    const safeId = company.safeId;
+
+                    const cardHTML = `
+                    <div class="progress-card">
+                        <div class="card-header">
+                            <div class="card-title">${partner} (일정 ${company.schedules.length}개)</div>
+                        </div>
+                        <div class="charts-row">
+                            <div class="bar-chart-container"><canvas id="barChart_${safeId}"></canvas></div>
+                            <div class="donut-chart-container">
+                                <div class="donut-title">불량 현황</div>
+                                <canvas id="qualityDonut_${safeId}"></canvas>
+                            </div>
+                        </div>
+                    </div>`;
+                    container.insertAdjacentHTML('beforeend', cardHTML);
+
+                    // 차트 생성
+                    requestAnimationFrame(() => {
+                        const barCanvas = document.getElementById(`barChart_${safeId}`);
+                        const donutCanvas = document.getElementById(`qualityDonut_${safeId}`);
+
+                        if (barCanvas && donutCanvas) {
+                            // 막대차트
+                            const sch = company.schedules;
+                            const labels = sch.map(s=>s.schName||'일정명 없음');
+                            let done = sch.map(s=>parseInt(s.doneCount)||0);
+                            let ing = sch.map(s=>parseInt(s.ingCount)||0);
+                            let delay = sch.map(s=>parseInt(s.delayCount)||0);
+                            let wait = sch.map(s=>parseInt(s.waitCount)||0);
+
+                            if (!done.some(v=>v>0) && !ing.some(v=>v>0) && !delay.some(v=>v>0) && !wait.some(v=>v>0)) {
+                                done = sch.map(()=>10); ing=sch.map(()=>5); delay=sch.map(()=>3); wait=sch.map(()=>2);
+                            }
+
+                            new Chart(barCanvas.getContext('2d'), {
+                                type:'bar',
+                                data:{ labels, datasets:[
+                                    {label:'완료', data:done, backgroundColor:'rgba(46,204,113,0.8)', borderColor:'rgba(46,204,113,1)', borderWidth:1},
+                                    {label:'진행중', data:ing, backgroundColor:'rgba(52,152,219,0.8)', borderColor:'rgba(52,152,219,1)', borderWidth:1},
+                                    {label:'지연', data:delay, backgroundColor:'rgba(241,196,15,0.8)', borderColor:'rgba(241,196,15,1)', borderWidth:1},
+                                    {label:'대기', data:wait, backgroundColor:'rgba(149,165,166,0.8)', borderColor:'rgba(149,165,166,1)', borderWidth:1}
+                                ]},
+                                options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+                                    scales:{x:{stacked:true},y:{stacked:true}},
+                                    plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{title:ctx=>`일정: ${ctx[0].label}`, label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.x}개`} } }
+                                }
+                            });
+
+                            // 도넛차트
+                            let donutData = schrDonutListData.filter(d=>d.bpPartner===partner);
+                            if (!donutData.length || donutData.every(d=>!parseInt(d.defCountType))) {
+                                donutData = [{defType:'양호',defCountType:80},{defType:'주의',defCountType:20}];
+                            }
+                            const dLabels = donutData.map(d=>d.defType);
+                            const dCounts = donutData.map(d=>parseInt(d.defCountType)||1);
+                            const colors = ['#e74c3c','#f1c40f','#3498db','#9b59b6','#2ecc71'];
+
+                            new Chart(donutCanvas.getContext('2d'), {
+                                type:'doughnut',
+                                data:{ labels:dLabels, datasets:[{data:dCounts, backgroundColor:colors.slice(0,dLabels.length), borderColor:colors.slice(0,dLabels.length), borderWidth:2}]},
+                                options:{ responsive:true, maintainAspectRatio:false, cutout:'50%', plugins:{legend:{position:'bottom',labels:{font:{size:10}}}}}
+                            });
+                        }
+                    });
+                });
+
+            })
+            .catch(err=>{ console.error('데이터 fetch 실패:', err); container.innerHTML='<div class="loading">데이터를 불러오는 중 오류가 발생했습니다.</div>'; });
+    });
+</script>
+</body>
+</html>

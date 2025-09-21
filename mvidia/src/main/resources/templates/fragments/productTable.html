@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>productTable</title>
+</head>
+<body>
+    <div th:fragment="prodTable">
+        <table>
+            <thead>
+            <tr>
+                <th>제품코드</th>
+                <th>제품명</th>
+                <th>단가</th>
+                <th>재고수량</th>
+                <th>재고상태</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr th:each="p : ${list}">
+                <td th:text="${p.prodCode}"></td>
+                <td th:text="${p.prodName}"></td>
+                <td th:text="${p.price}"></td>
+                <td th:text="${p.stock}"></td>
+                <td th:text="${p.statusName}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

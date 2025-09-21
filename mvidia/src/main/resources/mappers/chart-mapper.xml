@@ -27,6 +27,17 @@
         <result column="schName" property="schName" />
     </resultMap>
 
+    <resultMap id="QualityCheckResultSet" type="QualityCheck">
+        <result column="check_id" property="checkId" />
+        <result column="schr_id" property="schrId" />
+        <result column="prod_code" property="prodCode" />
+        <result column="check_status" property="checkStatus" />
+        <result column="def_count" property="defCount" />
+        <result column="checked_date" property="checkedDate" />
+        <result column="def_code" property="defCode" />
+        <result column="status_count" property="statusCount" />
+    </resultMap>
+
     <resultMap id="ProgressResultSet" type="ProgressChart">
         <result column="task_code" property="taskCode" />
         <result column="task_id" property="taskId" />
@@ -42,7 +53,7 @@
         <result column="def_count_type" property="defCountType" />
     </resultMap>
 
-    <!-- 품질점검 일정 (전체검사 수 / 불량검사 수 )-->
+
     <select id="selectScheduleRegistration" resultMap="ChartResultSet">
         select
                schr_id
@@ -95,11 +106,11 @@
             s.details,
             s.total_count,
             s.def_count,
-            SUM(CASE WHEN q.check_status='C' THEN q.def_count ELSE 0 END) AS done_count,
-            SUM(CASE WHEN q.check_status='P' THEN q.def_count ELSE 0 END) AS ing_count,
-            SUM(CASE WHEN q.check_status='S' THEN q.def_count ELSE 0 END) AS delay_count,
-            SUM(CASE WHEN q.check_status='W' THEN q.def_count ELSE 0 END) AS wait_count,
-            SUM(NVL(q.def_count,0)) AS total_def_count,
+            SUM(CASE WHEN q.check_status='C' THEN nvl(q.status_count, 0) ELSE 0 END) AS done_count,
+            SUM(CASE WHEN q.check_status='P' THEN nvl(q.status_count, 0) ELSE 0 END) AS ing_count,
+            SUM(CASE WHEN q.check_status='S' THEN nvl(q.status_count, 0) ELSE 0 END) AS delay_count,
+            SUM(CASE WHEN q.check_status='W' THEN nvl(q.status_count, 0) ELSE 0 END) AS wait_count,
+            SUM(CASE WHEN q.def_count > 0 THEN NVL(q.def_count, 0) ELSE 0 END) AS total_def_count,
             ROW_NUMBER() OVER (PARTITION BY s.bp_partner, s.sch_no ORDER BY s.end_date) AS rn
             FROM tb_schedule_registration s
             LEFT JOIN tb_schedule sc ON s.sch_no = sc.sch_no
@@ -119,14 +130,15 @@
         select *
           from (
                select
-                      d.def_type
-                    , sum(nvl(q.def_count, 0)) as def_count_type
+                      d.def_type as defType
+                    , sum(nvl(q.def_count, 0)) as defCountType
                  from tb_quality_check q
                  left
                  join tb_schedule_registration s on q.schr_id = s.schr_id
                  left
                  join tb_defective_type d on q.def_code = d.def_code
                 where s.schr_id = #{schrId}
+                  and q.def_count > 0
                 group
                    by d.def_type
                 order
@@ -147,8 +159,10 @@
                     , sr.start_date
                     , sr.end_date
                     , case when sr.total_count > 0
-                      then round( nvl(sum(case when q.check_status='C' then 1 else 0 end),0) * 100.0 / sr.total_count, 2 )
-                      else 0
+                        then round(
+                        nvl(sum(case when q.check_status='C' then q.status_count else 0 end), 0)
+                        * 100.0 / sr.total_count, 2 )
+                        else 0
                       end as prog_rate
                  from tb_progress_chart p
                  left
@@ -166,52 +180,72 @@
     </select>
 
     <!-- 개별 일정 전체 누적상태별막대(더보기 클릭-> 페이지 이동) -->
-    <select id="selectAllSchr" resultMap="ChartResultSet">
-        select
-             s.schr_id
-             , s.sch_no
-             , sc.sch_name as schName
-             , s.cat_code
-             , s.bp_partner
-             , s.emp_no
-             , s.start_date
-             , s.end_date
-             , s.color_id
-             , s.details
-             , s.total_count
-             , s.def_count
-             , sum(case when q.check_status='C' then q.def_count else 0 end) as doneCount
-             , sum(case when q.check_status='P' then q.def_count else 0 end) as ingCount
-             , sum(case when q.check_status='S' then q.def_count else 0 end) as delayCount
-             , sum(case when q.check_status='W' then q.def_count else 0 end) as waitCount
-             , sum(nvl(q.def_count,0)) as totalDefCount
-          from tb_schedule_registration s
-          left
-          join tb_schedule sc on s.sch_no = sc.sch_no
-          left
-          join tb_quality_check q on s.schr_id = q.schr_id
-         group
-            by s.schr_id, s.sch_no, s.cat_code, s.bp_partner, s.emp_no,
-               s.start_date, s.end_date, s.color_id, s.details, s.total_count,
-               s.def_count, sc.sch_name
-         order
-            by s.end_date
+    <!-- 전체 일정 누적 상태 + 총 불량 수 (tb_quality_check 없어도) -->
+    <select id="selectAllSchr" resultMap="ChartResultSet" parameterType="String">
+        SELECT
+        s.schr_id,
+        s.sch_no,
+        sc.sch_name AS schName,
+        s.cat_code,
+        s.bp_partner,
+        s.emp_no,
+        s.start_date,
+        s.end_date,
+        s.color_id,
+        s.details,
+        s.total_count,
+        s.def_count,
+        SUM(CASE WHEN q.check_status='C' THEN NVL(q.status_count,0) ELSE 0 END) AS doneCount,
+        SUM(CASE WHEN q.check_status='P' THEN NVL(q.status_count,0) ELSE 0 END) AS ingCount,
+        SUM(CASE WHEN q.check_status='S' THEN NVL(q.status_count,0) ELSE 0 END) AS delayCount,
+        SUM(CASE WHEN q.check_status='W' THEN NVL(q.status_count,0) ELSE 0 END) AS waitCount,
+        NVL(s.def_count,0) AS totalDefCount
+        FROM tb_schedule_registration s
+        LEFT JOIN tb_schedule sc ON s.sch_no = sc.sch_no
+        LEFT JOIN tb_quality_check q ON s.schr_id = q.schr_id
+        GROUP BY s.schr_id,
+        s.sch_no,
+        s.cat_code,
+        s.bp_partner,
+        s.emp_no,
+        s.start_date,
+        s.end_date,
+        s.color_id,
+        s.details,
+        s.total_count,
+        s.def_count,
+        sc.sch_name
+        ORDER BY s.end_date
+
     </select>
 
     <!-- 개별 일정 전체 누적상태별 불량 도넛 (더보기 클릭-> 페이지 이동) -->
-    <select id="selectAllSchrDonut" resultType="ScheduleRegistration">
-        select
-               s.bp_partner as bpPartner
-             , d.def_type as defType
-             , sum(nvl(q.def_count, 0)) as defCountType
-          from tb_quality_check q
-          left
-          join tb_schedule_registration s on q.schr_id = s.schr_id
-          left
-          join tb_defective_type d on q.def_code = d.def_code
-         group
-            by s.bp_partner, d.def_type
-         order
-            by s.bp_partner, d.def_type
+    <select id="selectAllSchrDonut" resultType="ScheduleRegistration" parameterType="String">
+        SELECT
+        s.bp_partner as bpPartner,
+        CASE
+        WHEN NVL(s.def_count, 0) > 0 THEN '불량'
+        ELSE '양호'
+        END as defType,
+        SUM(
+        CASE
+        WHEN NVL(s.def_count, 0) > 0 THEN NVL(s.def_count, 0)
+        ELSE NVL(s.total_count, 0) - NVL(s.def_count, 0)
+        END
+        ) as defCountType
+        FROM tb_schedule_registration s
+        GROUP BY s.bp_partner,
+        CASE
+        WHEN NVL(s.def_count, 0) > 0 THEN '불량'
+        ELSE '양호'
+        END
+        HAVING SUM(
+        CASE
+        WHEN NVL(s.def_count, 0) > 0 THEN NVL(s.def_count, 0)
+        ELSE NVL(s.total_count, 0) - NVL(s.def_count, 0)
+        END
+        ) > 0
     </select>
+
+
  </mapper>

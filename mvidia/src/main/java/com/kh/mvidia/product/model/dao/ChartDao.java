@@ -28,9 +28,9 @@ public class ChartDao {
         return sqlSession.selectList("chartMapper.selectTop5Prog");
     }
 
-    public List<ScheduleRegistration> selectAllSchr(){ return sqlSession.selectList("chartMapper.selectAllSchr"); }
+    public List<ScheduleRegistration> selectAllSchr(String bpPartner){ return sqlSession.selectList("chartMapper.selectAllSchr", bpPartner); }
 
-    public List<ScheduleRegistration> selectAllSchrDonut() { return sqlSession.selectList("chartMapper.selectAllSchrDonut"); }
+    public List<ScheduleRegistration> selectAllSchrDonut(String bpPartner) { return sqlSession.selectList("chartMapper.selectAllSchrDonut", bpPartner); }
 
 
 }

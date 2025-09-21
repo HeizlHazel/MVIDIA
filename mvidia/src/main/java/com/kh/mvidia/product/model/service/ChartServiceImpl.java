@@ -30,10 +30,10 @@ public class ChartServiceImpl implements ChartService{
     public List<ProgressChart> selectTop5Prog(){ return cDao.selectTop5Prog(); }
 
     @Override
-    public List<ScheduleRegistration> selectAllSchr(){ return  cDao.selectAllSchr(); }
+    public List<ScheduleRegistration> selectAllSchr(String bpPartner){ return  cDao.selectAllSchr(bpPartner); }
 
     @Override
-    public List<ScheduleRegistration> selectAllSchrDonut(){ return cDao.selectAllSchrDonut(); }
+    public List<ScheduleRegistration> selectAllSchrDonut(String bpPartner){ return cDao.selectAllSchrDonut(bpPartner); }
 
 
 }

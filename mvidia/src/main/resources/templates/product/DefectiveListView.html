@@ -191,8 +191,8 @@
             <datalist id="searchList"></datalist>
         </div>
         <div class="search-row">
-            <label for="defectType">불량유형</label>
-            <select id="defectType">
+            <label for="defType">불량유형</label>
+            <select id="defType">
                 <option value="">전체</option>
                 <option value="DEF_UNK">미분류</option>
                 <option value="DEF_RND">랜덤 불량</option>
@@ -299,7 +299,7 @@
     <!-- 테이블 영역 - fragment 사용 -->
     <div class="DefList">
         <form id="deleteForm" action="delete.bo" method="POST">
-            <div id="defTableArea" th:include="~{fragments/DefProductTable :: defTable}"></div>
+            <div id="defTableArea" th:replace="fragments/DefProductTable :: defTable"></div>
             <br clear="both"><br>
             <div>
                 <button type="button" id="btnDelete" class="btn btn-delete" align="left">삭제</button>
@@ -376,7 +376,7 @@
 
     // 검색 관련 이벤트 바인딩
     function bindSearchEvents() {
-        const searchInputs = ['#keyword', '#defectType', '#startDate', '#endDate', '#status'];
+        const searchInputs = ['#keyword', '#defType', '#startDate', '#endDate', '#status'];
         const searchResetBtn = $('#searchResetBtn');
         const searchBtn = $('#searchBtn');
 
@@ -420,10 +420,11 @@
     function performSearch() {
         const searchParams = {
             keyword: $('#keyword').val().trim(),
-            defectType: $('#defectType').val(),
+            defType: $('#defType').val(),
+            defStatus: $('#status').val(),
             startDate: $('#startDate').val(),
             endDate: $('#endDate').val(),
-            status: $('#status').val()
+            cpage: 1
         };
 
         // 검색 조건이 하나라도 있는지 확인
@@ -442,7 +443,11 @@
             success: function(response) {
                 if (response.result === 'success') {
                     // 검색 결과로 테이블 업데이트
-                    $('#defTableArea').html(response.html);
+                    updateTableAndPagination(response.list, response.pi, searchParams);
+                    if (response.list.length === 0) {
+                     alert(response.message || '검색 결과가 없습니다.');
+                    }
+
                 } else {
                     alert('검색 중 오류가 발생했습니다.');
                 }
@@ -453,6 +458,98 @@
             }
         });
     }
+
+    function loadSearchedList(params) {
+    $.ajax({
+        url: '/search.bo',
+        type: 'GET',
+        data: params,
+        success: function(response) {
+            if (response.result === 'success') {
+                updateTableAndPagination(response.list, response.pi, params);
+            } else {
+                alert(response.message || '페이지 로드 중 오류가 발생했습니다.');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('페이지 로드 오류:', error);
+            alert('페이지 로드 중 오류가 발생했습니다.');
+        }
+    });
+}
+
+// [추가 2] UI 업데이트 핵심 함수 (테이블과 페이징 영역을 새로 그립니다.)
+function updateTableAndPagination(list, pi, searchParams) {
+    const $defTableBody = $('#defTable tbody');
+    const $defPagination = $('#pagingArea .DefPagination');
+
+    // 1. 테이블 내용 업데이트
+    $defTableBody.empty();
+    if (list.length > 0) {
+        list.forEach(function(d) {
+            const row = `
+                <tr data-defno="${d.defNo}">
+                    <td><input type="checkbox" class="chk" name="dno" value="${d.defNo}"></td>
+                    <td class="defNo">${d.defNo}</td>
+                    <td>${d.occurDate}</td>
+                    <td>${d.prodCode}</td>
+                    <td>${d.prodName}</td>
+                    <td>${d.defType}</td>
+                    <td>${d.defQty}</td>
+                    <td>${d.statusName}</td>
+                    <td>${d.remarks}</td>
+                </tr>
+            `;
+            $defTableBody.append(row);
+        });
+    } else {
+        $defTableBody.append(`<tr><td colspan="9">검색 결과가 없습니다.</td></tr>`);
+    }
+
+    // 2. 페이지네이션 업데이트
+    $defPagination.empty();
+
+    // 이전 버튼
+    const prevDisabled = pi.currentPage === 1 ? 'disabled' : '';
+    const prevPage = pi.currentPage > 1 ? pi.currentPage - 1 : 1;
+    $defPagination.append(`
+        <li class="page-item ${prevDisabled}">
+            <a class="page-link" href="#" data-cpage="${prevPage}">이전</a>
+        </li>
+    `);
+
+    // 페이지 번호 리스트
+    for (let pageNum = pi.startPage; pageNum <= pi.endPage; pageNum++) {
+        const activeClass = pageNum === pi.currentPage ? 'active' : '';
+        $defPagination.append(`
+            <li class="page-item ${activeClass}">
+                <a class="page-link" href="#" data-cpage="${pageNum}">${pageNum}</a>
+            </li>
+        `);
+    }
+
+    // 다음 버튼
+    const nextDisabled = pi.currentPage === pi.maxPage ? 'disabled' : '';
+    const nextPage = pi.currentPage < pi.maxPage ? pi.currentPage + 1 : pi.maxPage;
+    $defPagination.append(`
+        <li class="page-item ${nextDisabled}">
+            <a class="page-link" href="#" data-cpage="${nextPage}">다음</a>
+        </li>
+    `);
+
+    // 3. 페이지네이션 링크 클릭 이벤트 재연결
+    // **주석: 새로 그려진 페이지 버튼에 이벤트를 다시 연결합니다. 이것이 loadSearchedList가 필요한 이유입니다.**
+    $defPagination.find('a.page-link').off('click').on('click', function(e) {
+        e.preventDefault();
+        const newCpage = parseInt($(this).data('cpage'));
+
+        // 검색 파라미터에 새 cpage를 업데이트하고, 페이지 로드 함수 호출
+        const newSearchParams = { ...searchParams, cpage: newCpage };
+        loadSearchedList(newSearchParams);
+    });
+}
+
+
 
     // 모달 관련 이벤트 바인딩
     function bindModalEvents() {
@@ -634,7 +731,7 @@
                     alert(response.message);
 
                     // 리스트 새로고침 후 모달 처리
-                    refreshDefList().then(() => {
+                    refreshDefList(true).then(() => {
                         // 모달 input 초기화
                         $(".modal-content .form-input, .modal-content select, .modal-content textarea").val("");
                         $(".comment_length").text('0');
@@ -644,7 +741,13 @@
 
                         // 모달 닫기
                         $(".modal-background").hide();
+
+                         if (window.history.pushState) {
+                            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + "?cpage=1";
+                            window.history.pushState({path: newUrl}, '', newUrl);
+                        }
                     });
+
                 } else {
                     alert(response.message || "등록이 실패했습니다.");
                 }
@@ -686,9 +789,11 @@
             success: function(response) {
                 if (response.result === "success") {
                     alert(response.message);
-
+                    //$("#defModal").hide();
+                    $(".modal-background").hide();
                     // 리스트 새로고침
                     refreshDefList();
+
                 } else {
                     alert(response.message || "삭제가 실패했습니다.");
                 }

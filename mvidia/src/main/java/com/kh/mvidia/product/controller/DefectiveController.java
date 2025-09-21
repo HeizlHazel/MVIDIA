@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +43,7 @@ public class DefectiveController {
         mv.addObject("pi", pi).addObject("list", list);
 
         if(ajax){
-            mv.setViewName("fragment/DefProductTable :: defTable");
+            mv.setViewName("fragments/DefProductTable :: defTable");
         }else{
             mv.setViewName("product/defectiveListView");
         }
@@ -112,6 +111,48 @@ public class DefectiveController {
 
         return response;
 
+    }
+
+    @GetMapping("search.bo")
+    @ResponseBody
+    public Map<String, Object> searchDefective(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "defType", required = false) String defType,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "startDate", required = false) String startDate,
+            @RequestParam(value = "endDate", required = false) String endDate,
+            @RequestParam(value = "cpage", defaultValue = "1") int currentPage) {
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("keyword", keyword);
+        params.put("defType", defType);
+        params.put("status", status);
+        params.put("startDate", startDate);
+        params.put("endDate", endDate);
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            int listCount = dService.selectSearchCount(params);
+
+            PageInfo pi = Pagination.getPageInfo(listCount, currentPage, 10, 5);
+            ArrayList<DefectiveProduction> list = dService.selectSearchList(params, pi);
+
+            // 성공
+            response.put("result", "success");
+            response.put("list", list);
+            response.put("pi", pi);
+
+            if (listCount == 0) {
+                response.put("message", "해당 검색 결과가 없습니다.");
+            }
+
+        } catch (Exception e) {
+            // 에러
+            response.put("result", "error");
+            response.put("message", "검색 중 오류가 발생했습니다.");
+
+        }
+        return response;
     }
 
 }

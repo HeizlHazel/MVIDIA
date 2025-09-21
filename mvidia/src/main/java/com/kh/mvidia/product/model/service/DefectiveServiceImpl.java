@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 @Service
 public class DefectiveServiceImpl implements DefectiveService{
@@ -33,4 +34,16 @@ public class DefectiveServiceImpl implements DefectiveService{
 
     @Override
     public int deleteDefective(ArrayList<String> defNoList){ return dDao.deletelist(sqlSession, defNoList);}
+
+    @Override
+    public int selectSearchCount(Map<String, Object> params) {
+        return dDao.selectSearchCount(sqlSession, params);
+    }
+
+    @Override
+    public ArrayList<DefectiveProduction> selectSearchList(Map<String, Object> params, PageInfo pi) {
+        return dDao.selectSearchList(sqlSession, params, pi);
+    }
+
+
 }

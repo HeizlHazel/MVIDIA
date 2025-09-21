@@ -8,14 +8,6 @@
     <meta charset="UTF-8">
     <title>계정 권한 관리</title>
     <style>
-        /* 카드 그리드 */
-        .card-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            margin-bottom:20px;
-        }
-
         /* 개별 카드 스타일 */
         .innerOuter {
             background-color: #fff;
@@ -28,216 +20,510 @@
             margin: 0 auto;
         }
 
-        #searchEmpName {
-            display: inline;
-            font-size: 17px;
-            font-weight: 500;
-            margin-bottom: 15px;
+        /* 검색 영역 */
+        .search-section {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid #e3f2fd;
         }
 
-        .permission-row {
+        .search-section h4 {
+            color: #1976d2;
+            margin-bottom: 20px;
+            font-weight: 600;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            width: 100%;
-            padding: 8px 0;
+            gap: 8px;
         }
 
-        .permission-row td {
-            padding: 0 10px;
+        .search-input-group {
+            display: flex;
+            max-width: 400px;
+            gap: 10px;
         }
 
-        /* 커스텀 체크박스 스타일 */
-        .custom-checkbox {
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-            margin-left: 20px;
+        .search-input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
         }
 
-        .custom-checkbox input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
-
-        .checkmark {
-            height: 20px;
-            width: 20px;
-            background-color: #fff;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .custom-checkbox:hover input ~ .checkmark {
+        .search-input-group input:focus {
             border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
         }
 
-        .custom-checkbox input:checked ~ .checkmark {
-            background-color: #007bff;
-            border-color: #007bff;
+        .search-btn {
+            padding: 12px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
         }
 
-        .checkmark:after {
-            content: "";
-            position: absolute;
+        .search-btn:hover {
+            background: #0056b3;
+            outline: none;
+        }
+
+        /* 사원 정보 표시 */
+        .employee-info {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #28a745;
+            margin-bottom: 25px;
             display: none;
         }
 
-        .custom-checkbox input:checked ~ .checkmark:after {
+        .employee-info.active {
             display: block;
+            animation: fadeIn 0.5s ease-in;
         }
 
-        .custom-checkbox .checkmark:after {
-            left: 6px;
-            top: 2px;
-            width: 5px;
-            height: 10px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        body label {
+        .employee-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+
+        .employee-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 권한 카드 그리드 */
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        /* 권한 카드 스타일 */
+        .permission-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .permission-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .permission-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        .permission-card:hover::before {
+            background: #007bff;
+            width: 6px;
+        }
+
+        .permission-card.checked {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #f8fff9 0%, #e8f5e8 100%);
+        }
+
+        .permission-card.checked::before {
+            background: #28a745;
+            width: 6px;
+        }
+
+        .permission-card.checked:hover {
+            border-color: #28a745;
+            box-shadow: 0 4px 12px rgba(40,167,69,0.15);
+        }
+
+        /* 카드 내용 */
+        .permission-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .permission-name {
             font-size: 16px;
+            font-weight: 600;
             color: #333;
-            font-weight: 500;
-            margin-bottom: 15px;
+            margin: 0;
         }
 
-        body h3 { margin-bottom: 15px; }
+        .permission-card.checked .permission-name {
+            color: #28a745;
+        }
 
-        .hr {
-            border-bottom: 1px solid #dee0ea;
-            margin-top: 15px;
-            margin-bottom: 15px;
+        /* 커스텀 토글 스위치 */
+        .permission-toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background-color: #ccc;
+            border-radius: 15px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .permission-toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: white;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .permission-card.checked .permission-toggle {
+            background-color: #28a745;
+        }
+
+        .permission-card.checked .permission-toggle::before {
+            transform: translateX(24px);
+        }
+
+        .permission-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* 숨겨진 체크박스 */
+        .permission-card input[type="checkbox"] {
+            display: none;
+        }
+
+        /* 액션 버튼 */
+        .form-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,123,255,0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-1px);
+        }
+
+        /* 권한 없음 상태 */
+        .no-permissions {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .no-permissions-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .innerOuter {
+                width: 95%;
+                margin: 0 2.5%;
+                padding: 15px;
+            }
+
+            .permissions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-input-group {
+                flex-direction: column;
+                max-width: 100%;
+            }
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="content">
-        <div class="card-grid">
-            <div class="innerOuter">
-                <h3>🔑 계정 권한 관리</h3>
+<div class="content">
+    <div class="innerOuter">
+        <h3>🔑 계정 권한 관리</h3>
 
-                <!-- 사원 검색 -->
-                <label>사용자 검색</label>
-                <div class="input-group" style="width: 300px;">
-                    <input type="text" class="form-control" id="empNo" placeholder="사번 입력">
-                    <button class="btn btn-outline-secondary" type="button" onclick="searchEmp()">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-                <div class="hr"></div>
-
-                <div id="searchEmpName"></div><span>- 권한 설정</span>
-                <br><br>
-                <!-- 권한 관리 form -->
-                <form id="postForm" action="updatePerm.pe" method="post">
-                    <input type="hidden" name="empNo" value="[[$(employee.empNo)]]">
-
-                    <table id="permTable">
-                        <tbody>
-                        <!-- Ajax로 채움 -->
-                        </tbody>
-                    </table>
-
-                    <div style="text-align: center; margin-top: 30px;">
-                        <button class="btn btn-primary" type="submit">저장</button>
-                        <button class="btn btn-secondary" type="reset">취소</button>
-                    </div>
-                </form>
-
-                <script>
-                    function searchEmp() {
-                        const empNo = $("#empNo").val();
-
-                        $.ajax({
-                            url: "search1.pe",
-                            data: { empNo: empNo },
-                            success: function(response) {
-                                // 사원 이름/부서
-                                const value = `${response.empLName}${response.empName} (${response.deptName})`;
-                                $("#searchEmpName").html(value);
-
-                                // hidden input 업데이트
-                                $("#postForm input[name='empNo']").val(empNo);
-
-                                // 직원 조회 성공하면 권한 리스트도 같이 조회
-                                searchPermission(empNo);
-                                },
-                            error: function() {
-                                console.log("ajax 통신 실패");
-                            }
-                        });
-                    }
-
-                    function searchPermission(empNo) {
-                        $.ajax({
-                            type: "POST",
-                            url: "searchEmpPerm.pe",
-                            data: { empNo: empNo },
-                            success: function(data) {
-                                let html = "";
-                                data.forEach(function(perm, index) {
-                                    if (perm && perm.permName) {
-                                        html += `
-                                        <tr class="permission-row">
-                                            <td>${perm.permName}</td>
-                                            <td>
-                                                <label class="custom-checkbox">
-                                                    <input type="checkbox" name="permCodes" value="${perm.permCode}" ${perm.isGranted == 'Y' ? 'checked' : ''}>
-                                                    <span class="checkmark"></span>
-                                                </label>
-                                            </td>
-                                        </tr>`;
-                                    }
-                                });
-                                $("#permTable tbody").html(html);
-                            },
-                            error: function() {
-                                console.log("권한 목록 ajax 통신 실패");
-                            }
-                        });
-                    }
-
-                    $("#postForm").submit(function(e) {
-                        e.preventDefault();
-
-                        const empNo = $("#postForm input[name='empNo']").val();
-                        const permCodes = [];
-                        $("#permTable input[name='permCodes']:checked").each(function() {
-                            permCodes.push($(this).val());
-                        });
-
-                        $.ajax({
-                            type: "POST",
-                            url: "updatePerm.pe",
-                            traditional: true,
-                            data: { empNo: empNo, permCodes: permCodes },
-                            success: function() {
-                                alert("권한이 저장되었습니다.");
-                            },
-                            error: function() {
-                                alert("권한 저장 중 오류가 발생하였습니다.");
-                            }
-                        });
-                    });
-
-                    // Enter 키로 검색 실행
-                    $("#empNo").keypress(function(e) {
-                        if (e.which == 13) {
-                            e.preventDefault();
-                            searchEmp();
-                        }
-                    });
-                </script>
+        <!-- 검색 섹션 -->
+        <div class="search-section">
+            <h4>👤 사용자 검색</h4>
+            <div class="search-input-group">
+                <input type="text" id="empNo" placeholder="사번을 입력하세요" />
+                <button class="search-btn" onclick="searchEmp()">
+                    🔍
+                </button>
             </div>
         </div>
+
+        <!-- 사원 정보 표시 -->
+        <div class="employee-info" id="employeeInfo">
+            <div class="employee-name" id="employeeName"></div>
+            <div class="employee-subtitle">권한 설정</div>
+        </div>
+
+        <!-- 권한 관리 폼 -->
+        <form id="postForm" action="updatePerm.pe" method="post">
+            <input type="hidden" name="empNo" value="">
+
+            <div class="permissions-grid" id="permissionsGrid">
+                <!-- 권한 카드들이 여기에 동적으로 생성됩니다 -->
+            </div>
+
+            <div class="form-actions" id="formActions" style="display: none;">
+                <button class="btn btn-primary" type="submit">저장</button>
+                <button class="btn btn-secondary" type="reset">취소</button>
+            </div>
+        </form>
+
+        <script>
+            // 권한별 설명 매핑
+            const permissionDescriptions = {
+                'SYS_ADMIN': '시스템 전체 관리 권한입니다. 모든 기능에 접근할 수 있습니다.',
+                'APPROVAL_ADMIN': '전자결재 승인 관리 권한입니다. 결재 라인 설정 및 승인 처리를 할 수 있습니다.',
+                'ORG_MANAGE': '조직도 조회 권한입니다. 회사 조직 구조와 인사 정보를 확인할 수 있습니다.',
+                'SALARY_MANAGE': '급여 정보 열람/수정 권한입니다. 급여 데이터 관리 업무를 수행할 수 있습니다.',
+                'PERSONAL_INFO_MANAGE': '개인 인사 정보 열람/수정 권한입니다. 직원들의 개인정보를 관리할 수 있습니다.'
+            };
+
+            function searchEmp() {
+                const empNo = $("#empNo").val().trim();
+
+                if (!empNo) {
+                    alert('사번을 입력해주세요.');
+                    return;
+                }
+
+                // 로딩 상태 표시
+                $("#permissionsGrid").html('<div class="loading">사용자 정보를 검색중입니다...</div>');
+
+                $.ajax({
+                    url: "search1.pe",
+                    data: { empNo: empNo },
+                    success: function(response) {
+                        // 사원 정보 표시
+                        const employeeName = `${response.empLName}${response.empName} (${response.deptName})`;
+                        $("#employeeName").text(employeeName);
+                        $("#employeeInfo").addClass('active');
+
+                        // hidden input 업데이트
+                        $("#postForm input[name='empNo']").val(empNo);
+
+                        // 권한 조회
+                        searchPermission(empNo);
+                    },
+                    error: function() {
+                        $("#permissionsGrid").html('<div class="no-permissions"><div class="no-permissions-icon">❌</div><div>사용자를 찾을 수 없습니다.</div></div>');
+                        $("#employeeInfo").removeClass('active');
+                        $("#formActions").hide();
+                    }
+                });
+            }
+
+            function searchPermission(empNo) {
+                $.ajax({
+                    type: "POST",
+                    url: "searchEmpPerm.pe",
+                    data: { empNo: empNo },
+                    success: function(data) {
+                        console.log("받은 권한 데이터:", data); // 디버깅용
+
+                        if (data && data.length > 0) {
+                            let html = "";
+                            data.forEach(function(perm) {
+                                if (perm && perm.permName) {
+                                    const description = permissionDescriptions[perm.permCode] || '시스템 권한입니다.';
+                                    const isChecked = perm.isGranted === 'Y';
+
+                                    console.log(`권한: ${perm.permCode}, 상태: ${perm.isGranted}, 체크됨: ${isChecked}`); // 디버깅용
+
+                                    html += `
+                                        <div class="permission-card ${isChecked ? 'checked' : ''}" onclick="togglePermission(this)">
+                                            <div class="permission-header">
+                                                <h5 class="permission-name">${perm.permName}</h5>
+                                                <div class="permission-toggle"></div>
+                                            </div>
+                                            <p class="permission-description">${description}</p>
+                                            <input type="checkbox" name="permCodes" value="${perm.permCode}" ${isChecked ? 'checked="checked"' : ''}>
+                                        </div>
+                                    `;
+                                }
+                            });
+                            $("#permissionsGrid").html(html);
+                            $("#formActions").show();
+                        } else {
+                            $("#permissionsGrid").html('<div class="no-permissions"><div class="no-permissions-icon">📋</div><div>권한 정보가 없습니다.</div></div>');
+                            $("#formActions").hide();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("권한 조회 실패:", error); // 디버깅용
+                        $("#permissionsGrid").html('<div class="no-permissions"><div class="no-permissions-icon">⚠️</div><div>권한 정보를 불러올 수 없습니다.</div></div>');
+                        $("#formActions").hide();
+                    }
+                });
+            }
+
+            function togglePermission(cardElement) {
+                const checkbox = cardElement.querySelector('input[type="checkbox"]');
+                const isCurrentlyChecked = checkbox.checked;
+
+                // 체크박스 상태 토글
+                checkbox.checked = !isCurrentlyChecked;
+
+                // 카드 스타일 업데이트
+                if (checkbox.checked) {
+                    cardElement.classList.add('checked');
+                } else {
+                    cardElement.classList.remove('checked');
+                }
+            }
+
+            $("#postForm").submit(function(e) {
+                e.preventDefault();
+
+                const empNo = $("#postForm input[name='empNo']").val();
+                const permCodes = [];
+                $("#permissionsGrid input[name='permCodes']:checked").each(function() {
+                    permCodes.push($(this).val());
+                });
+
+                // 로딩 상태 표시
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                submitBtn.html('💾 저장 중...').prop('disabled', true);
+
+                $.ajax({
+                    type: "POST",
+                    url: "updatePerm.pe",
+                    traditional: true,
+                    data: { empNo: empNo, permCodes: permCodes },
+                    success: function(response) {
+                        if (response.success) {
+                            alert("권한이 성공적으로 저장되었습니다!");
+                        } else {
+                            alert("❌ " + (response.message || "권한 저장 중 오류가 발생했습니다."));
+                        }
+                    },
+                    error: function() {
+                        alert("❌ 권한 저장 중 오류가 발생했습니다.");
+                    },
+                    complete: function() {
+                        submitBtn.html(originalText).prop('disabled', false);
+                    }
+                });
+            });
+
+            // Enter 키로 검색 실행
+            $("#empNo").keypress(function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    searchEmp();
+                }
+            });
+
+            // 초기화 버튼 동작
+            $("#postForm").on('reset', function() {
+                setTimeout(function() {
+                    $("#permissionsGrid .permission-card").each(function() {
+                        const checkbox = $(this).find('input[type="checkbox"]')[0];
+                        if (checkbox.checked) {
+                            $(this).addClass('checked');
+                        } else {
+                            $(this).removeClass('checked');
+                        }
+                    });
+                }, 10);
+            });
+        </script>
     </div>
+</div>
 </body>
 </html>

@@ -98,9 +98,12 @@ public class ApprovalController {
         String details = map.get("details");
         String category = map.get("swtch");
 
+        Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+        String empNo = loginEmp.getEmpNo();
+
         System.out.println("문서 작성자: " + writer);
 
-        HttpResponse<JsonNode> response = aService.addPage(writer, dept, date, title, approval, details, category);
+        HttpResponse<JsonNode> response = aService.addPage(writer, dept, date, title, approval, details, category, empNo);
         System.out.println("노션 API 응답: " + response.getStatus() + ", " + response.getBody());
 
         return response.getStatus() == 200 ? "success" : "fail";
@@ -141,28 +144,25 @@ public class ApprovalController {
         return aService.getApprovalDetail(pageId);
     }
 
-//    // 결재 승인
-//    @ResponseBody
-//    @PostMapping("/approval/approve/{pageId}")
-//    public String approveApproval(@PathVariable String pageId, HttpSession session) {
-//        aService.updateApprovalStatus(pageId, "승인");
-//        return "success";
-//    }
-//
-//    // 결재 반려
-//    @ResponseBody
-//    @PostMapping("/approval/reject/{pageId}")
-//    public String rejectApproval(@PathVariable String pageId) {
-//        aService.updateApprovalStatus(pageId, "반려");
-//        return "success";
-//    }
-
+    // 승인 메서드
     @ResponseBody
     @PostMapping("/approval/approve/{pageId}")
-    public Map<String, Object> approveApproval(@PathVariable String pageId) {
+    public Map<String, Object> approveApproval(@PathVariable String pageId, @RequestBody Map<String, String> request, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         try {
+            System.out.println("승인 처리 시작: " + pageId);
+
+            Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+
+            String reason = request.get("reason");
+            String actorName = loginEmp.getEmpLName() + loginEmp.getEmpName();
+
+            System.out.println("승인 처리 - 사유: " + reason);
+            System.out.println("작업자: " + actorName);
             aService.updateApprovalStatus(pageId, "승인");
+            aService.saveApprovalLog(pageId, loginEmp.getEmpNo(), actorName, "APPROVE", reason);
+            System.out.println("노션 상태 업데이트 완료");
+
             result.put("success", true);
             result.put("message", "승인 처리되었습니다.");
         } catch (Exception e) {
@@ -172,12 +172,19 @@ public class ApprovalController {
         return result;
     }
 
+    // 반려 메서드
     @ResponseBody
     @PostMapping("/approval/reject/{pageId}")
-    public Map<String, Object> rejectApproval(@PathVariable String pageId) {
+    public Map<String, Object> rejectApproval(@PathVariable String pageId, @RequestBody Map<String, String> request, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         try {
+            Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+            String reason = request.get("reason");
+            String actorName = loginEmp.getEmpLName() + loginEmp.getEmpName();
+
             aService.updateApprovalStatus(pageId, "반려");
+            aService.saveApprovalLog(pageId, loginEmp.getEmpNo(), actorName, "REJECT", reason);
+
             result.put("success", true);
             result.put("message", "반려 처리되었습니다.");
         } catch (Exception e) {
@@ -216,4 +223,5 @@ public class ApprovalController {
         }
         return 0;
     }
+
 }

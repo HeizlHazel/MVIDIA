@@ -215,53 +215,65 @@
             font-weight: bold;
             color: #007bff;
         }
-
-                /* 액션 버튼 스타일 */
+        /* 액션 버튼 스타일 */
         .action-buttons {
             display: flex;
-            gap: 5px;
+            gap: 4px;
             justify-content: center;
+            flex-wrap: wrap;
         }
 
         .btn-action {
-            padding: 4px 8px;
-            font-size: 11px;
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
             font-weight: 500;
-            border: none;
-            border-radius: 4px;
+            border: 1px solid;
             cursor: pointer;
             transition: all 0.2s ease;
-            min-width: 45px;
+            text-decoration: none;
+            min-width: auto;
+            text-align: center;
         }
 
         .btn-approve {
-            background-color: #28a745;
-            color: white;
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
         }
 
         .btn-approve:hover {
-            background-color: #218838;
+            background-color: #c3e6cb;
+            color: #0b2e13;
             transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(21, 87, 36, 0.15);
         }
 
         .btn-reject {
-            background-color: #dc3545;
-            color: white;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
         }
 
         .btn-reject:hover {
-            background-color: #c82333;
+            background-color: #f5c6cb;
+            color: #491217;
             transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(114, 28, 36, 0.15);
         }
 
         .btn-view {
-            background-color: #17a2b8;
-            color: white;
+            background-color: #e2e3e5;
+            color: #383d41;
+            border-color: #d6d8db;
         }
 
         .btn-view:hover {
-            background-color: #138496;
+            background-color: #d6d8db;
+            color: #1c1e21;
             transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(56, 61, 65, 0.15);
         }
 
         /* 모달 전체 스타일 */
@@ -409,6 +421,38 @@
             background: #5a6268;
             transform: translateY(-1px);
         }
+
+    /* 사유 입력 모달 스타일 */
+    #reasonModal .modal-content {
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    #reasonModal .modal-header {
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+        border-bottom: 1px solid #dee0ea;
+        border-radius: 10px 10px 0 0;
+    }
+
+    #reasonModal .modal-body {
+        padding: 25px;
+    }
+
+    #reasonModal .form-control {
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    #reasonModal .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    #reasonModal .modal-footer {
+        border-top: 1px solid #dee0ea;
+        border-radius: 0 0 10px 10px;
+    }
     </style>
 </head>
 <body>
@@ -438,14 +482,14 @@
             <table class="board-table">
                 <thead>
                 <tr>
-                    <th width="6%">번호</th>
-                    <th width="10%">구분</th>
-                    <th width="20%">제목</th>
+                    <th width="8%">번호</th>
+                    <th width="13%">구분</th>
+                    <th width="25%">제목</th>
                     <th width="12%">작성자</th>
-                    <th width="15%">결재자</th>
-                    <th width="10%">상태</th>
-                    <th width="12%">작성일</th>
-                    <th width="15%">승인</th>
+                    <!--                    <th width="15%">결재자</th>-->
+                    <th width="12%">상태</th>
+                    <th width="15%">작성일</th>
+                    <th width="15%">액션</th>
                 </tr>
                 </thead>
                 <tbody id="approvalTableBody">
@@ -492,7 +536,7 @@
                     <div class="modal-info-item modal-approvers-section">
                         <span class="modal-info-label">결재자:</span>
                         <div class="modal-approvers" id="modalApprovers">
-                            <!-- 결재자 배지들이 여기에 표시됩니다 -->
+                            <!-- 결재자 표시 -->
                         </div>
                     </div>
                 </div>
@@ -512,9 +556,37 @@
     </div>
 </div>
 
+<!-- 사유 입력 모달 -->
+<div class="modal fade" id="reasonModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reasonModalTitle">승인 사유 입력</h5>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="reasonText" class="form-label">사유</label>
+                    <textarea class="form-control" id="reasonText" rows="4"
+                              placeholder="승인/반려 사유를 입력해주세요..."></textarea>
+                </div>
+                <div class="text-muted small">
+                    <span id="reasonRequiredNote">* 반려 시 사유 입력은 필수입니다.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                <button type="button" class="btn" id="reasonSubmitBtn">확인</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // 전역 변수
     let currentTab = 'pending';
+
+    let currentAction = '';
+    let currentPageId = '';
 
     // 날짜 포맷팅 함수
     function formatDate(dateString) {
@@ -546,28 +618,11 @@
         tbody.innerHTML = '';
 
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8">데이터가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7">데이터가 없습니다.</td></tr>';
             return;
         }
 
         data.forEach((item, index) => {
-            // 결재자 배지 생성
-            let approverBadges = '';
-            if (item.approvers && item.approvers.trim() !== '') {
-                const approvers = item.approvers.split(',');
-                approvers.forEach(approver => {
-                    const name = approver.trim();
-                    let badgeClass = 'approver-default';
-                    if (name === '김하늘') badgeClass = 'approver-kim';
-                    else if (name === '박지우') badgeClass = 'approver-park';
-                    else if (name === '정가온') badgeClass = 'approver-jung';
-
-                    approverBadges += `<span class="approver-badge ${badgeClass}">${name}</span>`;
-                });
-            } else {
-                approverBadges = '<span class="approver-badge approver-default">결재자 없음</span>';
-            }
-
             // 상태 배지 클래스 결정
             let statusClass = 'status-pending';
             if (item.status === '승인') statusClass = 'status-approved';
@@ -576,19 +631,19 @@
             // 액션 버튼 생성
             let actionButtons = '';
             if (currentTab === 'pending') {
-                // 대기 중인 경우: 승인/반려/보기 버튼
+                // 대기 중인 경우: 승인/반려/상세 버튼
                 actionButtons = `
                     <div class="action-buttons">
                         <button class="btn-action btn-approve" onclick="approveDocument('${item.id}')">승인</button>
                         <button class="btn-action btn-reject" onclick="rejectDocument('${item.id}')">반려</button>
-                        <button class="btn-action btn-view" onclick="viewDocument('${item.id}')">보기</button>
+                        <button class="btn-action btn-view" onclick="viewDocument('${item.id}')">상세</button>
                     </div>
                 `;
             } else {
-                // 완료된 경우: 보기 버튼만
+                // 완료된 경우: 상세 버튼만
                 actionButtons = `
                     <div class="action-buttons">
-                        <button class="btn-action btn-view" onclick="viewDocument('${item.id}')">보기</button>
+                        <button class="btn-action btn-view" onclick="viewDocument('${item.id}')">상세</button>
                     </div>
                 `;
             }
@@ -602,12 +657,12 @@
                         <a href="#" class="title-link" onclick="viewDocument('${item.id}')">${item.title || ''}</a>
                     </td>
                     <td>${item.writer || ''}</td>
-                    <td>${approverBadges}</td>
                     <td><span class="status-badge ${statusClass}">${item.status || ''}</span></td>
                     <td>${formatDate(item.createdDate)}</td>
                     <td>${actionButtons}</td>
                 </tr>`;
         });
+    }
 
     // 상세 모달 이벤트
     function viewDocument(pageId) {
@@ -658,7 +713,7 @@
                 }
 
                 // Bootstrap 5 방식으로 모달 표시
-                const modal = new bootstrap.Modal(document.getElementById('viewModal'));
+                const modal = new bootstrap.Modal(document.getElementById('approvalModal'));
                 modal.show();
             })
             .catch(error => {
@@ -667,40 +722,112 @@
             });
     }
 
-
     // 승인 처리 함수
     function approveDocument(pageId) {
-        if (!confirm('정말 승인하시겠습니까?')) return;
+        currentAction = 'APPROVE';
+        currentPageId = pageId;
 
-        fetch(`/approval/approve/${pageId}`, { method: 'POST' })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                loadTabData(currentTab);
-                updatePendingCount();
-            })
-            .catch(error => {
-                console.error('승인 처리 오류:', error);
-                alert('승인 처리 중 오류가 발생했습니다.');
-            });
+        // 모달 제목과 스타일 설정
+        document.getElementById('reasonModalTitle').textContent = '승인 사유 입력';
+        document.getElementById('reasonText').placeholder = '승인 사유를 입력해주세요.';
+        document.getElementById('reasonRequiredNote').textContent = '* 승인 시 사유는 필수입니다.';
+
+        const submitBtn = document.getElementById('reasonSubmitBtn');
+        submitBtn.className = 'btn btn-success';
+        submitBtn.textContent = '승인';
+
+        // 텍스트 초기화
+        document.getElementById('reasonText').value = '';
+
+        // 모달 표시
+        const modal = new bootstrap.Modal(document.getElementById('reasonModal'));
+        modal.show();
     }
 
     // 반려 처리 함수
     function rejectDocument(pageId) {
-        if (!confirm('정말 반려하시겠습니까?')) return;
+        currentAction = 'REJECT';
+        currentPageId = pageId;
 
-        fetch(`/approval/reject/${pageId}`, { method: 'POST' })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.message);
-                loadTabData(currentTab);
-                updatePendingCount();
-            })
-            .catch(error => {
-                console.error('반려 처리 오류:', error);
-                alert('반려 처리 중 오류가 발생했습니다.');
-            });
+        // 모달 제목과 스타일 설정
+        document.getElementById('reasonModalTitle').textContent = '반려 사유 입력';
+        document.getElementById('reasonText').placeholder = '반려 사유를 입력해주세요.';
+        document.getElementById('reasonRequiredNote').textContent = '* 반려 시 사유 입력은 필수입니다.';
+
+        const submitBtn = document.getElementById('reasonSubmitBtn');
+        submitBtn.className = 'btn btn-danger';
+        submitBtn.textContent = '반려';
+
+        // 텍스트 초기화
+        document.getElementById('reasonText').value = '';
+
+        // 모달 표시
+        const modal = new bootstrap.Modal(document.getElementById('reasonModal'));
+        modal.show();
     }
+
+    // 사유 제출 처리
+    document.getElementById('reasonSubmitBtn').addEventListener('click', function() {
+        const reason = document.getElementById('reasonText').value.trim();
+
+        // 반려 시 사유 필수 체크
+        if (currentAction === 'REJECT' && reason === '') {
+            alert('반려 사유를 입력해주세요.');
+            document.getElementById('reasonText').focus();
+            return;
+        }
+
+        // API 엔드포인트 결정
+        const endpoint = currentAction === 'APPROVE' ?
+            `/approval/approve/${currentPageId}` :
+            `/approval/reject/${currentPageId}`;
+
+        // 확인 메시지
+        const actionText = currentAction === 'APPROVE' ? '승인' : '반려';
+        if (!confirm(`정말 ${actionText}하시겠습니까?`)) return;
+
+        // API 호출
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                reason: reason
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+
+            // 모달 닫기 - 순수 JavaScript 방식
+            const modalElement = document.getElementById('reasonModal');
+            const backdrop = document.querySelector('.modal-backdrop');
+
+            modalElement.style.display = 'none';
+            modalElement.classList.remove('show');
+            document.body.classList.remove('modal-open');
+
+            if (backdrop) {
+                backdrop.remove();
+            }
+
+            // 테이블 새로고침
+            loadTabData(currentTab);
+            updatePendingCount();
+        })
+        .catch(error => {
+            console.error('처리 중 오류:', error);
+            alert('처리 중 오류가 발생했습니다.');
+        });
+    });
+
+    // Bootstrap 모달 이벤트 리스너 (모달 닫힐 때 초기화)
+    document.getElementById('reasonModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('reasonText').value = '';
+        currentAction = '';
+        currentPageId = '';
+    });
 
     // 대기건수 업데이트 함수
     function updatePendingCount() {

@@ -16,6 +16,17 @@
         <result column="user_id" property="userId" />
     </resultMap>
 
+    <resultMap id="systemLogResultSet" type="SystemLog">
+        <result column="log_id" property="logId" />
+        <result column="log_type" property="logType" />
+        <result column="target_id" property="targetId" />
+        <result column="target_name" property="targetName" />
+        <result column="actor_id" property="actorId" />
+        <result column="action" property="action" />
+        <result column="created_at" property="createdAt" />
+        <result column="dept_name" property="deptName" />
+    </resultMap>
+
     <select id="selectEmployee" resultMap="employeeResultSet">
         select
                emp_no
@@ -40,11 +51,26 @@
             by p.perm_code
     </select>
 
-    <update id="updateEmpPermission">
+    <select id="empPermissionRowExists" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM tb_emp_permission
+        WHERE user_id = #{userId}
+        AND perm_code = #{permCode}
+    </select>
+
+
+    <update id="deleteEmpPermission">
         update tb_emp_permission
-           set is_granted = 'Y'
+           set is_granted = #{isGranted}
          where user_id = #{userId}
            and perm_code = #{permCode}
+    </update>
+
+    <update id="updateEmpPermission">
+        update tb_emp_permission
+        set is_granted = #{isGranted}
+        where user_id = #{userId}
+        and perm_code = #{permCode}
     </update>
 
     <insert id="insertEmpPermission">
@@ -55,12 +81,12 @@
           , perm_code
           , is_granted
           )
-        select #{userId}, #{permCode}, #{isGranted}
-        from dual
-        where not exists(
-        select 1 from tb_emp_permission
-        where user_id = #{userId} and perm_code = #{permCode}
-        )
+        values
+          (
+            #{userId}
+          , #{permCode}
+          , #{isGranted}
+          )
     </insert>
 
     <select id="getEmpPermission" resultMap="permissionResultSet">
@@ -80,6 +106,7 @@
           , actor_id
           , action
           , reason
+          , notion_doc_id
           )
         values
           (
@@ -89,6 +116,7 @@
           , #{actorId}
           , #{action}
           , #{reason}
+          , #{notionDocId}
           )
     </insert>
 
@@ -114,4 +142,54 @@
           )
     </insert>
 
+    <select id="selectPermissionLogListCount" resultType="_int">
+        select count(*)
+          from tb_system_log
+         where log_type = 'PERMISSION'
+    </select>
+
+    <select id="selectPermissionLogList" resultType="map" parameterType="map">
+        select * from (
+            select
+                l.log_id,
+                l.target_name,
+                l.action,
+                TO_CHAR(l.created_at, 'YYYY-MM-DD HH24:MI:SS') as created_at,
+                (actor.emp_lname || actor.emp_name) as actor_name,
+                (target.emp_lname || target.emp_name) as target_emp_name,
+                d.dept_name,
+                ROW_NUMBER() OVER (ORDER BY l.created_at DESC, l.log_id DESC) as rn
+            from tb_system_log l
+            join tb_employee actor ON l.actor_id = actor.emp_no
+            left join tb_employee target ON l.target_id = target.emp_no
+            left join tb_department d ON target.dept_code = d.dept_code
+            where l.log_type = 'PERMISSION'
+        )
+        where rn between #{startRow} and #{endRow}
+    </select>
+
+    <select id="selectApprovalLogListCount" resultType="_int">
+        select count(*)
+        from tb_system_log
+        where log_type = 'APPROVAL'
+    </select>
+
+    <select id="selectApprovalLogList" resultType="map" parameterType="map">
+        select * from (
+        select
+            l.LOG_ID,
+            l.TARGET_ID,
+            l.TARGET_NAME,
+            l.ACTION,
+            TO_CHAR(l.CREATED_AT, 'YYYY-MM-DD HH24:MI:SS') as CREATED_AT,
+            (applicant.EMP_LNAME || applicant.EMP_NAME) as APPLICANT_NAME,
+            (actor.EMP_LNAME || actor.EMP_NAME) as ACTOR_NAME,
+            ROW_NUMBER() OVER (ORDER BY l.CREATED_AT DESC, l.LOG_ID DESC) as RN
+        from tb_system_log l
+        left join tb_employee applicant ON l.TARGET_ID = applicant.EMP_NO
+        left join tb_employee actor ON l.ACTOR_ID = actor.EMP_NO
+        where l.LOG_TYPE = 'APPROVAL'
+        )
+        where rn between #{startRow} and #{endRow}
+    </select>
 </mapper>

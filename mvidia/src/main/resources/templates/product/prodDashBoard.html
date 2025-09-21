@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>prodDashBoard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<h1>📊 제품 대시보드</h1>
+
+<!-- 1. 요약 지표 -->
+<section class="summary">
+    <h2>요약 지표</h2>
+    <ul>
+        <li>이번달 등록된 생산 제품 수: ${summary.prodCount}</li>
+        <li>이번달 등록된 불량 제품 수: ${summary.defCount}</li>
+        <li>총 불량률: ${summary.defRate}%</li>
+        <li>이번달 점검 수: ${summary.checkCount}</li>
+    </ul>
+</section>
+
+<!-- 2. 최근 불량 제품 리스트 -->
+<section class="recent-defective">
+    <h2>최근 불량 제품</h2>
+    <table border="1" width="100%">
+        <thead>
+        <tr>
+            <th>제품코드</th>
+            <th>제품명</th>
+            <th>불량사유</th>
+            <th>등록일</th>
+        </tr>
+        </thead>
+        <tbody>
+        <c:forEach var="item" items="${recentDefective}">
+            <tr>
+                <td>${item.PROD_CODE}</td>
+                <td>${item.PROD_NAME}</td>
+                <td>${item.DEF_REASON}</td>
+                <td>${item.REG_DATE}</td>
+            </tr>
+        </c:forEach>
+        </tbody>
+    </table>
+</section>
+
+<!-- 3. TOP5 진행 현황 (차트) -->
+<section class="top5-prog">
+    <h2>진행 현황 TOP 5</h2>
+    <canvas id="top5Chart" width="400" height="200"></canvas>
+</section>
+
+<script>
+    // Controller에서 내려준 top5Prog를 JS로 변환
+    const top5ProgData = ${top5Prog};
+
+    const labels = top5ProgData.map(item => item.NAME); // ex) 제품명
+    const values = top5ProgData.map(item => item.COUNT); // ex) 건수
+
+    new Chart(document.getElementById('top5Chart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '진행 현황 건수',
+                data: values
+            }]
+        }
+    });
+</script>
+
+</body>
+</html>

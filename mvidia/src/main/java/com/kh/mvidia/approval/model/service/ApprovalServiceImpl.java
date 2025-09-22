@@ -26,10 +26,10 @@ import java.util.stream.Collectors;
 @Service
 public class ApprovalServiceImpl implements ApprovalService {
 
-    @Value("${notion.api.token}")
+    @Value("${notion.approval.token}")
     private String token;
 
-    @Value("${notion.database.id}")
+    @Value("${notion.approval.database.id}")
     private String database_id;
 
     @Autowired

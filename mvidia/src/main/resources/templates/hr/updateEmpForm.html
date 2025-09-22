@@ -22,8 +22,9 @@
         .form .actions { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 6px; }
         .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background-color: #0c197f; color: #fff; }
         .btn.ghost { background: transparent; color: #002B39; border: 1px solid #002B39; }
-        .updated-badge { font-size: .7rem; color: #fff; background: #28a745; padding: 2px 6px; border-radius: 8px; margin-left: 5px; vertical-align: middle; }
-        .rejected-badge { font-size: .7rem; color: #fff; background: #dc3545; padding: 2px 6px; border-radius: 8px; margin-left: 5px; vertical-align: middle; display: none; }
+        .badge { font-size: .7rem; color: #fff; padding: 2px 6px; border-radius: 8px; margin-left: 5px; vertical-align: middle; }
+        .updated-badge { background: #28a745; }
+        .rejected-badge { background: #dc3545; display: none; }
         .modal { display: none; position: fixed; z-index: 1000; inset: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, .4); }
         .modal-content { background: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, .2); }
         .error-msg { color: #d9534f; font-size: 10px; display: none; }
@@ -36,16 +37,16 @@
         <div class="widget" id="home">
             <form th:action="@{/hr/updateEmp.hr}" class="form" method="post" id="updateForm" enctype="multipart/form-data">
 
-                <th:block th:with="profileReq=${reqList != null ? reqList.?[fieldName == 'profilePic'] : new java.util.ArrayList()}">
+                <th:block th:with="profileReq=${reqList != null ? reqList.?[fieldName == 'profilePic'] : null}">
                     <div class="profile-section">
                         <img id="profile-preview" class="profile-pic"
-                             th:src="${profileReq.isEmpty()} ? @{/images/default_profile.png} : @{/uploadFiles/{fileName}(fileName=${profileReq[0].newValue})}"
-                             th:data-original-url="${profileReq.isEmpty()} ? @{/images/default_profile.png} : @{/uploadFiles/{fileName}(fileName=${profileReq[0].oldValue})}"
-                             th:data-new-url="${profileReq.isEmpty()} ? @{/images/default_profile.png} : @{/uploadFiles/{fileName}(fileName=${profileReq[0].newValue})}"
+                             th:src="${profileReq != null and !profileReq.isEmpty()} ? @{/uploadFiles/{fileName}(fileName=${profileReq[0].newValue})} : @{/images/default_profile.png}"
+                             th:data-original-url="@{/images/default_profile.png}"
+                             th:data-new-url="${profileReq != null and !profileReq.isEmpty()} ? @{/uploadFiles/{fileName}(fileName=${profileReq[0].newValue})} : @{/images/default_profile.png}"
                              alt="프로필"/>
 
                         <div class="file-input-group">
-                            <div th:if="${!profileReq.isEmpty()}" style="margin-bottom:10px;">
+                            <div th:if="${profileReq != null}" style="margin-bottom:10px;">
                                 <button type="button" class="btn ghost" id="originalPicBtn">기존 프로필</button>
                                 <button type="button" class="btn ghost" id="newPicBtn">변경될 프로필</button>
                             </div>
@@ -54,149 +55,148 @@
                             <br>
                             <span>변경할 프로필 사진 : </span>
                             <input name="atchFile" type="file" accept="image/*" onchange="previewProfilePic(event)"
-                                   th:data-req-id="${profileReq.isEmpty()} ? null : 'profilePic'"/>
-                            <span th:unless="${profileReq.isEmpty()}" class="updated-badge">⭐ 변경됨</span>
-                            <span class="rejected-badge">거절됨</span>
+                                   th:data-req-id="${profileReq != null} ? 'profilePic' : null"/>
+                            <span th:if="${profileReq != null}" class="badge updated-badge">⭐ 변경됨</span>
+                            <span class="badge rejected-badge">거절됨</span>
                         </div>
                     </div>
                 </th:block>
 
-                <div class="field full"><label>사번*</label><input name="empNo" th:value="${emp.empNo}" readonly/></div>
-                <div class="field full"><label>이메일*</label><input name="email" type="email" th:value="${emp.email}" readonly/></div>
+                <div class="field full"><label>사번*</label><input name="empNo" th:value="${emp != null ? emp.empNo : ''}" readonly/></div>
+                <div class="field full"><label>이메일*</label><input name="email" type="email" th:value="${emp != null ? emp.email : ''}" readonly/></div>
 
-                <th:block th:with="lNameReq=${reqList != null ? reqList.?[fieldName == 'empLName'] : new java.util.ArrayList()}">
-                    <div class="field field-row">
+                <th:block th:with="lNameReq=${reqList != null ? reqList.?[fieldName == 'empLName'] : null}">
+                    <div class="field">
                         <label>성*</label>
-                        <input name="empLName" required oninput="validateName('korean')"
-                               th:value="${!lNameReq.isEmpty() ? lNameReq[0].newValue : emp.empLName}"
-                               th:data-req-id="${lNameReq.isEmpty()} ? null : 'empLName'"
-                               th:data-original-value="${!lNameReq.isEmpty() ? lNameReq[0].newValue : emp.empLName}"/>
-                        <span id="korean-name-error" class="error-msg">한글 성/이름은 한글만 입력하세요.</span>
-                        <span th:if="${!lNameReq.isEmpty()}" class="updated-badge">⭐ 변경됨</span>
-                        <span class="rejected-badge">거절됨</span>
+                        <input name="empLName" required oninput="validateKorean(this)"
+                               th:value="${lNameReq != null and !lNameReq.isEmpty() ? lNameReq[0].newValue : (emp != null ? emp.empLName : '')}"
+                               th:data-req-id="${lNameReq != null} ? 'empLName' : null"
+                               th:data-original-value="${emp != null ? emp.empLName : ''}"/>
+                        <span class="error-msg">한글 성/이름은 한글만 입력하세요.</span>
+                        <span th:if="${lNameReq != null}" class="badge updated-badge">⭐ 변경됨</span>
+                        <span class="badge rejected-badge">거절됨</span>
                     </div>
                 </th:block>
 
-                <th:block th:with="nameReq=${reqList != null ? reqList.?[fieldName == 'empName'] : new java.util.ArrayList()}">
-                    <div class="field field-row">
+                <th:block th:with="nameReq=${reqList != null ? reqList.?[fieldName == 'empName'] : null}">
+                    <div class="field">
                         <label>이름*</label>
-                        <input name="empName" required oninput="validateName('korean')"
-                               th:value="${!nameReq.isEmpty() ? nameReq[0].newValue : emp.empName}"
-                               th:data-req-id="${nameReq.isEmpty()} ? null : 'empName'"
-                               th:data-original-value="${!nameReq.isEmpty() ? nameReq[0].newValue : emp.empName}"/>
-                        <span id="korean-name-error-2" class="error-msg">한글 성/이름은 한글만 입력하세요.</span>
-                        <span th:if="${!nameReq.isEmpty()}" class="updated-badge">⭐ 변경됨</span>
-                        <span class="rejected-badge">거절됨</span>
+                        <input name="empName" required oninput="validateKorean(this)"
+                               th:value="${nameReq != null and !nameReq.isEmpty() ? nameReq[0].newValue : (emp != null ? emp.empName : '')}"
+                               th:data-req-id="${nameReq != null} ? 'empName' : null"
+                               th:data-original-value="${emp != null ? emp.empName : ''}"/>
+                        <span class="error-msg">한글 성/이름은 한글만 입력하세요.</span>
+                        <span th:if="${nameReq != null}" class="badge updated-badge">⭐ 변경됨</span>
+                        <span class="badge rejected-badge">거절됨</span>
                     </div>
                 </th:block>
 
-                <th:block th:with="engLNameReq=${reqList != null ? reqList.?[fieldName == 'empEngLName'] : new java.util.ArrayList()}">
-                    <div class="field field-row">
+                <th:block th:with="engLNameReq=${reqList != null and !reqList.isEmpty() ? reqList.?[fieldName == 'empEngLName'] : null}">
+                    <div class="field">
                         <label>영문 성*</label>
-                        <input name="empEngLName" required oninput="validateName('english')"
-                               th:value="${!engLNameReq.isEmpty() ? engLNameReq[0].newValue : emp.empEngLName}"
-                               th:data-req-id="${engLNameReq.isEmpty()} ? null : 'empEngLName'"
-                               th:data-original-value="${!engLNameReq.isEmpty() ? engLNameReq[0].newValue : emp.empEngLName}"/>
-                        <span id="english-name-error" class="error-msg">영문 성/이름은 알파벳만 입력하세요.</span>
-                        <span th:if="${!engLNameReq.isEmpty()}" class="updated-badge">⭐ 변경됨</span>
-                        <span class="rejected-badge">거절됨</span>
+                        <input name="empEngLName" required oninput="validateEnglish(this)"
+                               th:value="${engLNameReq != null and !engLNameReq.isEmpty() ? engLNameReq[0].newValue : (emp != null ? emp.empEngLName : '')}"
+                               th:data-req-id="${engLNameReq != null} ? 'empEngLName' : null"
+                               th:data-original-value="${emp != null ? emp.empEngLName : ''}"/>
+                        <span class="error-msg">영문 성/이름은 알파벳만 입력하세요.</span>
+                        <span th:if="${engLNameReq != null}" class="badge updated-badge">⭐ 변경됨</span>
+                        <span class="badge rejected-badge">거절됨</span>
                     </div>
                 </th:block>
 
-                <th:block th:with="engNameReq=${reqList != null ? reqList.?[fieldName == 'empEngName'] : new java.util.ArrayList()}">
-                    <div class="field field-row">
+                <th:block th:with="engNameReq=${reqList != null and !reqList.isEmpty() ? reqList.?[fieldName == 'empEngName'] : null}">
+                    <div class="field">
                         <label>영문 이름*</label>
-                        <input name="empEngName" required oninput="validateName('english')"
-                               th:value="${!engNameReq.isEmpty() ? engNameReq[0].newValue : emp.empEngName}"
-                               th:data-req-id="${engNameReq.isEmpty()} ? null : 'empEngName'"
-                               th:data-original-value="${!engNameReq.isEmpty() ? engNameReq[0].newValue : emp.empEngName}"/>
-                        <span id="english-name-error-2" class="error-msg">영문 성/이름은 알파벳만 입력하세요.</span>
-                        <span th:if="${!engNameReq.isEmpty()}" class="updated-badge">⭐ 변경됨</span>
-                        <span class="rejected-badge">거절됨</span>
+                        <input name="empEngName" required oninput="validateEnglish(this)"
+                               th:value="${engNameReq != null and !engNameReq.isEmpty() ? engNameReq[0].newValue : (emp != null ? emp.empEngName : '')}"
+                               th:data-req-id="${engNameReq != null} ? 'empEngName' : null"
+                               th:data-original-value="${emp != null ? emp.empEngName : ''}"/>
+                        <span class="error-msg">영문 성/이름은 알파벳만 입력하세요.</span>
+                        <span th:if="${engNameReq != null}" class="badge updated-badge">⭐ 변경됨</span>
+                        <span class="badge rejected-badge">거절됨</span>
                     </div>
                 </th:block>
 
-                <th:block th:with="birthdayReq=${reqList != null ? reqList.?[fieldName == 'birthday'] : new java.util.ArrayList()}">
-                    <div class="field field-row">
+                <th:block th:with="birthdayReq=${reqList != null ? reqList.?[fieldName == 'birthday'] : null}">
+                    <div class="field">
                         <label>생년월일*</label>
                         <input name="birthday" type="date" required
-                               th:value="${!birthdayReq.isEmpty() ? birthdayReq[0].newValue : emp.birthday}"
-                               th:data-req-id="${birthdayReq.isEmpty()} ? null : 'birthday'"
-                               th:data-original-value="${!birthdayReq.isEmpty() ? birthdayReq[0].newValue : emp.birthday}"/>
-                        <span th:if="${!birthdayReq.isEmpty()}" class="updated-badge">⭐ 변경됨</span>
-                        <span class="rejected-badge">거절됨</span>
+                               th:value="${birthdayReq != null  and !birthdayReq.isEmpty()? birthdayReq[0].newValue : (emp != null ? emp.birthday : '')}"
+                               th:data-req-id="${birthdayReq != null} ? 'birthday' : null"
+                               th:data-original-value="${emp != null ? emp.birthday : ''}"/>
+                        <span th:if="${birthdayReq != null}" class="badge updated-badge">⭐ 변경됨</span>
+                        <span class="badge rejected-badge">거절됨</span>
                     </div>
                 </th:block>
 
                 <div class="field"><label>부서*</label>
-                    <select name="deptCode" disabled>
+                    <select name="deptCode" required>
                         <option value="">선택</option>
-                        <option value="D1" th:selected="${emp.deptCode == 'D1'}">인사팀</option>
-                        <option value="D2" th:selected="${emp.deptCode == 'D2'}">경영관리팀</option>
-                        <option value="D3" th:selected="${emp.deptCode == 'D3'}">생산품질관리팀</option>
-                        <option value="D4" th:selected="${emp.deptCode == 'D4'}">기술지원팀</option>
+                        <option value="D1" th:selected="${emp != null and emp.deptCode == 'D1'}">인사팀</option>
+                        <option value="D2" th:selected="${emp != null and emp.deptCode == 'D2'}">경영관리팀</option>
+                        <option value="D3" th:selected="${emp != null and emp.deptCode == 'D3'}">생산품질관리팀</option>
+                        <option value="D4" th:selected="${emp != null and emp.deptCode == 'D4'}">기술지원팀</option>
                     </select>
                 </div>
 
                 <div class="field"><label>직급*</label>
-                    <select name="jobName" disabled>
-                        <option value="">선택</option>
-                        <option th:selected="${emp.jobName.endsWith('사원')}" value="1">사원</option>
-                        <option th:selected="${emp.jobName.endsWith('대리')}" value="2">대리</option>
-                        <option th:selected="${emp.jobName.endsWith('과장')}" value="3">과장</option>
-                        <option th:selected="${emp.jobName.endsWith('차장')}" value="4">차장</option>
-                        <option th:selected="${emp.jobName.endsWith('부장')}" value="5">부장</option>
+                    <select name="jobNo" required> <option value="">선택</option>
+                        <option value="5" th:selected="${emp != null and emp.jobName != null and emp.jobName.endsWith('사원')}">사원</option>
+                        <option value="4" th:selected="${emp != null and emp.jobName != null and emp.jobName.endsWith('대리')}">대리</option>
+                        <option value="3" th:selected="${emp != null and emp.jobName != null and emp.jobName.endsWith('과장')}">과장</option>
+                        <option value="2" th:selected="${emp != null and emp.jobName != null and emp.jobName.endsWith('차장')}">차장</option>
+                        <option value="1" th:selected="${emp != null and emp.jobName != null and emp.jobName.endsWith('부장')}">부장</option>
                     </select>
                 </div>
 
-                <th:block th:with="addressReq=${reqList != null ? reqList.?[fieldName == 'address'] : new java.util.ArrayList()}">
-                    <div class="field field-row full">
+                <th:block th:with="addressReq=${reqList != null ? reqList.?[fieldName == 'address'] : null}">
+                    <div class="field full">
                         <label>주소*</label>
                         <input name="address" required
-                               th:value="${!addressReq.isEmpty() ? addressReq[0].newValue : emp.address}"
-                               th:data-req-id="${addressReq.isEmpty()} ? null : 'address'"
-                               th:data-original-value="${!addressReq.isEmpty() ? addressReq[0].newValue : emp.address}"/>
-                        <span th:if="${!addressReq.isEmpty()}" class="updated-badge">⭐ 변경됨</span>
-                        <span class="rejected-badge">거절됨</span>
+                               th:value="${addressReq != null and !adrressReq.isEmpty() ? addressReq[0].newValue : (emp != null ? emp.address : '')}"
+                               th:data-req-id="${addressReq != null} ? 'address' : null"
+                               th:data-original-value="${emp != null ? emp.address : ''}"/>
+                        <span th:if="${addressReq != null}" class="badge updated-badge">⭐ 변경됨</span>
+                        <span class="badge rejected-badge">거절됨</span>
                     </div>
                 </th:block>
 
-                <th:block th:with="phoneReq=${reqList != null ? reqList.?[fieldName == 'phone'] : new java.util.ArrayList()}">
-                    <div class="field field-row">
+                <th:block th:with="phoneReq=${reqList != null ? reqList.?[fieldName == 'phone'] : null}">
+                    <div class="field">
                         <label>전화번호*</label>
-                        <input name="phone" required placeholder="010-0000-0000" pattern="^01[016789]-\d{3,4}-\d{4}$"
-                               th:value="${!phoneReq.isEmpty() ? phoneReq[0].newValue : emp.phone}"
-                               th:data-req-id="${phoneReq.isEmpty()} ? null : 'phone'"
-                               th:data-original-value="${!phoneReq.isEmpty() ? phoneReq[0].newValue : emp.phone}"/>
-                        <span th:if="${!phoneReq.isEmpty()}" class="updated-badge">⭐ 변경됨</span>
-                        <span class="rejected-badge">거절됨</span>
+                        <input name="phone" required placeholder="010-0000-0000" pattern="^01[016789]-?\d{3,4}-?\d{4}$"
+                               th:value="${phoneReq != null and !phoneReq.isEmpty()? phoneReq[0].newValue : (emp != null ? emp.phone : '')}"
+                               th:data-req-id="${phoneReq != null} ? 'phone' : null"
+                               th:data-original-value="${emp != null ? emp.phone : ''}"/>
+                        <span th:if="${phoneReq != null}" class="badge updated-badge">⭐ 변경됨</span>
+                        <span class="badge rejected-badge">거절됨</span>
                     </div>
                 </th:block>
 
-                <th:block th:with="extNoReq=${reqList != null ? reqList.?[fieldName == 'extNo'] : new java.util.ArrayList()}">
-                    <div class="field field-row">
+                <th:block th:with="extNoReq=${reqList != null ? reqList.?[fieldName == 'extNo'] : null}">
+                    <div class="field">
                         <label>내선번호</label>
                         <input name="extNo" placeholder="1234" pattern="^\d{3,5}$"
-                               th:value="${!extNoReq.isEmpty() ? extNoReq[0].newValue : emp.extNo}"
-                               th:data-req-id="${extNoReq.isEmpty()} ? null : 'extNo'"
-                               th:data-original-value="${!extNoReq.isEmpty() ? extNoReq[0].newValue : emp.extNo}"/>
-                        <span th:if="${!extNoReq.isEmpty()}" class="updated-badge">⭐ 변경됨</span>
-                        <span class="rejected-badge">거절됨</span>
+                               th:value="${extNoReq != null and !extNoReq.isEmpty()? extNoReq[0].newValue : (emp != null ? emp.extNo : '')}"
+                               th:data-req-id="${extNoReq != null} ? 'extNo' : null"
+                               th:data-original-value="${emp != null ? emp.extNo : ''}"/>
+                        <span th:if="${extNoReq != null}" class="badge updated-badge">⭐ 변경됨</span>
+                        <span class="badge rejected-badge">거절됨</span>
                     </div>
                 </th:block>
 
-                <div class="field"><label>입사일*</label><input name="hireDate" type="date" th:value="${emp.hireDate}" readonly/></div>
+                <div class="field"><label>입사일*</label><input name="hireDate" type="date" th:value="${emp != null and ? emp.hireDate : ''}" readonly/></div>
 
                 <input type="hidden" name="originAtchId" th:value="${(atch != null && atch.atchId != null) ? atch.atchId : ''}"/>
                 <input type="hidden" name="originName" th:value="${(atch != null && atch.originName != null) ? atch.originName : ''}"/>
                 <input type="hidden" name="changeName" th:value="${(atch != null && atch.changeName != null) ? atch.changeName : ''}"/>
                 <input type="hidden" name="refType" th:value="${(atch != null && atch.refType != null) ? atch.refType : ''}"/>
-
+                <input type="hidden" id="jobCode" name="jobCode">
                 <th:block th:each="req : ${reqList}">
                     <input type="hidden" th:name="'reqIdMap[' + ${req.fieldName} + ']'" th:value="${req.reqId}"/>
                 </th:block>
 
-                <input type="hidden" name="managerId" th:value="${session.loginEmp.empNo}"/>
+                <input type="hidden" name="managerId" th:value="${session != null and session.loginEmp != null ? session.loginEmp.empNo : ''}"/>
 
                 <div class="actions">
                     <button class="btn" type="submit" id="submitBtn">수정 사항 반영</button>
@@ -219,209 +219,189 @@
     </div>
 
     <script>
-        (function () {
-            function init() {
-                const form = document.getElementById('updateForm');
-                if (!form) {
-                    console.warn('[empModify] form not found');
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('updateForm');
+            const rejectModal = document.getElementById('rejectModal');
+            const rejectReason = document.getElementById('rejectReason');
+            const confirmRejectBtn = document.getElementById('confirmRejectBtn');
+            const cancelRejectBtn = document.getElementById('cancelRejectBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const resetAllBtn = document.getElementById('resetAllBtn');
+            const profilePreview = document.getElementById('profile-preview');
+            const fileInput = document.querySelector('input[name="atchFile"]');
+
+            let lastEditedField = null;
+            const pendingRejects = {};
+            const originalValues = new Map();
+
+            // Store original values on load
+            form.querySelectorAll('[data-original-value]').forEach(el => {
+                originalValues.set(el.name, el.dataset.originalValue);
+            });
+
+            function resolveFieldName(el) {
+                if (el.name === 'atchFile') return 'profilePic';
+                return el.dataset?.reqId || el.name;
+            }
+
+            // Input/change event listener for all relevant fields
+            form.addEventListener('change', (e) => {
+                const field = e.target;
+                const fieldName = resolveFieldName(field);
+
+                if (!fieldName || !field.dataset.reqId) return;
+
+                if (field.type === 'file' && field.files.length > 0) {
+                    lastEditedField = field;
+                    rejectModal.style.display = 'block';
+                } else if (field.type !== 'file' && field.value !== field.dataset.originalValue) {
+                    lastEditedField = field;
+                    rejectModal.style.display = 'block';
+                }
+            }, true);
+
+            confirmRejectBtn.addEventListener('click', () => {
+                const text = rejectReason.value.trim();
+                if (!lastEditedField) {
+                    rejectModal.style.display = 'none';
+                    return;
+                }
+                const fieldName = resolveFieldName(lastEditedField);
+                if (!fieldName || !text) {
+                    alert('거절 사유를 입력해주세요.');
                     return;
                 }
 
-                const modal = document.getElementById('rejectModal');
-                const reason = document.getElementById('rejectReason');
-                const confirmBtn = document.getElementById('confirmRejectBtn');
-                const cancelBtn = document.getElementById('cancelRejectBtn');
-                const submitBtn = document.getElementById('submitBtn');
-                const resetBtn = document.getElementById('resetAllBtn');
-                const profilePreview = document.getElementById('profile-preview');
-                const fileInput = document.querySelector('input[name="atchFile"]');
+                pendingRejects[fieldName] = text;
 
-                const reqFields = new Set(
-                    Array.from(document.querySelectorAll('input[name^="reqIdMap["]'))
-                    .map(h => (h.name.match(/^reqIdMap\[(.+)\]$/) || [])[1])
-                    .filter(Boolean)
-                );
-
-                const pendingRejects = {};
-                let lastEditedField = null;
-
-                function resolveFieldName(el) {
-                    if (el.name === 'atchFile') {
-                        const profileReqElement = document.querySelector('[data-req-id="profilePic"]');
-                        if (profileReqElement) return 'profilePic';
-                    }
-                    return el.dataset?.reqId || el.name;
+                const container = lastEditedField.closest('.field, .profile-section');
+                if (container) {
+                    const updatedBadge = container.querySelector('.updated-badge');
+                    const rejectedBadge = container.querySelector('.rejected-badge');
+                    if (updatedBadge) updatedBadge.style.display = 'none';
+                    if (rejectedBadge) rejectedBadge.style.display = 'inline';
                 }
 
-                function onFieldChange(event) {
-                    const field = event.target;
-                    const fieldName = resolveFieldName(field);
-                    if (!fieldName || !reqFields.has(fieldName)) return;
+                rejectReason.value = '';
+                rejectModal.style.display = 'none';
+            });
 
-                    const isValueChanged = (field.type === 'file' && field.files.length > 0) ||
-                                         (field.type !== 'file' && field.value !== field.dataset.originalValue);
-
-                    if (isValueChanged) {
-                        lastEditedField = field;
-                        if (modal) modal.style.display = 'block';
-                    }
-                }
-
-                form.addEventListener('change', (e) => {
-                    onFieldChange(e);
-                }, true);
-
-                confirmBtn && confirmBtn.addEventListener('click', () => {
-                    const text = (reason?.value || '').trim();
-                    if (!lastEditedField) {
-                        modal.style.display = 'none';
-                        return;
-                    }
-                    const fieldName = resolveFieldName(lastEditedField);
-                    if (!fieldName || !text) {
-                        if (!text) alert('거절 사유를 입력해주세요.');
-                        return;
-                    }
-
-                    pendingRejects[fieldName] = text;
-
-                    const container = lastEditedField.closest('.field-row, .profile-section, .field');
-                    const upd = container && container.querySelector('.updated-badge');
-                    const rej = container && container.querySelector('.rejected-badge');
-                    if (upd) upd.style.display = 'none';
-                    if (rej) rej.style.display = 'inline';
-
-                    if (reason) reason.value = '';
-                    modal.style.display = 'none';
-                });
-
-                cancelBtn && cancelBtn.addEventListener('click', () => {
-                    modal.style.display = 'none';
-                    if (reason) reason.value = '';
-                    if (!lastEditedField) return;
-
+            cancelRejectBtn.addEventListener('click', () => {
+                if (lastEditedField) {
                     if (lastEditedField.type === 'file') {
                         lastEditedField.value = '';
-                        if (profilePreview?.dataset.newUrl) profilePreview.src = profilePreview.dataset.newUrl;
-                    } else {
-                        // 취소 시에도 사용자가 입력한 값 유지
+                        profilePreview.src = profilePreview.dataset.newUrl;
                     }
-                });
-
-                submitBtn && submitBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    form.querySelectorAll('.dyn-reject').forEach(n => n.remove());
-                    const h = document.createElement('input');
-                    h.type = 'hidden';
-                    h.name = 'pendingRejects';
-                    h.value = JSON.stringify(pendingRejects);
-                    h.className = 'dyn-reject';
-                    form.appendChild(h);
-                    form.submit();
-                });
-
-                resetBtn && resetBtn.addEventListener('click', () => {
-                    Object.keys(pendingRejects).forEach(k => delete pendingRejects[k]);
-
-                    document.querySelectorAll('[data-req-id]').forEach(field => {
-                        if (field.dataset.originalValue) {
-                            field.value = field.dataset.originalValue;
-                        }
-                        const container = field.closest('.field-row, .profile-section, .field');
-                        if (container) {
-                            container.querySelector('.updated-badge')?.style.setProperty('display', 'inline', 'important');
-                            container.querySelector('.rejected-badge')?.style.setProperty('display', 'none', 'important');
-                        }
-                    } );
-
-                    const profileContainer = document.querySelector('.profile-section');
-                    if (profileContainer) {
-                        if (fileInput) fileInput.value = '';
-                        if (profilePreview?.dataset.newUrl) profilePreview.src = profilePreview.dataset.newUrl;
-                    }
-                });
-
-                document.getElementById('originalPicBtn')?.addEventListener('click', () => {
-                    lastEditedField = fileInput;
-                    if (modal) modal.style.display = 'block';
-
-                    const originalUrl = profilePreview?.dataset.originalUrl;
-                    if (originalUrl) {
-                        profilePreview.src = originalUrl;
-                        if (fileInput) fileInput.value = '';
-                    }
-                });
-
-                document.getElementById('newPicBtn')?.addEventListener('click', () => {
-                    const newUrl = profilePreview?.dataset.newUrl;
-                    if (newUrl) {
-                        profilePreview.src = newUrl;
-                        if (fileInput) fileInput.value = '';
-
-                        const profileContainer = document.querySelector('.profile-section');
-                        if (profileContainer) {
-                            const upd = profileContainer.querySelector('.updated-badge');
-                            const rej = profileContainer.querySelector('.rejected-badge');
-                            if (upd) upd.style.display = 'inline';
-                            if (rej) rej.style.display = 'none';
-                        }
-                        if (pendingRejects['profilePic']) {
-                            delete pendingRejects['profilePic'];
-                        }
-                    }
-                });
-
-                if (profilePreview?.dataset.newUrl) {
-                    profilePreview.src = profilePreview.dataset.newUrl;
                 }
-            }
+                rejectReason.value = '';
+                rejectModal.style.display = 'none';
+            });
 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init, { once: true });
-            } else {
-                init();
-            }
-        })();
+            submitBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const h = document.createElement('input');
+                h.type = 'hidden';
+                h.name = 'pendingRejects';
+                h.value = JSON.stringify(pendingRejects);
+                form.appendChild(h);
+                form.submit();
+            });
+
+            resetAllBtn.addEventListener('click', () => {
+                Object.keys(pendingRejects).forEach(k => delete pendingRejects[k]);
+
+                form.querySelectorAll('[data-req-id]').forEach(field => {
+                    const container = field.closest('.field, .profile-section');
+                    const updatedBadge = container.querySelector('.updated-badge');
+                    const rejectedBadge = container.querySelector('.rejected-badge');
+
+                    if (field.name === 'atchFile') {
+                        field.value = '';
+                        profilePreview.src = profilePreview.dataset.newUrl;
+                    } else {
+                        field.value = field.dataset.originalValue;
+                    }
+                    if (updatedBadge) updatedBadge.style.display = 'inline';
+                    if (rejectedBadge) rejectedBadge.style.display = 'none';
+                });
+            });
+
+            document.getElementById('originalPicBtn')?.addEventListener('click', () => {
+                lastEditedField = fileInput;
+                rejectModal.style.display = 'block';
+                profilePreview.src = profilePreview.dataset.originalUrl;
+            });
+
+            document.getElementById('newPicBtn')?.addEventListener('click', () => {
+                profilePreview.src = profilePreview.dataset.newUrl;
+                const container = document.querySelector('.profile-section');
+                const updatedBadge = container.querySelector('.updated-badge');
+                const rejectedBadge = container.querySelector('.rejected-badge');
+                if (updatedBadge) updatedBadge.style.display = 'inline';
+                if (rejectedBadge) rejectedBadge.style.display = 'none';
+                delete pendingRejects['profilePic'];
+            });
+        });
 
         function previewProfilePic(event) {
-            var file = event.target.files && event.target.files[0];
-            if (!file) {
-                var img = document.getElementById('profile-preview');
-                var newUrl = img.dataset.newUrl;
-                img.src = newUrl;
-                return;
+            const reader = new FileReader();
+            const output = document.getElementById('profile-preview');
+            const file = event.target.files[0];
+            if (file) {
+                reader.onload = function(){
+                    output.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                output.src = output.dataset.newUrl;
             }
-            var reader = new FileReader();
-            reader.onload = function () {
-                var img = document.getElementById('profile-preview');
-                if (img) img.src = reader.result;
-            };
-            reader.readAsDataURL(file);
         }
 
-        function validateName(type) {
-            var kL = document.querySelector('input[name="empLName"]');
-            var kN = document.querySelector('input[name="empName"]');
-            var eL = document.querySelector('input[name="empEngLName"]');
-            var eN = document.querySelector('input[name="empEngName"]');
-            var korean = /^[가-힣]+$/,
-                english = /^[a-zA-Z]+$/;
-            if (type === 'korean') {
-                var ok1 = !kL || !kL.value || korean.test(kL.value);
-                var ok2 = !kN || !kN.value || korean.test(kN.value);
-                var e1 = document.getElementById('korean-name-error');
-                var e2 = document.getElementById('korean-name-error-2');
-                if (e1) e1.style.display = ok1 ? 'none' : 'block';
-                if (e2) e2.style.display = ok2 ? 'none' : 'block';
-            } else if (type === 'english') {
-                var ok3 = !eL || !eL.value || english.test(eL.value);
-                var ok4 = !eN || !eN.value || english.test(eN.value);
-                var e3 = document.getElementById('english-name-error');
-                var e4 = document.getElementById('english-name-error-2');
-                if (e3) e3.style.display = ok3 ? 'none' : 'block';
-                if (e4) e4.style.display = ok4 ? 'none' : 'block';
+        function validateKorean(input) {
+            const korean = /^[가-힣]+$/;
+            const errorMsg = input.parentNode.querySelector('.error-msg');
+            if (input.value && !korean.test(input.value)) {
+                errorMsg.style.display = 'block';
+            } else {
+                errorMsg.style.display = 'none';
             }
         }
+
+        function validateEnglish(input) {
+            const english = /^[a-zA-Z]+$/;
+            const errorMsg = input.parentNode.querySelector('.error-msg');
+            if (input.value && !english.test(input.value)) {
+                errorMsg.style.display = 'block';
+            } else {
+                errorMsg.style.display = 'none';
+            }
+        }
+
+        $(document).ready(function() {
+            $('select[name="deptCode"], select[name="jobNo"]').on('change', function() {
+                updateJobCode();
+            });
+
+            updateJobCode();
+
+            function updateJobCode() {
+                const deptCode = $('select[name="deptCode"]').val();
+                const jobNo = $('select[name="jobNo"]').val();
+
+                let deptInitial = "";
+
+                switch(deptCode) {
+                    case 'D1': deptInitial = 'J1'; break;
+                    case 'D2': deptInitial = 'J2'; break;
+                    case 'D3': deptInitial = 'J3'; break;
+                    case 'D4': deptInitial = 'J4'; break;
+                }
+
+                if (deptInitial && jobNo) {
+                    const combinedCode = deptInitial + jobNo;
+                }
+            }
+        });
     </script>
 
     <script th:if="${alertMsg}">

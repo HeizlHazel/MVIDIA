@@ -2,10 +2,9 @@ package com.kh.mvidia.certificate.service;
 
 import java.util.Map;
 
-public interface CertificateService {
+public interface NotionCertificateService {
 	
-	void createCertificatePage(String databaseId, String title, String empNo);
-	
+	Map<String, Object> createCertificatePage(String databaseId, String empNo, String approverEmpNo);
 	
 	Map<String, Object> getPayslipData(String databaseId, String empNo);
 	

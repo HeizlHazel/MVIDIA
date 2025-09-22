@@ -18,9 +18,9 @@
         .controls-row {display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;}
         #calendar-container {border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem;}
         .calendar-header {display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; text-align: center; font-weight: 600; }
-        .calendar-grid {display: grid;  grid-template-columns: repeat(7, 1fr); gap: 2px;  text-align: center;}
+        .calendar-grid {gap: var(--grid-gap); display: grid;  grid-template-columns: repeat(7, 1fr); gap: 2px;  text-align: center;}
         .day-header {padding: 0.5rem; font-weight: 700; color: #4a5568;}
-        .day {min-height: 100px; padding: 0.5rem; background-color: #f7fafc; border-radius: 0.25rem; position: relative;}
+        .day {overflow: visible; min-height: 100px; padding: 0.5rem; background-color: #f7fafc; border-radius: 0.25rem; position: relative;}
         .day-number {font-weight: 600; color: #2d3748; margin-bottom: 0.5rem;}
         .event {font-size: 0.75rem; padding: 2px 4px; border-radius: 0.25rem; background: #edf2f7; color: #111827; margin-bottom: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;}
         .event.vacation { background-color: #ef4444; }
@@ -34,12 +34,13 @@
         .event-item .color-box {width: 12px; height: 12px; border-radius: 2px; margin-right: 0.5rem;}
         #loading-message {display: none; color: #6b7280; margin-top: 1rem; text-align: center;}
         .day.is-today {outline: 2px solid #3b82f6; background: rgba(59,130,246,.08);}
-        .holiday-span{position:absolute; top:26px; left:4px; right:4px; height:6px; background:#f59e0b; z-index:0;}
-        .piece-single{ border-radius:9999px; }
-        .piece-start { border-top-left-radius:9999px; border-bottom-left-radius:9999px; }
-        .piece-mid   { /* 양쪽 모서리 없음 */ }
-        .piece-end   { border-top-right-radius:9999px; border-bottom-right-radius:9999px; }
-        .day-number, .event{ position:relative; z-index:1; }
+        :root{--grid-gap: 2px; --grid-gap-half: 1px;}
+        .holiday-span{position:absolute; top:26px; height:8px; background:#f59e0b; z-index:0; left: calc(-1 * var(--grid-gap-half)); right: calc(-1 * var(--grid-gap-half)); border-radius: 9999px;}
+        .holiday-span.piece-start{left: 0; right: calc(-1 * var(--grid-gap-half)); border-top-right-radius: 0; border-bottom-right-radius: 0;}
+        .holiday-span.piece-mid{left: calc(-1 * var(--grid-gap-half)); right: calc(-1 * var(--grid-gap-half)); border-radius: 0;}
+        .holiday-span.piece-end{left: calc(-1 * var(--grid-gap-half)); right: 0; border-top-left-radius: 0; border-bottom-left-radius: 0;}
+        .holiday-span.edge-left { left: 0 !important; }
+        .holiday-span.edge-right { right: 0 !important; }
     </style>
 </head>
 <body>
@@ -232,20 +233,27 @@
       // 날짜들
       for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const dow = new Date(year, month - 1, day).getDay(); // 0=일, 6=토
         const dayEvents = events.filter(e => e.date === dateStr);
         const todayClass = (dateStr === todayStr) ? ' is-today' : '';
 
         html += `<div class="day hover:bg-gray-200 transition-colors cursor-pointer${todayClass}" onclick="showDayEvents('${dateStr}', this)">`;
         html += `<div class="day-number text-right">${day}</div>`;
 
-          if (holidaySet.has(dateStr)) {
-            const hasPrev = holidaySet.has(shiftDateStr(dateStr, -1));
-            const hasNext = holidaySet.has(shiftDateStr(dateStr,  1));
-            let piece = 'piece-single';
-            if (!hasPrev && hasNext) piece = 'piece-start';
-            else if (hasPrev && hasNext) piece = 'piece-mid';
-            else if (hasPrev && !hasNext) piece = 'piece-end';
-            html += `<div class="holiday-span ${piece}" aria-hidden="true"></div>`;
+            if (holidaySet.has(dateStr)) {
+              const hasPrev = holidaySet.has(shiftDateStr(dateStr, -1));
+              const hasNext = holidaySet.has(shiftDateStr(dateStr,  1));
+              let piece = 'piece-single';
+              if (!hasPrev && hasNext) piece = 'piece-start';
+              else if (hasPrev && hasNext) piece = 'piece-mid';
+              else if (hasPrev && !hasNext) piece = 'piece-end';
+
+              // 주간 엣지 보정 (일요일/토요일에는 바가 그리드를 넘지 않게)
+              let edge = '';
+              if (dow === 0) edge += ' edge-left';
+              if (dow === 6) edge += ' edge-right';
+
+              html += `<div class="holiday-span ${piece}${edge}" aria-hidden="true"></div>`;
           }
 
         dayEvents.forEach(ev => {

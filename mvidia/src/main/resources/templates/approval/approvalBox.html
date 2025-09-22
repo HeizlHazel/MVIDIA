@@ -451,11 +451,11 @@
                 <thead>
                 <tr>
                     <th width="10%">번호</th>
-                    <th width="12%">구분</th>
+                    <th width="15%">구분</th>
                     <th width="25%">제목</th>
                     <th width="18%">결재자</th>
                     <th width="12%">결재상태</th>
-                    <th width="23%">작성일</th>
+                    <th width="20%">작성일</th>
                 </tr>
                 </thead>
                 <!-- 작성자만 보이게 -->
@@ -601,7 +601,7 @@
         tbody.innerHTML = '';
 
         if (pageData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7">데이터가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6">데이터가 없습니다.</td></tr>';
             return;
         }
 
@@ -628,12 +628,12 @@
             if (item.status === '승인') statusClass = 'status-approved';
             else if (item.status === '반려') statusClass = 'status-rejected';
 
-            // 번호 계산
-            const itemNumber = allData.length - startIndex - index;
+            // 문서번호 불러오기
+            const docNumber = item.docNumber;
 
             tbody.innerHTML += `
                 <tr>
-                    <td>${itemNumber}</td>
+                    <td><span class="doc-number">${docNumber}</span></td>
                     <td>${item.category}</td>
                     <td class="title-col">
                         <a href="#" class="title-link" data-id="${item.id}">${item.title}</a>

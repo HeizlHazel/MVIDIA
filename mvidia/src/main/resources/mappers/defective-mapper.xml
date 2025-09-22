@@ -17,6 +17,29 @@
         <result column="status_name" property="statusName" />
     </resultMap>
 
+    <select id="selectList" resultMap="DefectiveResultSet" parameterType="map">
+        select
+               d.def_no
+             , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
+             , d.prod_code
+             , p.prod_name as "prod_name"
+             , t.def_type as "def_type"
+             , d.def_qty
+             , d.def_status
+             , s.status_name as "status_name"
+             , d.remarks
+          from tb_defective_production d
+          left
+          join tb_production_quality p on p.prod_code = d.prod_code
+          left
+          join tb_defective_type t on t.def_code = d.def_code
+          left
+          join tb_status s on s.status_code = d.def_status
+         where d.def_status != 'R'
+         order
+            by d.def_no desc
+    </select>
+
     <!-- 불량 제품 리스트 카운트 -->
     <select id="selectListCount" resultType="int" parameterType="map">
         select
@@ -34,7 +57,7 @@
                 and (
                         upper(d.def_no) like '%' || upper(#{keyword}) || '%'
                      or upper(d.prod_code) like '%' || upper(#{keyword}) || '%'
-                     or upper(d.prod_name) like '%' || upper(#{keyword}) || '%'
+                     or upper(p.prod_name) like '%' || upper(#{keyword}) || '%'
                 )
             </if>
             <if test="defType != null and defType != ''">
@@ -80,7 +103,7 @@
                 and (
                 upper(d.def_no) like '%' || upper(#{keyword}) || '%'
                 or upper(d.prod_code) like '%' || upper(#{keyword}) || '%'
-                or upper(d.prod_name) like '%' || upper(#{keyword}) || '%'
+                or upper(p.prod_name) like '%' || upper(#{keyword}) || '%'
                 )
             </if>
             <if test="defType != null and defType != ''">
@@ -137,28 +160,7 @@
         </where>
     </select>
 
-    <select id="selectList" resultMap="DefectiveResultSet" parameterType="map">
-        select
-               d.def_no
-             , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
-             , d.prod_code
-             , p.prod_name as "prod_name"
-             , t.def_type as "def_type"
-             , d.def_qty
-             , d.def_status
-             , s.status_name as "status_name"
-             , d.remarks
-          from tb_defective_production d
-          left
-          join tb_production_quality p on p.prod_code = d.prod_code
-          left
-          join tb_defective_type t on t.def_code = d.def_code
-          left
-          join tb_status s on s.status_code = d.def_status
-         where d.def_status != 'R'
-         order
-            by d.def_no desc
-    </select>
+
 
     <!-- 불량 제품 등록 -->
     <insert id="insertDefective">

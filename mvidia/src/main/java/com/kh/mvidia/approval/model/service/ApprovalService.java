@@ -13,7 +13,7 @@ import java.util.List;
 public interface ApprovalService {
 
     // 전자결재 신청 - 노션 저장
-    public HttpResponse<JsonNode> addPage(String writer, String dept, String date, String title, String approval, String details, String category, String empoNo);
+    public HttpResponse<JsonNode> addPage(String writer, String dept, String date, String title, String approval, String details, String category, String empNo, String docNumber);
 
     // 노션 API 호출 - 전체 문서 조회(페이징)
     public NotionPageResult getDatabaseWithPaging(String cursor, int pageSize);
@@ -35,4 +35,9 @@ public interface ApprovalService {
 
     // 승인/반려 DB에 로그 저장
     public void saveApprovalLog(String pageId, String actorId, String actorName, String action, String reason);
+
+    // 전자결재 넘버링
+    String generateApprovalDocNumber();
+
+
 }

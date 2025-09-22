@@ -87,7 +87,7 @@ public class ApprovalController {
     // 전자결재 등록
     @ResponseBody
     @PostMapping(value = "add.notion", consumes = "application/json")
-    public String addNotion(@RequestBody Map<String, String> map, HttpSession session) {
+    public Map<String, Object> addNotion(@RequestBody Map<String, String> map, HttpSession session) {
         System.out.println("받은 데이터: " + map);
 
         String writer = map.get("applyWriter");
@@ -101,12 +101,29 @@ public class ApprovalController {
         Employee loginEmp = (Employee) session.getAttribute("loginEmp");
         String empNo = loginEmp.getEmpNo();
 
-        System.out.println("문서 작성자: " + writer);
+        // 문서번호 생성
+        String docNumber = aService.generateApprovalDocNumber();
 
-        HttpResponse<JsonNode> response = aService.addPage(writer, dept, date, title, approval, details, category, empNo);
+        System.out.println("문서 작성자: " + writer);
+        HttpResponse<JsonNode> response = aService.addPage(writer, dept, date, title, approval, details, category, empNo, docNumber);
+
         System.out.println("노션 API 응답: " + response.getStatus() + ", " + response.getBody());
 
-        return response.getStatus() == 200 ? "success" : "fail";
+        if (response.getStatus() == 200) {
+            // JSON 응답 생성
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("docNumber", docNumber);
+            result.put("message", "전자결재 신청이 등록되었습니다.");
+
+            return result;
+        } else {
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("message", "전자결재 신청이 실패하였습니다.");
+
+            return result;
+        }
     }
 
     // 문서함 데이터 조회 (AJAX용)

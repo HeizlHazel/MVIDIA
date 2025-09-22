@@ -68,7 +68,7 @@
             </thead>
             <tbody>
             <tr th:each="msg : ${messages}" class="message-row">
-                <td th:text="${msg.msgId}"></td>
+                <td th:text="${#strings.substring(msg.msgId, 3)}"></td>
                 <td class="text-left pl-3">
                     <span th:text="${msg.title}"></span>
                 </td>
@@ -84,7 +84,7 @@
                     <!-- 수신자가 없을 때 -->
                     <span th:if="${msg.receiverCount == 0}">수신자 없음</span>
                 </td>
-                <td th:text="${msg.sendDate}"></td>
+                <td th:text="${#dates.format(msg.sendDate, 'yyyy-MM-dd HH:mm:ss')}"></td>
                 <td>
                     <button type="button" class="btn btn-sm btn-outline-primary"
                             th:attr="onclick=|viewSentMessage('${msg.msgId}')|">
@@ -144,70 +144,6 @@
         </div>
     </div>
 </div>
-
-<script>
-
-    function formatKoreanDate(dateStr) {
-        dateStr = dateStr.replace(/\.0$/, '');
-
-        const date = new Date(dateStr);
-        return date.toLocaleString('ko-KR', {
-            year: 'numeric',
-            month: 'long',   // "9월"
-            day: 'numeric',  // "7일"
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true     // 오전/오후 표시
-        });
-    }
-    // 발송 메시지 상세보기
-    function viewSentMessage(msgId) {
-        $.ajax({
-            url: '/message/sent-detail',
-            method: 'GET',
-            data: { msgId: msgId },
-            success: function(response) {
-                console.log(response);
-                let content = `
-                <div class="mb-3">
-                    <strong>제목:</strong> ${response.title}
-                </div>
-                <div class="mb-3">
-                    <strong>발송일시:</strong> ${formatKoreanDate(response.sendDate)}
-                </div>
-                <div class="mb-3">
-                    <strong>수신자:</strong>
-                    <div class="mt-2">
-            `;
-
-                response.receivers.forEach(function(receiver) {
-                    content += `
-                    <span class="badge badge-info mr-1 mb-1">
-                        ${receiver.empName} (${receiver.empNo})
-                    </span>
-                `;
-                });
-
-                content += `
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <strong>내용:</strong>
-                    <div class="mt-2 p-3" style="background-color: #f8f9fa; border-radius: 5px;">
-                        ${response.content.replace(/\n/g, '<br>')}
-                    </div>
-                </div>
-            `;
-
-                $('#sentMessageContent').html(content);
-                $('#sentMessageModal').modal('show');
-            },
-            error: function() {
-                alert('메시지를 불러오는 중 오류가 발생했습니다.');
-            }
-        });
-    }
-</script>
-
+    <script src="/js/layout.js"></script>
 </body>
 </html>

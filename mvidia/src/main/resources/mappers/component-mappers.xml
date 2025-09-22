@@ -20,6 +20,7 @@
         order by cp_code
     </select>
 
+
     <select id="searchComponents" parameterType="string" resultMap="compResultMap">
         select cp_code, cp_name, price, qty, local_code, min_qty
           from tb_component
@@ -27,22 +28,21 @@
     </select>
 
     <update id="increaseStock">
-        UPDATE tb_component
-        SET qty = qty + #{qty}
-        WHERE cp_code = #{cpCode}
+        update tb_component
+           set qty = qty + #{qty}
+         where cp_code = #{cpCode}
     </update>
 
     <update id="decreaseStock">
-        UPDATE tb_component
-        SET qty = qty - #{qty}
-        WHERE cp_code = #{cpCode}
+        update tb_component
+           set qty = qty - #{qty}
+         where cp_code = #{cpCode}
     </update>
 
     <select id="getCurrentQty" parameterType="string" resultType="int">
-        SELECT qty
-        FROM tb_component
-        WHERE cp_code = #{cpCode}
+        select qty
+          from tb_component
+         where cp_code = #{cpCode}
     </select>
-
 
 </mapper>

@@ -7,174 +7,182 @@
 
     <!-- 수신함 메시지 목록 조회 -->
     <select id="selectInboxMessages" resultType="map">
-        SELECT * FROM (
-        SELECT ROWNUM rnum, sub.* FROM (
-        SELECT
-        mb.MSG_ID as "msgId",
-        mb.TITLE as "title",
-        COALESCE(e.EMP_NAME, mb.SENDER_NO) as "senderName",
-        mb.SEND_DATE as "sendDate",
-        mr.READ_YN as "readYn",
-        mr.IMPORT_YN as "importYn"
-        FROM TB_MESSAGE_BOX mb
-        JOIN TB_MESSAGE_RCPT mr ON mb.MSG_ID = mr.MSG_ID
-        LEFT JOIN TB_EMPLOYEE e ON mb.SENDER_NO = e.EMP_NO
-        WHERE mr.RECEIVER_NO = #{receiverNo}
-        <if test="filter == 'unread'">
-            AND mr.READ_YN = 'N'
-        </if>
-        <if test="filter == 'important'">
-            AND mr.IMPORT_YN = 'Z'
-        </if>
-        ORDER BY mb.SEND_DATE DESC
-        ) sub
-        WHERE ROWNUM &lt;= #{offset} + #{pageSize}
+        select * from (
+        select rownum rnum, sub.* from
+            (
+            select
+                   mb.msg_id as "msgId"
+                 , mb.title as "title"
+                 , coalesce(e.emp_name, mb.sender_no) as "senderName"
+                 , mb.send_date as "sendDate"
+                 , mr.read_yn as "readYn"
+                 , mr.import_yn as "importYn"
+              from tb_message_box mb
+              join tb_message_rcpt mr on mb.msg_id = mr.msg_Id
+              left join tb_employee e on mb.sender_no = e.emp_no
+             where mr.receiver_no = #{receiverNo}
+            <if test="filter == 'unread'">
+                and mr.read_yn = 'N'
+            </if>
+            <if test="filter == 'important'">
+                and mr.import_yn = 'Z'
+            </if>
+             order by mb.send_date desc
+            ) sub
+         where rownum &lt;= #{offset} + #{pageSize}
         )
-        WHERE rnum &gt; #{offset}
+         where rnum &gt; #{offset}
     </select>
 
     <!-- 수신함 메시지 개수 -->
     <select id="selectInboxMessageCount" resultType="int">
-        SELECT COUNT(*)
-        FROM TB_MESSAGE_BOX mb
-        JOIN TB_MESSAGE_RCPT mr ON mb.MSG_ID = mr.MSG_ID
-        WHERE mr.RECEIVER_NO = #{receiverNo}
+        select count(*)
+          from tb_message_box mb
+          join tb_message_rcpt mr on mb.msg_id = mr.msg_id
+         where mr.receiver_no = #{receiverNo}
         <if test="filter == 'unread'">
-            AND mr.READ_YN = 'N'
+            and mr.read_yn = 'N'
         </if>
         <if test="filter == 'important'">
-            AND mr.IMPORT_YN = 'Z'
+            and mr.import_yn = 'Z'
         </if>
     </select>
 
     <!-- 메시지 상세 조회 -->
     <select id="selectMessageDetail" resultType="map">
-        SELECT
-        mb.MSG_ID as "msgId",
-        mb.SENDER_NO as "senderNo",
-        COALESCE(e.EMP_NAME, mb.SENDER_NO, '알 수 없음') as "senderName",
-        COALESCE(mb.TITLE, '제목 없음') as "title",
-        COALESCE(mb.CONTENT, '내용 없음') as "content",
-        mb.SEND_DATE as "sendDate",
-        mr.READ_YN as "readYn",
-        mr.IMPORT_YN as "importYn"
-        FROM TB_MESSAGE_BOX mb
-        JOIN TB_MESSAGE_RCPT mr ON mb.MSG_ID = mr.MSG_ID
-        LEFT JOIN TB_EMPLOYEE e ON mb.SENDER_NO = e.EMP_NO
-        WHERE mb.MSG_ID = #{msgId}
-        AND mr.RECEIVER_NO = #{receiverNo}
+        select
+               mb.msg_id as "msgId"
+             , mb.sender_no as "senderNo"
+             , coalesce(e.emp_name, mb.sender_no, '알 수 없음') as "senderName"
+             , coalesce(mb.title, '제목 없음') as "title"
+             , coalesce(mb.content, '내용 없음') as "content"
+             , mb.send_date as "sendDate"
+             , mr.read_yn as "readYn"
+             , mr.import_yn as "importYn"
+          from tb_message_box mb
+          join tb_message_rcpt mr on mb.msg_id = mr.msg_id
+          left join tb_employee e on mb.sender_no = e.emp_no
+         where mb.msg_id = #{msgId}
+           and mr.receiver_no = #{receiverNo}
     </select>
 
     <!-- 읽음 상태 업데이트 -->
     <update id="updateReadStatus">
-        UPDATE TB_MESSAGE_RCPT
-        SET READ_YN = 'S'
-        WHERE MSG_ID = #{msgId} AND RECEIVER_NO = #{receiverNo}
+        update tb_message_rcpt
+           set read_yn = 'S'
+         where msg_id = #{msgId} and receiver_no = #{receiverNo}
     </update>
 
 
     <!-- 중요도 상태 조회 -->
     <select id="selectImportantStatus" resultType="string">
-        SELECT IMPORT_YN
-        FROM TB_MESSAGE_RCPT
-        WHERE MSG_ID = #{msgId} AND RECEIVER_NO = #{receiverNo}
+        select import_yn
+          from tb_message_rcpt
+         where msg_id = #{msgId} and receiver_no = #{receiverNo}
     </select>
 
     <!-- 중요도 상태 업데이트 -->
     <update id="updateImportantStatus">
-        UPDATE TB_MESSAGE_RCPT
-        SET IMPORT_YN = #{importYn}
-        WHERE MSG_ID = #{msgId} AND RECEIVER_NO = #{receiverNo}
+        update tb_message_rcpt
+           set import_yn = #{importYn}
+         where msg_id = #{msgId} and receiver_no = #{receiverNo}
     </update>
 
     <!-- 메시지 삭제 -->
     <update id="deleteMessage">
-        UPDATE TB_MESSAGE_RCPT
-        SET DEL_YN = 'Y'
-        WHERE MSG_ID = #{msgId} AND RECEIVER_NO = #{receiverNo}
+        update tb_message_rcpt
+           set del_yn = 'Y'
+         where msg_id = #{msgId} and receiver_no = #{receiverNo}
     </update>
 
     <!-- 메시지박스 삽입 -->
-    <insert id="insertMessageBox">
-        INSERT INTO TB_MESSAGE_BOX (MSG_ID, SENDER_NO, TITLE, CONTENT, SEND_DATE)
-        VALUES (SEQ_MSG.NEXTVAL, #{senderNo}, #{title}, #{content}, SYSDATE)
+    <insert id="insertMessageBox" parameterType="map">
+        insert into tb_message_box (sender_no, title, content, send_date)
+        values (#{senderNo}, #{title}, #{content}, sysdate)
     </insert>
 
     <!-- 현재 메시지 ID 조회 -->
     <select id="selectCurrMessageId" resultType="string">
-        SELECT 'MSG' || LPAD(SEQ_MSG.CURRVAL, 4, '0') FROM DUAL
+        select 'MSG' || lpad(seq_msg.currval, 4, '0') from dual
     </select>
 
     <!-- 메시지 수신자 삽입 -->
     <insert id="insertMessageRcpt">
-        INSERT INTO TB_MESSAGE_RCPT (MSG_ID, RECEIVER_NO, READ_YN, IMPORT_YN, DEL_YN)
-        VALUES (#{msgId}, #{receiverNo}, 'N', 'N', 'N')
+        insert into tb_message_rcpt (msg_id, receiver_no)
+        values (#{msgId}, #{receiverNo})
     </insert>
 
     <!-- 전체 사원 조회 -->
     <select id="findAllEmployees" resultType="com.kh.mvidia.employee.model.vo.Employee">
-        SELECT EMP_NO as empNo, EMP_NAME as empName, EMP_LNAME as empLName,
-        DEPT_NAME as deptName, JOB_NAME as jobName
-        FROM TB_EMPLOYEE
-        WHERE DEL_YN = 'N'
-        ORDER BY EMP_NAME
+        select e.emp_no as empNo
+             , e.emp_name as empName
+             , e.emp_lName as empLName
+             , d.dept_name as deptName
+             , j.job_name as jobName
+        from tb_employee e
+        left join tb_department d on e.dept_code = d.dept_code
+        left join tb_job j on e.job_code = j.job_code
+        where e.emp_status ='H'
+        order by e.emp_name
     </select>
 
     <!-- 발신함 메시지 목록 조회 -->
     <select id="selectOutboxMessages" resultType="map">
-        SELECT * FROM (
-        SELECT ROWNUM rnum, sub.* FROM (
-        SELECT
-        mb.MSG_ID AS "msgId",
-        mb.TITLE AS "title",
-        mb.SEND_DATE AS "sendDate",
-        mb.CONTENT AS "content",
-        (SELECT COUNT(*) FROM TB_MESSAGE_RCPT r WHERE r.MSG_ID = mb.MSG_ID) AS "receiverCount",
-        COALESCE(e.EMP_NAME, r.RECEIVER_NO) AS "firstReceiverName"
-        FROM TB_MESSAGE_BOX mb
-        LEFT JOIN (
-        SELECT
-        MSG_ID,
-        RECEIVER_NO,
-        ROW_NUMBER() OVER(PARTITION BY MSG_ID ORDER BY RECEIVER_NO) AS rn
-        FROM TB_MESSAGE_RCPT
-        ) r ON mb.MSG_ID = r.MSG_ID AND r.rn = 1
-        LEFT JOIN TB_EMPLOYEE e ON r.RECEIVER_NO = e.EMP_NO
-        WHERE mb.SENDER_NO = #{senderNo}
-        ORDER BY mb.SEND_DATE DESC
-        ) sub
-        WHERE ROWNUM &lt;= #{offset} + #{pageSize}
-        )
-        WHERE rnum &gt; #{offset}
+        select * from
+             (
+                select rownum rnum
+                     , sub.* from
+                     (
+                        select
+                               mb.msg_id as "msgId"
+                             , mb.title as "title"
+                             , mb.send_date as "sendDate"
+                             , mb.content as "content"
+                             , (select count(*) from tb_message_rcpt r where r.msg_id = mb.msg_id) as "receiverCount"
+                             , coalesce(e.emp_name, r.receiver_no) as "firstReceiverName"
+                          from tb_message_box mb
+                          left join (
+                                    select msg_id
+                                         , receiver_no
+                                         , row_number() over(partition by msg_id order by receiver_no) as rn
+                                      from tb_message_rcpt
+                                    ) r on mb.msg_id = r.msg_id and r.rn = 1
+                          left join tb_employee e on r.receiver_no = e.emp_no
+                         where mb.sender_no = #{senderNo}
+                         order by mb.send_date desc
+                     ) sub
+                 where rownum &lt;= #{offset} + #{pageSize}
+             )
+         where rnum &gt; #{offset}
     </select>
 
 
     <!-- 발신함 메시지 개수 조회 -->
     <select id="selectOutboxMessageCount" resultType="int">
-        SELECT COUNT(*)
-        FROM TB_MESSAGE_BOX
-        WHERE SENDER_NO = #{senderNo}
+        select count(*)
+          from tb_message_box
+         where sender_no = #{senderNo}
     </select>
 
     <!-- 발신 메시지 상세 조회 -->
     <select id="selectSentMessageDetail" resultType="map">
-        SELECT
-        mb.MSG_ID AS "msgId",
-        mb.TITLE AS "title",
-        mb.CONTENT AS "content",
-        mb.SEND_DATE AS "sendDate"
-        FROM TB_MESSAGE_BOX mb
-        WHERE mb.MSG_ID = #{msgId}
+        select
+               mb.msg_id as "msgId"
+             , mb.title as "title"
+             , mb.content as "content"
+             , mb.send_date as "sendDate"
+          from tb_message_box mb
+         where mb.msg_id = #{msgId}
     </select>
 
     <!-- 발신 메시지 수신자 조회 -->
     <select id="selectMessageReceivers" resultType="map">
-        SELECT
-        mr.RECEIVER_NO AS "empNo",
-        COALESCE(e.EMP_NAME, mr.RECEIVER_NO) AS "empName"
-        FROM TB_MESSAGE_RCPT mr
-        LEFT JOIN TB_EMPLOYEE e ON mr.RECEIVER_NO = e.EMP_NO
-        WHERE mr.MSG_ID = #{msgId}
+        select
+               mr.receiver_no as "empNo"
+             , coalesce(e.emp_name, mr.receiver_no) as "empName"
+          from tb_message_rcpt mr
+          left join tb_employee e on mr.receiver_no = e.emp_no
+         where mr.msg_id = #{msgId}
     </select>
 
 </mapper>

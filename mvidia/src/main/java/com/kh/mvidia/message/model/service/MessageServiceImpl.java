@@ -140,6 +140,7 @@ public class MessageServiceImpl implements MessageService {
                 rcptData.put("msgId", msgId);
                 rcptData.put("receiverNo", receiverNo);
                 messageDao.insertMessageRcpt(sqlSession, rcptData);
+
             }
 
             response.put("success", true);

@@ -133,6 +133,7 @@ public class DefectiveController {
             params.put("defType", defType);
         }
         if (defStatus != null && !defStatus.trim().isEmpty()) {
+            String statusCode = convertStatusNameToCode(defStatus);
             params.put("defStatus", defStatus);
         }
         if (startDate != null && !startDate.trim().isEmpty()) {
@@ -169,6 +170,23 @@ public class DefectiveController {
         }
 
         return response;
+    }
+
+    private String convertStatusNameToCode(String defStatus) {
+
+        switch (defStatus){
+            case "대기":
+                return  "W";
+            case "접수":
+                return  "K";
+            case "처리중":
+                return "P";
+            case "완료":
+                return "C";
+            default:
+                return defStatus;
+
+        }
     }
 
 }

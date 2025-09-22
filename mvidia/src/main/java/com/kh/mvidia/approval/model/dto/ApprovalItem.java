@@ -10,7 +10,6 @@ import lombok.*;
 public class ApprovalItem {
 
     private String id;
-    private String docNumber;
     private String title;
     private String writer;
     private String category;

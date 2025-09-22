@@ -650,7 +650,7 @@
 
             tbody.innerHTML += `
                 <tr>
-                    <td>${item.docNumber || 'N/A'}</td>
+                    <td>${data.length - index}</td>
                     <td>${item.category || ''}</td>
                     <td class="title-col">
                         <a href="#" class="title-link" onclick="viewDocument('${item.id}')">${item.title || ''}</a>

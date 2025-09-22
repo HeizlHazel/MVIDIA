@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="salesMapper">
+
+    <select id="selectQuarterlySales" resultType="com.kh.mvidia.sales.model.vo.Sales">
+        select p.prod_name AS prodName,
+            extract
+                  (
+                    year from s.period_st)                 as year
+
+                  , to_number (to_char(s.period_st, 'Q'))  as quarter
+
+                  , sum( s.total_sales )                   as totalSales
+
+                  , sum( s.op_profit )                     as opProfit
+          from tb_sales s
+          join tb_production_quality p
+            on s.prod_code = p.prod_code
+         where extract(year from s.period_st) = #{year}
+         group by p.prod_name
+             , extract(year from s.period_st)
+             , to_char(s.period_st, 'Q')
+         order by p.prod_name
+             , quarter
+    </select>
+
+    <insert id="mergeQuarterlySales" parameterType="string">
+         merge into tb_sales s
+         using
+             (
+            select h.prod_code
+                 , trunc(h.sale_date, 'Q')                          as period_st
+
+                 , last_day(add_months(trunc(h.sale_date, 'Q'), 2)) as period_fn
+
+                 , sum(h.qty * p.price)                             as total_sales
+
+                 , round(sum(h.qty * p.price *
+                 ( h.profit_rate / 100 ) ), 0)                      as op_profit
+
+              from tb_sales_history h
+              join tb_production_quality p
+                on h.prod_code = p.prod_code
+             where to_char(h.sale_date, 'YYYY') = #{year}
+             group by h.prod_code
+                 , trunc(h.sale_date, 'Q')
+                 , last_day(add_months(trunc(h.sale_date, 'Q'), 2))
+             ) src
+           on
+            (
+            s.prod_code = src.prod_code
+            and s.period_st = src.period_st
+            and s.period_fn = src.period_fn
+            )
+          when matched then
+        update set s.total_sales = src.total_sales
+             , s.op_profit = src.op_profit
+          when not matched then
+        insert
+             (
+               prod_code
+             , period_st
+             , period_fn
+             , total_sales
+             , op_profit
+             )
+        values
+             (
+               src.prod_code
+             , src.period_st
+             , src.period_fn
+             , src.total_sales
+             , src.op_profit
+             )
+    </insert>
+</mapper>

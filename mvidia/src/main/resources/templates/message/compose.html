@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>쪽지 작성</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+
+    <style>
+        .custom {
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            background: #ffffff;
+        }
+
+        .receiver-tag {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .receiver-tag .remove-btn {
+            margin-left: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .employee-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .employee-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .employee-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .employee-item:last-child {
+            border-bottom: none;
+        }
+
+        .char-count {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>
+        <span class="material-symbols-outlined" style="font-size: 44px;">edit</span>
+        쪽지 작성
+    </h2>
+    <div>
+        <button type="button" class="btn btn-secondary" onclick="history.back()">
+            <span class="material-symbols-outlined" style="font-size: 16px;">arrow_back</span>
+            목록으로
+        </button>
+    </div>
+</div>
+
+<div class="card custom p-4 mt-3">
+    <form id="composeForm">
+        <!-- 임시 발신자 설정 (실제로는 세션에서 가져옴) -->
+        <input type="hidden" id="senderNo" name="senderNo" value="22010001">
+
+        <div class="form-group">
+            <label for="receiverSearch">수신자</label>
+            <input type="text" class="form-control" id="receiverSearch" placeholder="사원명 또는 사번을 입력하세요" autocomplete="off">
+            <div id="employeeList" class="employee-list mt-1"></div>
+            <div id="selectedReceivers" class="mt-2"></div>
+            <small class="form-text text-muted">여러 명에게 보낼 수 있습니다. 사원을 검색하여 추가하세요.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="title">제목 <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="title" name="title" required maxlength="100">
+            <div class="d-flex justify-content-end">
+                <span class="char-count" id="titleCount">0/100</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="content">내용 <span class="text-danger">*</span></label>
+            <textarea class="form-control" id="content" name="content" rows="10" required maxlength="1000" placeholder="메시지 내용을 입력하세요"></textarea>
+            <div class="d-flex justify-content-end">
+                <span class="char-count" id="contentCount">0/1000</span>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button type="button" class="btn btn-secondary mr-2" onclick="resetForm()">
+                <span class="material-symbols-outlined" style="font-size: 16px;">refresh</span>
+                초기화
+            </button>
+            <button type="button" class="btn btn-primary" onclick="sendMessage()">
+                <span class="material-symbols-outlined" style="font-size: 16px;">send</span>
+                전송
+            </button>
+        </div>
+    </form>
+</div>
+
+<script src="/js/layout.js"></script>
+
+</body>
+</html>

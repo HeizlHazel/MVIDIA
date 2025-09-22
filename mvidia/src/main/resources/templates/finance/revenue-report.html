@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>분기별 수익 조회</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .header {
+            font-size: 18px;
+            font-weight :bold;
+            margin-bottom:10px;
+            color:#333;
+        }
+        .custom {
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            background: #ffffff;
+        }
+        .body div{
+            flex: 1;
+        }
+        .body small{
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            table td, table th{
+                font-size:12px;
+                padding: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2 class="mb-0 fw-bold">
+        <span class="material-symbols-outlined"
+            style="font-size: 35px; color: #212121;">add_chart</span>
+            분기별 수익조회
+    </h2>
+    <div class="container-fluid">
+        <div class="card custom p-3">
+            <select id="yearSelect"
+                    class="form-select form-select-sm"
+                    style="width: 80px; font-size:17px; margin-left: auto;"
+                    onchange="changeYear(this.value)">
+                <option value="2025" th:selected="${year eq '2025'}">2025</option>
+                <option value="2024" th:selected="${year eq '2024'}">2024</option>
+                <option value="2023" th:selected="${year eq '2023'}">2023</option>
+                <option value="2022" th:selected="${year eq '2022'}">2022</option>
+            </select>
+            <div class="card shadow-sm p-3 mt-3">
+                <h5 class="fw-bold mb-3 border-bottom pb-2 mb-3"
+                    th:text="|${year}년 성과 요약|"></h5>
+                <div class="row text-center">
+
+                    <div class="flex-fill border-end">
+                        <h5 class="fw-bold text-primary" th:text="|${ytd} 억원|"></h5>
+                        <small class="text-muted">YTD (연간 총매출)</small>
+                    </div>
+
+                    <div class="flex-fill border-end">
+                        <h5 class="fw-bold text-primary" th:text="|${yoy}%|"></h5>
+                        <small class="text-muted">YoY (전년 대비 성장률)</small>
+                    </div>
+
+                    <div class="flex-fill">
+                        <h5 class="fw-bold text-primary" th:text="|${profitRate}%|"></h5>
+                        <small class="text-muted">영업이익률</small>
+                    </div>
+
+                    <div class="flex-fill border-end">
+                        <h5 class="fw-bold text-primary" th:text="${maxSales}"></h5>
+                        <small class="text-muted">최대 매출 분기</small>
+                    </div>
+
+                    <div class="flex-fill border-end">
+                        <h5 class="fw-bold text-danger" th:text="${minSales}"></h5>
+                        <small class="text-muted">최소 매출 분기</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card custom p-3 mt-3">
+            <div class="row">
+                <div class="col-6">
+                    <div class="header">제품군별 분기 수익 (단위: 억원)</div>
+                        <div class="table-responsive">
+                            <table class="table table-bordered text-center table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>제품군</th>
+                                        <th>1분기</th>
+                                        <th>2분기</th>
+                                        <th>3분기</th>
+                                        <th>4분기</th>
+                                        <th>합계</th>
+                                    </tr>
+                                </thead>
+                                    <tbody>
+                                        <tr th:each="entry : ${productQuarterMap}">
+                                            <td th:text="${entry.key}"></td>
+                                            <td th:text="${#numbers.formatDecimal(entry.value[0] / 100000000.0, 1, 1) + '억'}"></td>
+                                            <td th:text="${#numbers.formatDecimal(entry.value[1] / 100000000.0, 1, 1) + '억'}"></td>
+                                            <td th:text="${#numbers.formatDecimal(entry.value[2] / 100000000.0, 1, 1) + '억'}"></td>
+                                            <td th:text="${#numbers.formatDecimal(entry.value[3] / 100000000.0, 1, 1) + '억'}"></td>
+                                            <td th:text="${#numbers.formatDecimal(productSumMap[entry.key] / 100000000.0, 1, 1)} + '억'"></td>
+                                        </tr>
+                                    </tbody>
+                            </table>
+                        </div>
+                </div>
+            <div class="col-6">
+                <div class="header">분기별 총매출 & 영업이익</div>
+                <div class="body">
+                    <div style="height:350px">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script th:inline="javascript">
+        const totalSales = /*[[${totalSales}]]*/ [];
+        const totalProfit = /*[[${totalProfits}]]*/ [];
+
+        const quarters = ["1분기", "2분기", "3분기", "4분기"];
+
+        new Chart(document.getElementById("profitChart"), {
+            type: "bar",
+            data: {
+                labels: quarters,
+                datasets: [
+                    {
+                        label: "총매출",
+                        data: totalSales,
+                        backgroundColor: "rgba(0, 80, 190, 0.7)",
+                        yAxisID: 'y',
+                        barPercentage: 0.5,
+                        categoryPercentage: 0.6
+                    },
+                    {
+                        label: "영업이익",
+                        data: totalProfit,
+                        type: "line",
+                        borderColor: "orange",
+                        borderWidth: 2,
+                        fill: false,
+                        yAxisID: 'y1',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        position: 'left',
+                        title: { display: true, text: '매출 (억원)' },
+                        ticks: {
+                            callback: function(value) {
+                                return value / 100000000 + '억';
+                            }
+                        },
+                        max: 400000000000
+                    },
+
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        title: { display: true, text: '영업이익 (억원)' },
+                        ticks: {
+                            callback: function(value) {
+                                return value / 100000000 + '억';
+                            }
+                        },
+                        max: 200000000000
+                    }
+                }
+            }
+        });
+    </script>
+        <script>
+            function changeYear(year) {
+                $.ajax({
+                    url: "/finance/revenue-report",
+                    type: "get",
+                    data: { year: year },
+                    success: function (data) {
+                        // 새 HTML에서 container-fluid 추출
+                        const newDoc = $(data);
+                        const newCard = newDoc.find(".container-fluid").html();
+                        $(".container-fluid").html(newCard);
+
+                        newDoc.find("script").each(function() {
+                            eval(this.text);
+                        });
+                    }
+                });
+            }
+
+        </script>
+            <div class="header"> 분기별 총매출 & 영업이익 (단위: 억원)
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered text-center table-hover">
+                    <thead class="table-primary">
+                    <tr>
+                        <th>분기</th>
+                        <th>총매출</th>
+                        <th>영업이익</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>1분기</td>
+                        <td th:text="${#numbers.formatDecimal(totalSales[0] / 100000000.0, 1, 1) + '억'}"></td>
+                        <td th:text="${#numbers.formatDecimal(totalProfits[0] / 100000000.0, 1, 1) + '억'}"></td>
+                    </tr>
+                    <tr>
+                        <td>2분기</td>
+                        <td th:text="${#numbers.formatDecimal(totalSales[1] / 100000000.0, 1, 1) + '억'}"></td>
+                        <td th:text="${#numbers.formatDecimal(totalProfits[1] / 100000000.0, 1, 1) + '억'}"></td>
+                    </tr>
+                    <tr>
+                        <td>3분기</td>
+                        <td th:text="${#numbers.formatDecimal(totalSales[2] / 100000000.0, 1, 1) + '억'}"></td>
+                        <td th:text="${#numbers.formatDecimal(totalProfits[2] / 100000000.0, 1, 1) + '억'}"></td>
+                    </tr>
+                    <tr>
+                        <td>4분기</td>
+                        <td th:text="${#numbers.formatDecimal(totalSales[3] / 100000000.0, 1, 1) + '억'}"></td>
+                        <td th:text="${#numbers.formatDecimal(totalProfits[3] / 100000000.0, 1, 1) + '억'}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+</body>
+</html>

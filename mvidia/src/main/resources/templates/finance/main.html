@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>경영관리 대시보드</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* 카드 공통 스타일 */
+        .dashboard-card {
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 25px;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: 100%;
+        }
+        .dashboard-card h2 {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dashboard-card p b {
+            font-size: 20px;
+            color: #212121;
+        }
+        .shortcut-btn {
+            font-size: 15px;
+            padding: 6px 14px;
+        }
+        .dashboard-icon {
+            font-size: 32px;
+            vertical-align: middle;
+            margin-right: 6px;
+            color: #0050be;
+        }
+
+        /* row 간격 */
+        .row {
+            margin-bottom: 20px;
+        }
+
+        /* 차트 캔버스 고정 높이 */
+        #yearlyChart {
+            height: 300px !important;
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>경영관리 대시보드</h2>
+</div>
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <!-- 급여관리 요약 -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h2>
+                    <span class="material-symbols-outlined dashboard-icon">paid</span>
+                    급여관리 요약
+                    <a href="/finance/payroll" class="btn btn-secondary btn-sm shortcut-btn"> 급여 현황 바로가기</a>
+                </h2>
+                <p>
+                    <b th:text="'₩' + ${#numbers.formatInteger(avgNetPay, 3, 'COMMA')}">₩0</b>
+                    이번달 평균 실지급액
+                </p>
+                <p>
+                    <b th:text="'₩' + ${#numbers.formatInteger(totalNetPay, 3, 'COMMA')}">₩0</b>
+                    이번달 총 실지급액
+                </p>
+                <p><b th:text="|${empCount}명|">0명</b> 지급 대상 인원</p>
+                <small class="text-muted">※ 이번달: <span th:text="${thisMonth}"></span></small>
+            </div>
+        </div>
+
+        <!-- 수익 현황 -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h2>
+                    <span class="material-symbols-outlined dashboard-icon">add_chart</span>
+                    <span th:text="|${quarter}분기 수익 현황|"></span>
+                    <a href="/finance/revenue-report" class="btn btn-secondary btn-sm shortcut-btn"> 분기별 수익 조회하기</a>
+                </h2>
+                <p><b th:text="'₩'+${#numbers.formatInteger(revenueSummary['totalSales']/100000000,3,'COMMA')}+'억'">₩0</b> 현재 분기 매출</p>
+                <p>
+                    <span th:text="'영업이익률: ' + ${#numbers.formatDecimal(revenueSummary['profitRate'],1,1)} + '%'">0%</span>
+                </p>
+                <p><b th:text="'₩'+${#numbers.formatInteger(ytd,3,'COMMA')}+'억'">₩0</b> 올해 총매출</p>
+                <small class="text-muted">※ 선택 연도: <span th:text="${year}"></span></small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 재고 현황 -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h2>
+                    <span class="material-symbols-outlined dashboard-icon">inventory_2</span>
+                    부품 재고 현황
+                    <a href="/finance/inventory" class="btn btn-secondary btn-sm shortcut-btn"> 제품 현황 조회하기</a>
+                </h2>
+                <p><b th:text="|${normalCnt}개|">0개</b> 정상</p>
+                <p><b th:text="|${lowCnt}개|">0개</b> 부족</p>
+                <small class="text-muted">※ 실시간 재고 기준</small>
+                <div th:if="${lowList != null and !#lists.isEmpty(lowList)}">
+                    <hr>
+                    <p class="text-danger fw-bold">부족 품목:</p>
+                    <ul>
+                        <li th:each="c : ${lowList}">
+                            <span th:text="${c.cpName}"></span>
+                            (<span th:text="${c.qty}"></span>개)
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 부족 품목이 없을 때 -->
+                <div th:if="${lowList == null or #lists.isEmpty(lowList)}">
+                    <p class="text-success">현재 부족 품목이 없습니다 !!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 연간 수익 그래프 -->
+        <div class="col-md-6">
+            <div class="dashboard-card">
+                <h2>📊 2025년 연간 수익 (분기별)</h2>
+                <canvas id="yearlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const totalSales = /*[[${totalSales}]]*/ [];
+    const totalProfits = /*[[${totalProfits}]]*/ [];
+
+    new Chart(document.getElementById("yearlyChart"), {
+        type: "bar",
+        data: {
+            labels: ["1분기", "2분기", "3분기", "4분기"],
+            datasets: [
+                {
+                    label: "총매출",
+                    data: totalSales,
+                    backgroundColor: "rgba(0, 80, 190, 0.7)",
+                    yAxisID: "y",
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.8
+                },
+                {
+                    label: "영업이익",
+                    data: totalProfits,
+                    type: "line",
+                    borderColor: "orange",
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: "orange",
+                    fill: false,
+                    yAxisID: "y1"
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, /* 고정 높이 준 상태에서 비율 유지 X */
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ": " + context.raw.toFixed(1) + "억";
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 4000,   // ← 매출 축을 4000억으로 고정
+                    title: {display: true, text: "매출 (억원)"},
+                    ticks: {callback: val => val + "억"}
+                },
+                y1: {
+                    beginAtZero: true,
+                    max: 2000,   // ← 영업이익 축을 2000억으로 고정
+                    position: "right",
+                    title: {display: true, text: "영업이익 (억원)"},
+                    ticks: {callback: val => val + "억"}
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

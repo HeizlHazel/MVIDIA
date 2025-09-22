@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Service
 public class ApprovalServiceImpl implements ApprovalService {
 
-    @Value("${notion.token}")
+    @Value("${notion.api.token}")
     private String token;
 
     @Value("${notion.database.id}")

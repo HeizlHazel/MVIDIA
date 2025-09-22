@@ -30,14 +30,14 @@
 
 <!-- 메인 컨텐츠 -->
 <div class="myPage">
+    <h2 class="page-title">👤 마이페이지 개인정보 조회</h2>
     <div class="widget" id="home">
-        <h2 class="page-title">👤 마이페이지 개인정보 조회</h2>
         <div class="controls-row">
-            <th:block th:if="${att.originName == null}">
+            <th:block th:unless="${atch.originName != null  && atch.fileStatus == 'U'}">
                 <img class="profile-pic" th:src="@{/images/default_profile.png}" alt="기본 프로필">
             </th:block>
-            <th:block th:unless="${att.originName == null}">
-                <img th:src="@{/uploadFiles/{fileName}(fileName=${att.changeName})}" alt="프로필 사진" class="profile-pic">
+            <th:block th:if="${atch.originName != null && atch.fileStatus == 'U'}">
+                <img th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="profile-pic">
             </th:block>
 
             <div class="mark mark-gray" style="margin-bottom:10px">조회 전용</div>
@@ -49,9 +49,9 @@
             <div class="field full">
                 <label>프로필 사진</label>
                 <input type="text"
-                       th:value="${att.originName != null} ? ${att.originName} : ''"
+                       th:value="${atch.originName != null} ? ${atch.originName} : ''"
                        readonly
-                       th:placeholder="${att.originName != null} ? '' : '선택된 파일 없음'"/>
+                       th:placeholder="${atch.originName != null} ? '' : '선택된 파일 없음'"/>
             </div>
             <div class="field"><label>성*</label><input name="empLName" th:value="${session.loginEmp.empLName}"  readonly/></div>
             <div class="field"><label>이름*</label><input name="empName" th:value="${session.loginEmp.empName}"  readonly/></div>
@@ -65,7 +65,7 @@
             <div class="field"><label>내선번호</label><input name="extNo" placeholder="1234" th:value="${session.loginEmp.extNo}" readonly /></div>
             <div class="field full"><label>입사일*</label><input name="hireDate" type="date" th:value="${session.loginEmp.hireDate}"  readonly /></div>
             <div class="actions">
-                <a class="btn" th:href="@{/mypage/update}">개인정보 수정 요청 페이지로</a>
+                <a class="btn" th:href="@{/myPage/update}">개인정보 수정 요청 페이지로</a>
             </div>
         </div>
 

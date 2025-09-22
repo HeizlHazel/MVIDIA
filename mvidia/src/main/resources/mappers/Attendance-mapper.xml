@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="attendanceMapper">
+    <resultMap id="attendanceResultSet" type="Attendance">
+        <result column="att_no" property="attNo"/>
+        <result column="emp_no" property="empNo"/>
+        <result column="emp_name" property="empName"/>
+        <result column="att_date" property="attDate"/>
+        <result column="arriving_time" property="arrivingTime"/>
+        <result column="leaving_time" property="leavingTime"/>
+        <result column="att_status" property="attStatus"/>
+        <result column="status_name" property="attStatusName"/>
+    </resultMap>
+
+    <select id="selectRecentAttendances" resultMap="attendanceResultSet">
+        select *
+          from (
+                 select
+                        att_no
+                      , emp_no
+                      , emp_lname || emp_name as "emp_name"
+                      , to_char(att_date, 'YYYY-MM-DD') as "att_date"
+                      , to_char(arriving_time, 'HH24:MI') as "arriving_time"
+                      , to_char(leaving_time, 'HH24:MI') as "leaving_time"
+                      , att_status
+                      , status_name
+                   from tb_attendance
+                   join tb_employee using (emp_no)
+                   join tb_status on (att_status = status_code)
+                  order
+                     by att_no desc
+                )
+        where rownum &lt;= 5
+    </select>
+
+    <select id="selectAttListCount" resultType="_int">
+        select count(*)
+          from tb_attendance
+          join tb_employee using (emp_no)
+          join tb_status on (att_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="searchMap.keyword != null and searchMap.keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="status != null and status != ''">
+                and att_status = #{searchMap.status}
+            </if>
+        </trim>
+    </select>
+
+    <select id="selectAttendanceList" resultMap="attendanceResultSet">
+        select *
+          from (
+                 select rownum rnum, a.*
+                   from (
+                          select
+                                 att_no
+                               , emp_no
+                               , emp_lname || emp_name as "emp_name"
+                               , to_char(att_date, 'YYYY-MM-DD') as "att_date"
+                               , to_char(arriving_time, 'HH24:MI') as "arriving_time"
+                               , to_char(leaving_time, 'HH24:MI') as "leaving_time"
+                               , att_status
+                               , status_name
+                            from tb_attendance
+                            join tb_employee using (emp_no)
+                            join tb_status on (att_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="searchMap.keyword != null and searchMap.keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="searchMap.status != null and searchMap.status != ''">
+                and att_status = #{searchMap.status}
+            </if>
+        </trim>
+                           order by att_no desc
+                         ) a
+            )
+         where rnum between #{pi.startRow} and #{pi.endRow}
+    </select>
+
+    <update id="updateAttendance">
+        update tb_attendance
+            set att_status = #{attStatus}
+              , arriving_time = to_date(#{arrivingTime}, 'HH24:MI')
+              , leaving_time = to_date(#{leavingTime}, 'HH24:MI')
+              , hrm_no = #{hrmNo}
+         where att_no = #{attNo}
+    </update>
+
+    <select id="selectEmpAttendanceList" resultMap="attendanceResultSet">
+        select
+               att_no
+             , emp_no
+             , emp_lname || emp_name as "emp_name"
+             , to_char(att_date, 'YYYY-MM-DD') as "att_date"
+             , to_char(arriving_time, 'HH24:MI') as "arriving_time"
+             , to_char(leaving_time, 'HH24:MI') as "leaving_time"
+             , att_status
+             , status_name
+          from tb_attendance
+          join tb_employee using (emp_no)
+          join tb_status on (att_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="searchMap.keyword != null and searchMap.keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="searchMap.status != null and searchMap.status != ''">
+                and att_status = #{searchMap.status}
+            </if>
+            and emp_no = #{searchMap.empNo}
+        </trim>
+                order
+                   by att_no desc
+    </select>
+
+    <select id="selectToday" parameterType="string" resultMap="attendanceResultSet">
+        SELECT
+               ATT_NO
+             , EMP_NO
+             , ATT_DATE
+             , ARRIVING_TIME
+             , LEAVING_TIME
+             , ATT_STATUS
+          FROM TB_ATTENDANCE
+         WHERE EMP_NO = #{empNo}
+           AND ATT_DATE = TRUNC(SYSDATE)
+    </select>
+
+
+    <insert id="checkInUpsert">
+        INSERT
+            INTO TB_ATTENDANCE
+             (
+               ATT_NO
+             , EMP_NO
+             , HRM_NO
+             , ATT_DATE
+             , ARRIVING_TIME
+             , ATT_STATUS
+             )
+        SELECT
+               'ATT' || LPAD(SEQ_ATT.NEXTVAL, 4, '0')
+             , #{empNo}
+             , '22010001'
+             , TRUNC(SYSDATE)
+             , SYSDATE
+             , #{status}
+          FROM dual
+         WHERE NOT EXISTS
+             (
+               SELECT 1
+                 FROM TB_ATTENDANCE
+                WHERE EMP_NO = #{empNo}
+                  AND ATT_DATE = TRUNC(SYSDATE)
+              )
+    </insert>
+
+    <update id="checkOut">
+        UPDATE TB_ATTENDANCE
+           SET LEAVING_TIME = SYSDATE
+         WHERE EMP_NO = #{empNo}
+           AND ATT_DATE = TRUNC(SYSDATE)
+           AND LEAVING_TIME IS NULL
+    </update>
+
+    <update id="updateStatusToday">
+        UPDATE TB_ATTENDANCE
+           SET ATT_STATUS = #{status}
+         WHERE EMP_NO = #{empNo}
+            AND ATT_DATE = TRUNC(SYSDATE)
+    </update>
+
+    <select id="selectTodayTimes"  resultMap="attendanceResultSet">
+        SELECT
+               TO_CHAR(ARRIVING_TIME, 'HH24:MI') AS arriving_time
+             , TO_CHAR(LEAVING_TIME,  'HH24:MI') AS leaving_time
+             , ATT_STATUS
+          FROM TB_ATTENDANCE
+         WHERE EMP_NO = #{empNo}
+           AND ATT_DATE = TRUNC(SYSDATE)
+    </select>
+
+</mapper>

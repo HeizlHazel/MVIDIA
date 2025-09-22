@@ -12,26 +12,36 @@
     </resultMap>
 
     <insert id="insertFile">
+        <selectKey keyProperty="atchId" resultType="string" order="BEFORE">
+            select 'ATCH'|| LPAD(SEQ_EMP.NEXTVAL, 4, '0')
+            FROM dual
+        </selectKey>
+
         insert
             into tb_attachment
              (
-               ref_type
+               atch_id
+             , ref_type
              , origin_name
              , change_name
              , up_emp_no
+             , file_status
               )
              values
              (
-               #{refType}
+               #{atchId}
+             , #{refType}
              , #{originName}
              , #{changeName}
              , #{uploadEmpNo}
+             , #{fileStatus}
              )
     </insert>
 
     <select id="selectProfile" resultMap="attachmentResultSet">
         select
-               ref_type
+               atch_id
+             , ref_type
              , origin_name
              , change_name
              , upload_date
@@ -40,7 +50,16 @@
           from tb_attachment
          where up_emp_no = #{empNo}
            and ref_type = 'F'
+           and file_status = 'U'
 
     </select>
+
+    <update id="updateFile" parameterType="map">
+        update tb_attachment
+           set
+               file_status = #{fileStatus}
+         where atch_id = #{atchId}
+    </update>
+
 
 </mapper>

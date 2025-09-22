@@ -1,6 +1,7 @@
 package com.kh.mvidia.employee.controller;
 
 import com.kh.mvidia.common.model.vo.Attachment;
+import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.service.EmployeeService;
 import com.kh.mvidia.employee.model.vo.Employee;
 import com.kh.mvidia.permission.model.service.PermissionService;
@@ -76,8 +77,11 @@ public class EmployeeController {
 				// 없으면 기본 메인 페이지로 이동
 				return "redirect:/mainPage";
 			}
-		}else{
-			redirectAttributes.addFlashAttribute("alertMsg", "로그인에 실패하였습니다. 다시 로그인 시도해주세요.");
+		}else if(loginEmp != null && !bcryptPasswordEncoder.matches(emp.getEmpPwd(), loginEmp.getEmpPwd())){
+			redirectAttributes.addFlashAttribute("alertMsg", "비밀번호를 잘못입력하셨습니다.");
+			return "redirect:/";
+		} else{
+			redirectAttributes.addFlashAttribute("alertMsg", "존재하지 않는 사번입니다.");
 			return "redirect:/";
 		}
     }
@@ -113,6 +117,7 @@ public class EmployeeController {
 			atch.setRefType("F");
 			atch.setOriginName(atchFile.getOriginalFilename());
 			atch.setChangeName(changeName);
+			atch.setFileStatus("U");
 		}
 		
 		// 최종 확인 페이지에 전달할 데이터들을 Model에 추가
@@ -148,6 +153,139 @@ public class EmployeeController {
 		}
 		
 	}
+	
+	@PostMapping("/updateInfo.emp")
+	public String updateEmpInfo( @RequestParam Map<String, String> params,
+								 @RequestParam(value = "atchFile", required = false) MultipartFile atchFile,
+								 Employee emp,
+								 String originAtchNo,
+								 String oldValue,
+								 RedirectAttributes redirectAttributes,
+								 HttpSession session){
+		
+			int result = 0;
+			int atchResult = 1;
+
+			Employee originEmp = empService.selectEmpNo(emp.getEmpNo());
+
+			if(originEmp == null){
+				redirectAttributes.addFlashAttribute("alertMsg", "존재하지 않는 사원입니다.");
+				return "redirect:/mainPage";
+			}
+
+			Attachment newAtch = null;
+			if (atchFile != null && !atchFile.isEmpty()) {
+				// 새로운 파일이 업로드된 경우
+				String changeName = saveFile(atchFile);
+				newAtch = new Attachment();
+				newAtch.setRefType("F");
+				newAtch.setOriginName(atchFile.getOriginalFilename());
+				newAtch.setChangeName(changeName);
+				newAtch.setUploadEmpNo(emp.getEmpNo());
+				newAtch.setFileStatus("L");
+			}
+
+			List<EmpModifyReq> reqList = new ArrayList<>();
+
+			if (newAtch != null) {
+				atchResult = empService.insertFile( newAtch);
+				if (atchResult > 0) {
+					EmpModifyReq atchReq = new EmpModifyReq();
+					atchReq.setOldAtchId(originAtchNo);
+					atchReq.setNewAtchId(newAtch.getAtchId());
+					atchReq.setEmpNo(emp.getEmpNo());
+					atchReq.setFieldName("profilePic");
+					String oldAttachmentValue = (originAtchNo != null && !originAtchNo.isEmpty())
+							? oldValue
+							: "default_profile.png";
+					
+					atchReq.setOldValue(oldAttachmentValue);
+					atchReq.setNewValue(newAtch.getChangeName());
+					atchReq.setNewAtchId(newAtch.getAtchId());
+					reqList.add(atchReq);
+				}
+			}
+
+			if (!emp.getEmpLName().equals(originEmp.getEmpLName())) {
+				EmpModifyReq req = new EmpModifyReq();
+				req.setEmpNo(emp.getEmpNo());
+				req.setFieldName("empLName");
+				req.setOldValue(originEmp.getEmpLName());
+				req.setNewValue(emp.getEmpLName());
+				reqList.add(req);
+			}
+			if (!emp.getEmpName().equals(originEmp.getEmpName())) {
+				EmpModifyReq req = new EmpModifyReq();
+				req.setEmpNo(emp.getEmpNo());
+				req.setFieldName("empName");
+				req.setOldValue(originEmp.getEmpName());
+				req.setNewValue(emp.getEmpName());
+				reqList.add(req);
+			}
+			if (!emp.getEmpEngLName().equals(originEmp.getEmpEngLName())) {
+				EmpModifyReq req = new EmpModifyReq();
+				req.setEmpNo(emp.getEmpNo());
+				req.setFieldName("empEngLName");
+				req.setOldValue(originEmp.getEmpEngLName());
+				req.setNewValue(emp.getEmpEngLName());
+				reqList.add(req);
+			}
+			if (!emp.getEmpEngName().equals(originEmp.getEmpEngName())) {
+				EmpModifyReq req = new EmpModifyReq();
+				req.setEmpNo(emp.getEmpNo());
+				req.setFieldName("empEngName");
+				req.setOldValue(originEmp.getEmpEngName());
+				req.setNewValue(emp.getEmpEngName());
+				reqList.add(req);
+			}
+			if (!emp.getBirthday().equals(originEmp.getBirthday())) {
+				EmpModifyReq req = new EmpModifyReq();
+				req.setEmpNo(emp.getEmpNo());
+				req.setFieldName("birthday");
+				req.setOldValue(originEmp.getBirthday());
+				req.setNewValue(emp.getBirthday());
+				reqList.add(req);
+			}
+			if (!emp.getAddress().equals(originEmp.getAddress())) {
+				EmpModifyReq req = new EmpModifyReq();
+				req.setEmpNo(emp.getEmpNo());
+				req.setFieldName("address");
+				req.setOldValue(originEmp.getAddress());
+				req.setNewValue(emp.getAddress());
+				reqList.add(req);
+			}
+			if (!emp.getPhone().equals(originEmp.getPhone())) {
+				EmpModifyReq req = new EmpModifyReq();
+				req.setEmpNo(emp.getEmpNo());
+				req.setFieldName("phone");
+				req.setOldValue(originEmp.getPhone());
+				req.setNewValue(emp.getPhone());
+				reqList.add(req);
+			}
+			if (!emp.getExtNo().equals(originEmp.getExtNo())) {
+				EmpModifyReq req = new EmpModifyReq();
+				req.setEmpNo(emp.getEmpNo());
+				req.setFieldName("extNo");
+				req.setOldValue(originEmp.getExtNo());
+				req.setNewValue(emp.getExtNo());
+				reqList.add(req);
+			}
+
+			// 4. 변경 요청이 한 건이라도 있으면 DB에 삽입
+			if (!reqList.isEmpty()) {
+				result = empService.insertEmpModifyRequests(reqList);
+			}
+
+
+		if (result * atchResult > 0) {
+			redirectAttributes.addFlashAttribute("alertMsg", "개인정보 수정 요청이 완료되었습니다.");
+		} else {
+			redirectAttributes.addFlashAttribute("alertMsg", "개인정보 수정 요청에 실패했습니다.");
+		}
+
+		return "redirect:/mainPage";
+	}
+	
 
 	
 	public String saveFile(MultipartFile atchFile){

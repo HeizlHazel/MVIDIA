@@ -38,8 +38,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc:3.5.5") // jdbc를 위한 라이브러리 설정
     implementation("org.springframework.boot:spring-boot-starter-security:3.5.5") // 스프링 시큐리티 (security)
     implementation("com.google.code.gson:gson:2.10.1") // gson 라이브러리
-    implementation("com.konghq:unirest-java:3.13.6") // 노션 연동 관련 unirest 라이브러리
-    implementation("com.googlecode.json-simple:json-simple:1.1.1") // json 라이브러리
 }
 
 tasks.named('test') {

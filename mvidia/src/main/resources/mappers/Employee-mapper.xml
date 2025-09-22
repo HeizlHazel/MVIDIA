@@ -14,6 +14,7 @@
         <result column="dept_name" property="deptName"/>
         <result column="job_code" property="jobCode"/>
         <result column="job_name" property="jobName"/>
+        <result column="change_name" property="changeName"/>
         <result column="address" property="address"/>
         <result column="phone" property="phone"/>
         <result column="ext_no" property="extNo"/>
@@ -41,6 +42,7 @@
         , address
         , phone
         , ext_no
+        , change_name
         , emp_status
         , to_char(create_date, 'YYYY-MM-DD') as create_date
         , to_char(modify_date, 'YYYY-MM-DD') as modify_date
@@ -49,6 +51,7 @@
         from tb_employee
         join tb_department using (dept_code)
         join tb_job using (job_code)
+        left join tb_attachment on (emp_no = up_emp_no and ref_type = 'F' and file_status = 'U')
         where emp_status = 'H'
         and emp_no = #{empNo}
     </select>
@@ -99,4 +102,108 @@
 
     </insert>
 
+    <select id="selectEmpNo" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_pwd
+             , email
+             , emp_lname
+             , emp_name
+             , emp_eng_lname
+             , emp_eng_name
+             , to_char(birthday, 'YYYY-MM-DD') as birthday
+             , dept_code
+             , dept_name
+             , job_code
+             , job_name
+             , address
+             , phone
+             , ext_no
+             , emp_status
+             , to_char(create_date, 'YYYY-MM-DD') as create_date
+             , to_char(modify_date, 'YYYY-MM-DD') as modify_date
+             , to_char(hire_date, 'YYYY-MM-DD') as hire_date
+             , to_char(retired_date, 'YYYY-MM-DD') as retired_date
+          from tb_employee
+          join tb_department using (dept_code)
+          join tb_job using (job_code)
+         where emp_status = 'H'
+           and emp_no = #{empNo}
+    </select>
+    
+    <select id="checkEmpNo" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_lname || emp_name as "emp_name"
+             , dept_name
+             , substr(job_name, -2) as "job_name"
+          from tb_employee
+          join tb_department using (dept_code)
+          join tb_job using(job_code)
+         where emp_no = #{empNo}
+           and emp_status = 'H'
+    </select>
+
+    <update id="updateEmpSelective" parameterType="Employee">
+        update tb_employee
+            <set>
+                <if test="email != null">         email = #{email},</if>
+                <if test="empLName != null">      emp_lname = #{empLName},</if>
+                <if test="empName != null">       emp_name = #{empName},</if>
+                <if test="empEngLName != null">   emp_eng_lname = #{empEngLName},</if>
+                <if test="empEngName != null">    emp_eng_name = #{empEngName},</if>
+                <if test="birthday != null">      birthday = #{birthday},</if>
+                <if test="deptCode != null">      dept_code = #{deptCode},</if>
+                <if test="deptName != null">      dept_name = #{deptName},</if>
+                <if test="jobCode != null">       job_code = #{jobCode},</if>
+                <if test="jobName != null">       job_name = #{jobName},</if>
+                <if test="address != null">       address = #{address},</if>
+                <if test="phone != null">         phone = #{phone},</if>
+                <if test="extNo != null">         ext_no = #{extNo},</if>
+                modify_date = sysdate
+            </set>
+         where emp_no = #{empNo}
+           and emp_status = 'H'
+    </update>
+
+    <update id="deleteEmp">
+        update tb_employee
+            set
+               emp_status = 'F'
+             , retired_date = sysdate
+         where emp_no = #{empNo}
+           and emp_status = 'H'
+    </update>
+
+    <select id="selectEmpAllList" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_lname || emp_name as "emp_name"
+             , dept_name
+             , substr(job_name, -2) as "job_name"
+             , email
+             , change_name
+          from tb_employee
+          join tb_department using(dept_code)
+          join tb_job using(job_code)
+          left join tb_attachment on (emp_no = up_emp_no and ref_type = 'F' and file_status = 'U')
+         where job_code like '__1'
+           and emp_status = 'H'
+    </select>
+
+    <select id="selectEmpByDept" resultMap="employeeResultSet">
+        select
+               emp_no
+             , emp_lname || emp_name as "emp_name"
+             , dept_name
+             , substr(job_name, -2) as "job_name"
+             , email
+             , change_name
+          from tb_employee
+          join tb_department using(dept_code)
+          join tb_job using(job_code)
+          left join tb_attachment on (emp_no = up_emp_no and ref_type = 'F' and file_status = 'U')
+         where dept_Name = #{deptName}
+           and emp_status = 'H'
+    </select>
 </mapper>

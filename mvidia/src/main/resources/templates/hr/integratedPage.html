@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .hr-integrated { grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+        .hr-integrated > .widget { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, .1); }
+        .page-title { font-size: 20px; margin: 0 0 12px 0; }
+        #deptSelect {padding:10px 12px;border-radius:12px;border:1px solid #dde6ec;}
+        .stack { display: flex; gap: 10px; flex-wrap: wrap; }
+        .mt8 { margin-top: 8px; }
+        .mt16 { margin-top: 16px; display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+        .muted { color: var(--muted); }
+        .table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        .table th { font-size: 12px; color: #698492; text-align: left; padding: 0 10px; }
+        .table td { background: #fff; padding: 12px; border-top: 1px solid #e7eef3; border-bottom: 1px solid #e7eef3; }
+        .job-group { grid-column: 1 / -1; margin-top: 10px; }
+        .job-group h3 { margin: 0; padding-bottom: 5px; border-bottom: 2px solid #ddd; }
+        .job-group .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 12px; }
+        .card-footer-action:hover {color: #0056b3;}
+    </style>
+</head>
+<body>
+
+<div class="hr-integrated">
+    <h2 class="page-title">📋 인사 통합 관리 · 부서별 인사정보</h2>
+    <div class="widget" id="home">
+        <div class="stack mt8">
+            <select id="deptSelect">
+                <option value="ALL">전체 부서</option>
+            </select>
+            <span id="allDeptMessage" class="muted">* 각 부서별 부장 1명씩만 표시됩니다.</span>
+        </div>
+        <div id="integratedList" class="mt16">
+        </div>
+    </div>
+</div>
+
+<script>
+    // 페이지 로드 시 부서 목록을 서버에서 가져와 셀렉트 박스를 채웁니다.
+    $(document).ready(function() {
+        fetchDepartments();
+        refreshIntegrated(); // 초기 화면 렌더링
+    });
+
+    // 부서 목록을 서버에서 가져오는 함수
+    function fetchDepartments() {
+        $.ajax({
+            url: '/hr/departments',
+            type: 'GET',
+            success: function(response) {
+                const deptSelect = $('#deptSelect');
+                response.forEach(dept => {
+                    deptSelect.append(`<option value="${dept.deptName}">${dept.deptName}</option>`);
+                });
+            },
+            error: function(xhr) {
+                console.error("부서 목록을 불러오는 데 실패했습니다: ", xhr.responseText);
+            }
+        });
+    }
+
+    // 선택된 부서에 따라 서버에서 인사 데이터를 가져와 화면을 갱신하는 함수
+    function refreshIntegrated() {
+        const currentDept = $('#deptSelect').val();
+
+        if (currentDept === 'ALL') {
+            $('#allDeptMessage').show();
+        } else {
+            $('#allDeptMessage').hide();
+        }
+        const url = currentDept === 'ALL' ? '/hr/integrated/all' : `/hr/integrated/dept/${currentDept}`;
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(employees) {
+                const integratedListArea = $('#integratedList');
+                integratedListArea.empty(); // 기존 내용 초기화
+
+                const positionOrder = ['부장', '차장', '과장', '대리', '사원'];
+
+                if (currentDept === 'ALL') {
+                    // '전체 부서' 선택 시, 각 부서별 부장만 표시
+                    employees.sort((a, b) => a.deptName.localeCompare(b.deptName)).forEach(emp => {
+                        integratedListArea.append(createEmployeeCard(emp, ''));
+                    });
+                } else {
+                    // 특정 부서 선택 시, 직급별 트리 구조로 표시
+                    const employeesByPosition = employees.reduce((acc, emp) => {
+                        acc[emp.jobName] = acc[emp.jobName] || [];
+                        acc[emp.jobName].push(emp);
+                        return acc;
+                    }, {});
+
+                    positionOrder.forEach(jobName => {
+                        if (employeesByPosition[jobName]) {
+                            integratedListArea.append(createEmployeeGroup(jobName, employeesByPosition[jobName]));
+                        }
+                    });
+                }
+            },
+            error: function(xhr) {
+                console.error("인사 정보를 불러오는 데 실패했습니다: ", xhr.responseText);
+            }
+        });
+    }
+
+    // 사원 카드를 생성하는 유틸리티 함수
+    function createEmployeeCard(emp) {
+    const defaultProfile = '/images/default_profile.png';
+    const profileImg = emp.changeName ? `/uploadFiles/${emp.changeName}` : defaultProfile;
+        return `
+            <div class="card" style="position: relative; border-radius:10px">
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <img src="${profileImg}" alt="profile" style="width: 54px; height: 54px; border-radius: 50%; object-fit: cover; background: #e1e9ee;" />
+                    <div style="display: flex; flex-direction: column;">
+                        <b>${emp.empName} <span class="muted">(${emp.empNo})</span></b>
+                        <span class="muted">${emp.deptName} · ${emp.jobName}</span>
+                        <span class="muted" style="font-size: 12px;">${emp.email || ''}</span>
+                    </div>
+                </div>
+                <a class="btn card-footer-action" href="/hr/accountModifyDetail.hr?empNo=${emp.empNo}">정보조회</a>
+            </div>
+        `;
+    }
+
+    // 직급별 그룹을 생성하는 유틸리티 함수
+    function createEmployeeGroup(jobName, employees) {
+        let groupHtml = `<div class="job-group">
+                             <h3>${jobName}</h3>
+                             <div class="card-grid">`;
+
+        employees.sort((a, b) => a.empName.localeCompare(b.empName)).forEach(emp => {
+            groupHtml += createEmployeeCard(emp);
+        });
+
+        groupHtml += `</div></div>`;
+        return groupHtml;
+    }
+
+    // 부서 선택 시 이벤트 리스너
+    $('#deptSelect').on('change', refreshIntegrated);
+</script>
+</body>
+</html>

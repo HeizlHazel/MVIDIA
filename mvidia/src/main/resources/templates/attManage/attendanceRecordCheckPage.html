@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>📝 출퇴근 기록</title>
+    <style>
+        .attManage-Attendance { grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+        .attManage-Attendance > .widget { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, .1); }
+        .page-title { font-size: 20px; margin: 0 0 12px 0; }
+        .search-container { display: flex; align-items: center; margin-bottom: 15px; }
+        .search-container input, .search-container select { padding: 8px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px; }
+        .search-container button { padding: 8px 12px; border: none; border-radius: 5px; background-color: #0c197f; color: #fff; cursor: pointer; }
+        .action-buttons { display: none; }
+        .attManage-Attendance .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background-color: #0c197f; color: #fff; }
+        .attManage-Attendance .btn:hover { background: #0050be; color: #fff; }
+        .attManage-Attendance .ghost {display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px; margin-bottom:5px; border-radius: 12px; background: transparent; color: #002B39; border: 1px solid #002B39; text-decoration:none; }
+        .attManage-Attendance .ghost:hover { background: #e7f3f7; }
+        .attManage-Attendance .att-cancel-btn {display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; margin-left: 5px; }
+        .attManage-Attendance .att-cancel-btn:hover { background: #e7f3f7; }
+    </style>
+</head>
+<body>
+<div class="attManage-Attendance">
+    <h2 class="page-title">🕘 출퇴근 기록 조회</h2>
+    <div class="widget" id="home">
+
+        <div class="search-container">
+            <input type="text" id="attendanceSearchKeyword" placeholder="상태" th:value="${param.keyword}">
+            <select id="attendanceSearchStatus">
+                <option value="" th:selected="${param.status == null or param.status[0] == ''}">상태 전체</option>
+                <option value="N" th:selected="${param.status != null and param.status[0] == 'N'}">정상</option>
+                <option value="T" th:selected="${param.status != null and param.status[0] == 'T'}">지각</option>
+                <option value="B" th:selected="${param.status != null and param.status[0] == 'B'}">결근</option>
+                <option value="E" th:selected="${param.status != null and param.status[0] == 'E'}">조퇴</option>
+                <option value="V" th:selected="${param.status != null and param.status[0] == 'V'}">휴가</option>
+                <option value="O" th:selected="${param.status != null and param.status[0] == 'O'}">야근</option>
+                <option value="X" th:selected="${param.status != null and param.status[0] == 'X'}">출장</option>
+            </select>
+
+            <button id="attendanceSearchBtn">검색</button>
+        </div>
+
+        <table class="table mt16">
+            <thead><tr><th>#</th><th>사번</th><th>이름</th><th>일자</th><th>출근</th><th>퇴근</th><th>상태</th></tr></thead>
+            <tbody id="attendList">
+            <tr th:if="${#lists.isEmpty(attList)}">
+                <td colspan="8" style="text-align: center;">조회된 근태 내역이 없습니다.</td>
+            </tr>
+            <tr th:unless="${#lists.isEmpty(attList)}" th:each="att : ${attList}">
+                <td th:text="${attStat.count}"></td>
+                <td th:text="${att.empNo}"></td>
+                <td th:text="${att.empName}"></td>
+                <td th:text="${att.attDate}"></td>
+                <td th:text="${att.arrivingTime}"></td>
+                <td th:text="${att.leavingTime}"></td>
+                <td th:text="${att.attStatusName}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="stack mt8" id="attendancePager" th:if="${pi.listCount > 0}" align="center">
+            <a th:if="${pi.currentPage > 1}"
+               th:href="@{/attManage/attendanceRecordCheck.attManage(
+                                                  cpage=${pi.currentPage-1},
+                                                  keyword=${param.keyword},
+                                                  status=${param.status})}">&lt;</a>
+            <span th:each="p : ${#numbers.sequence(pi.startPage, pi.endPage)}">
+                <a th:href="@{/attManage/attendanceRecordCheck.attManage(
+                        cpage=${p},
+                        keyword=${param.keyword},
+                        status=${param.status})}"
+                   th:text="${p}"
+                   th:class="${pi.currentPage eq p ? 'active' : ''}"></a>
+            </span>
+            <a th:href="@{/attManage/attendanceRecordCheck.attManage(
+                      cpage=${pi.currentPage+1},
+                      keyword=${param.keyword},
+                      status=${param.status})}"
+               th:if="${pi.currentPage < pi.maxPage}">&gt;</a>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    const contextPath = [[@{/}]];
+
+    // 검색 버튼 클릭 시
+    $('#attendanceSearchBtn').on('click', function() {
+        const keyword = $('#attendanceSearchKeyword').val();
+        const status = $('#attendanceSearchStatus').val();
+
+        window.location.href = contextPath + 'attManage/attendanceRecordCheck.attManage?cpage=1&keyword=' + encodeURIComponent(keyword) + '&status=' + encodeURIComponent(status);
+    });
+</script>
+</body>
+</html>

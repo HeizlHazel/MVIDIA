@@ -9,8 +9,10 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
-        .accountCreate{grid-column:2; grid-row:2; background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);}
-        .accountCreate>.widget{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+        .accountConfirm{grid-column:2; grid-row:2; background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);}
+        .accountConfirm>.widget{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+        .accountConfirm .profile-section {display: flex; align-items: left; gap: 20px; margin-bottom: 15px;}
+        .profile-pic {width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 1px solid #ddd;}
         .form{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px}
         .form .field{display:flex;flex-direction:column;gap:8px}
         .form label{font-size:12px;color:var(--muted)}
@@ -25,20 +27,24 @@
 <body>
 
 <!-- 메인 컨텐츠 -->
-<div class="accountCreate">
+<div class="accountConfirm">
+    <h2 class="page-title">✔️ 사원 계정 최종 확인</h2>
     <div class="widget" id="home">
-        <h2 class="page-title">사원 계정 최종 확인</h2>
         <form th:action="@{/createEmp.emp}" class="form" method="post">
+            <div class="profile-section">
+                <th:block th:unless="${atch != null && atch.fileStatus == 'U'}">
+                    <img id="profile-preview" class="profile-pic" th:src="@{/images/default_profile.png}" alt="기본 프로필">
+                </th:block>
+                <th:block th:if="${atch != null && atch.fileStatus == 'U'}">
+                    <img id="profile-preview" th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="profile-pic">
+                </th:block>
+                <label style="margin-right:10px;"
+                       th:text="${atch != null && atch.originName != null ? atch.originName : '프로필 사진 미 첨부'}">프로필 사진 미 첨부
+                </label>
+            </div>
             <div class="field full"><label>사번*</label><input name="empNo" placeholder=" 자동 생성" readonly /></div>
             <div class="field full"><label>비밀번호*</label><input name="empPwd" th:value="${emp.empPwd}" readonly /></div>
             <div class="field full"><label>이메일*</label><input name="email" type="email"  placeholder="사번@gmail.com 자동 생성"  readonly /></div>
-            <div class="field full">
-                <label>프로필 사진</label>
-                <input type="text"
-                       th:value="${atch.originName != null} ? ${atch.originName} : ''"
-                       readonly
-                       th:placeholder="${atch.originName != null} ? '' : '선택된 파일 없음'"/>
-            </div>
             <div class="field"><label>성*</label><input name="empLName" th:value="${emp.empLName}" required readonly/></div>
             <div class="field"><label>이름*</label><input name="empName" th:value="${emp.empName}" required readonly/></div>
             <div class="field"><label>영문 성*</label><input name="empEngLName" th:value="${emp.empEngLName}" required readonly/></div>
@@ -71,6 +77,7 @@
             <input type="hidden" name="originName" th:value="${atch.originName}" />
             <input type="hidden" name="changeName" th:value="${atch.changeName}" />
             <input type="hidden" name="refType" th:value="${atch.refType}" />
+            <input type="hidden" name="fileStatus" th:value="${atch.fileStatus}" />
             <input type="hidden" id="jobCode" name="jobCode" th:value="${emp.jobCode}">
             <div class="actions">
                 <button class="btn" type="submit">계정 생성</button>

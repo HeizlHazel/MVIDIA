@@ -7,7 +7,7 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>👤 사원 계정 · 작업 선택</title>
     <style>
         .hrEmpAccount{grid-column:2;grid-row:2; background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);}
         .hrEmpAccount>.widget{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
@@ -20,6 +20,7 @@
         .btn.danger{background:var(--danger)}
         .btn.ghost{background:transparent;color:#002B39;border:1px solid #002B39}
         .modal-body .input-group {display: flex; gap: 10px; align-items: center;}
+        .modal-body .btn:hover{background:#0050be; color:#fff;}
         .emp-info { display: none; margin-top: 15px; padding: 15px; border-radius: 8px; background-color: #f0f4f7;}
         .emp-info .name, .emp-info .dept { font-weight: bold;}
         .error-message { display: none; color: var(--danger); margin-top: 10px;}
@@ -28,8 +29,8 @@
 <body>
     <!-- 메인 컨텐츠 -->
     <div class="hrEmpAccount">
+        <h2 class="page-title">👤 사원 계정 · 작업 선택</h2>
         <div class="widget" id="home">
-            <h2 class="page-title">사원 계정 · 작업 선택</h2>
             <div class="stack">
                 <a class="btn" th:href="@{/hr/accountCreate.hr}">생성</a>
                 <a class="btn alt"  data-toggle="modal" data-target="#updateModal">수정</a>
@@ -55,7 +56,6 @@
                 <div class="modal-body">
                     <div class="input-group">
                         <input id="updateEmpNo" class="form-control" type="text" placeholder="사번 입력" maxlength="8" />
-                        <button class="btn" id="btnFindForUpdate">조회</button>
                     </div>
                     <div class="emp-info" id="updateEmpInfo">
                         <p><strong>이름:</strong> <span id="updateEmpName"></span></p>
@@ -82,7 +82,6 @@
                 <div class="modal-body">
                     <div class="input-group">
                         <input id="deleteEmpNo" class="form-control" type="text" placeholder="사번 입력" maxlength="8" />
-                        <button class="btn danger" id="btnFindForDelete">조회</button>
                     </div>
                     <div class="emp-info" id="deleteEmpInfo">
                         <p><strong>이름:</strong> <span id="deleteEmpName"></span></p>
@@ -106,16 +105,19 @@
 
             // 사번 입력 시 동적 조회 (수정 모달)
             $('#updateEmpNo').on('input', function() {
-                searchEmployee($(this).val(), '#updateEmpInfo', '#updateErrorMsg');
+                searchEmployee($(this).val(), 'update');
             });
 
             // 사번 입력 시 동적 조회 (삭제 모달)
             $('#deleteEmpNo').on('input', function() {
-                searchEmployee($(this).val(), '#deleteEmpInfo', '#deleteErrorMsg');
+                searchEmployee($(this).val(), 'delete');
             });
 
             // 실제 서버와 통신하는 함수 (AJAX)
-            function searchEmployee(empNo, infoSelector, errorSelector) {
+            function searchEmployee(empNo, type) {
+                const infoSelector = `#${type}EmpInfo`;
+                const errorSelector = `#${type}ErrorMsg`;
+
                 $(infoSelector).hide();
                 $(errorSelector).hide();
 
@@ -126,11 +128,12 @@
                         type: 'GET',
                         data: { empNo: empNo },
                         success: function(response) {
-                            if (response.success) {
+
+                            if (response) {
                                 $(infoSelector).show();
-                                $(infoSelector + 'Name').text(response.name);
-                                $(infoSelector + 'Rank').text(response.rank);
-                                $(infoSelector + 'Dept').text(response.dept);
+                                $(`#${type}EmpName`).text(response.empName);
+                                $(`#${type}EmpRank`).text(response.jobName);
+                                $(`#${type}EmpDept`).text(response.deptName);
                             } else {
                                 $(errorSelector).text('사번이 올바르지 않습니다.').show();
                             }
@@ -174,6 +177,16 @@
                                 },
                                 error: function() {
                                     alertify.error('서버 통신 오류로 삭제에 실패했습니다.');
-
-    </body>
-    </html>
+                                }
+                            });
+                        }
+                    },
+                    function() {
+                        alertify.error('삭제가 취소되었습니다.');
+                    }
+                );
+            });
+        });
+    </script>
+</body>
+</html>

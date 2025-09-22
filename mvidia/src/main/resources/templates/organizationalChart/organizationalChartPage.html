@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>👨‍👩‍👧‍👦 조직도</title>
+    <style>
+        .organizationalChart{ grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+        .organizationalChart > .widget { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+        .page-title { font-size: 20px; margin: 0 0 12px 0; }
+        #deptSelect { padding:10px 12px; border-radius:12px; border:1px solid #dde6ec; }
+        .stack { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+        .mt8 { margin-top:8px; }
+        .mt16 { margin-top:16px; display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; }
+        .muted { color: var(--muted); }
+        .job-group { grid-column:1 / -1; margin-top:10px; }
+        .job-group h3 { margin:0; padding-bottom:6px; border-bottom:2px solid #e9eef3; font-size:15px; color:#334e5a; }
+        .job-group .card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; margin-top:12px; }
+
+        /* 카드 */
+        .emp-card { width:30px; position: relative; border-radius: 12px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.06); border: 1px solid #e7eef3; padding: 12px; cursor: pointer; outline: none;}
+        .emp-card:focus { box-shadow: 0 0 0 3px rgba(0,123,255,.25); }
+        .emp-head { display:flex; gap:12px; align-items:center; }
+        .emp-avatar { width:54px; height:54px; border-radius:50%; object-fit:cover; background:#e1e9ee; }
+        .emp-meta { display:flex; flex-direction:column; min-width:0; }
+        .emp-meta b { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .emp-meta .line { color:#698492; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .emp-meta .small { color:#9aaebe; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .card-actions {display: none; margin-top: 10px; border-top: 1px dashed #e7eef3; padding-top: 8px; gap: 8px;}
+        .card-actions.active { display:flex; flex-wrap:wrap; }
+        .card-action {display:inline-flex; align-items:center; justify-content:center; padding:8px 12px; border-radius:10px; border:1px solid #dde6ec; background:#f8fbfd; color:#0d3d4c; text-decoration:none; font-size:13px; transition: transform .08s ease, background .15s ease, border-color .15s ease;}
+        .card-action:hover { background:#eef6fb; border-color:#cfe2ee; transform: translateY(-1px); }
+        .card-action:active { transform: translateY(0); }
+        .card-action .dot { width:6px; height:6px; border-radius:50%; background:#9ac2d3; margin-right:8px; }
+        .chief-badge {position:absolute; top:8px; right:8px; background:#002B39; color:#fff; font-size:11px; padding:4px 8px; border-radius:999px; box-shadow: 0 2px 6px rgba(0,0,0,.12);}
+        @media (hover:none) {.emp-card { cursor: default; } }
+    </style>
+</head>
+<body>
+
+<div class="hr-integrated">
+    <h2 class="page-title">👨‍👩‍👧‍👦 조직도</h2>
+    <div class="widget" id="home">
+        <div class="stack mt8">
+            <select id="deptSelect" aria-label="부서 선택">
+                <option value="ALL">전체 부서</option>
+            </select>
+            <span id="allDeptMessage" class="muted">* 각 부서별 <b>부장 1명</b>씩만 표시됩니다. 카드를 클릭하면 액션이 펼쳐집니다.</span>
+        </div>
+        <div id="integratedList" class="mt16" aria-live="polite"></div>
+    </div>
+</div>
+
+<script>
+    // === 프로젝트 라우팅에 맞게 조정하세요 ===
+    const NOTE_COMPOSE_URL = '/note/compose?toEmpNo=';     // 쪽지
+    const INFO_URL         = '/hr/accountModifyDetail.hr?empNo='; // 정보보기(기존)
+
+    $(document).ready(function() {
+      fetchDepartments();
+      refreshIntegrated(); // 초기 렌더링
+    });
+
+    // 부서 목록 불러오기
+    function fetchDepartments() {
+      $.ajax({
+        url: '/hr/departments',
+        type: 'GET',
+        success: function(response) {
+          const deptSelect = $('#deptSelect');
+          response.forEach(dept => {
+            deptSelect.append(`<option value="${escapeHtml(dept.deptName)}">${escapeHtml(dept.deptName)}</option>`);
+          });
+        },
+        error: function(xhr) {
+          console.error("부서 목록 로드 실패: ", xhr.responseText);
+          alertify.error('부서 목록을 불러오지 못했습니다.');
+        }
+      });
+    }
+
+    // 선택된 부서에 따른 구성원 렌더링
+    function refreshIntegrated() {
+      const currentDept = $('#deptSelect').val();
+      $('#allDeptMessage').toggle(currentDept === 'ALL');
+
+      const url = currentDept === 'ALL' ? '/hr/integrated/all' : `/hr/integrated/dept/${encodeURIComponent(currentDept)}`;
+
+      $.ajax({
+        url,
+        type: 'GET',
+        success: function(employees) {
+          const area = $('#integratedList');
+          area.empty();
+
+          const positionOrder = ['부장', '차장', '과장', '대리', '사원'];
+
+          if (currentDept === 'ALL') {
+            // 각 부서별 부장만 (서버에서 이미 필터한 데이터라고 가정)
+            employees
+              .sort((a, b) => a.deptName.localeCompare(b.deptName) || a.empName.localeCompare(b.empName))
+              .forEach(emp => area.append(createEmployeeCard(emp, {showChief:true})));
+          } else {
+            // 직급 그룹 렌더링
+            const byPos = employees.reduce((acc, emp) => {
+              (acc[emp.jobName] = acc[emp.jobName] || []).push(emp);
+              return acc;
+            }, {});
+            positionOrder.forEach(job => {
+              if (byPos[job]) area.append(createEmployeeGroup(job, byPos[job]));
+            });
+          }
+        },
+        error: function(xhr) {
+          console.error("인사 정보 로드 실패: ", xhr.responseText);
+          alertify.error('인사 정보를 불러오지 못했습니다.');
+        }
+      });
+    }
+
+    // 카드 생성
+    function createEmployeeCard(emp, options = {}) {
+      const defaultProfile = '/images/default_profile.png';
+      const profileImg = emp.changeName ? `/uploadFiles/${encodeURIComponent(emp.changeName)}` : defaultProfile;
+
+      const empNo   = escapeHtml(emp.empNo ?? '');
+      const empName = escapeHtml(emp.empName ?? '');
+      const dept    = escapeHtml(emp.deptName ?? '');
+      const job     = escapeHtml(emp.jobName ?? '');
+      const email   = escapeHtml(emp.email ?? '');
+
+      const showChiefBadge = options.showChief && job === '부장';
+
+      return `
+        <div class="emp-card" role="button" tabindex="0"
+             data-emp-no="${empNo}" data-emp-name="${empName}">
+          ${showChiefBadge ? `<span class="chief-badge">부서장</span>` : ``}
+          <div class="emp-head">
+            <img class="emp-avatar" src="${profileImg}" alt="${empName} 프로필"/>
+            <div class="emp-meta">
+              <b>${empName} <span class="muted">(${empNo})</span></b>
+              <span class="line">${dept} · ${job}</span>
+              <span class="small">${email}</span>
+            </div>
+          </div>
+          <div class="card-actions" aria-hidden="true">
+            <a class="card-action action-info" href="${INFO_URL + encodeURIComponent(empNo)}" title="정보보기">
+              <span class="dot"></span>정보보기
+            </a>
+            <a class="card-action action-note" href="${NOTE_COMPOSE_URL + encodeURIComponent(empNo)}" title="쪽지 보내기">
+              <span class="dot"></span>쪽지 보내기
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    // 직급 그룹 생성
+    function createEmployeeGroup(jobName, employees) {
+      let html = `<div class="job-group">
+                    <h3>${escapeHtml(jobName)}</h3>
+                    <div class="card-grid">`;
+      employees
+        .sort((a,b) => a.empName.localeCompare(b.empName))
+        .forEach(emp => html += createEmployeeCard(emp));
+      html += `</div></div>`;
+      return html;
+    }
+
+    // 부서 변경 이벤트
+    $('#deptSelect').on('change', refreshIntegrated);
+
+    // ==== 액션 토글 & 접근성 ====
+    // 하나만 열리도록 관리
+    function closeAllActions() {
+      $('.card-actions').removeClass('active').attr('aria-hidden', 'true');
+    }
+
+    // 카드 클릭 시 액션 토글 (위임)
+    $(document).on('click', '.emp-card', function(e) {
+      // 링크 클릭은 토글하지 않음
+      if ($(e.target).closest('.card-action').length) return;
+
+      const $actions = $(this).find('.card-actions');
+      const active = $actions.hasClass('active');
+      closeAllActions();
+      if (!active) {
+        $actions.addClass('active').attr('aria-hidden', 'false');
+      }
+    });
+
+    // Enter로 열기/닫기
+    $(document).on('keydown', '.emp-card', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        $(this).trigger('click');
+      } else if (e.key === 'Escape') {
+        closeAllActions();
+      }
+    });
+
+    // 바깥 클릭 시 닫기
+    $(document).on('click', function(e) {
+      if ($(e.target).closest('.emp-card').length === 0) closeAllActions();
+    });
+
+    // 액션 클릭 시 간단 토스트 (원하면 제거하세요)
+    $(document).on('click', '.card-action', function(e) {
+      const $card = $(this).closest('.emp-card');
+      const empName = $card.data('emp-name') || '사원';
+      if ($(this).hasClass('action-note')) {
+        alertify.message(`${empName} 님에게 쪽지 작성으로 이동합니다.`);
+      } else if ($(this).hasClass('action-chat')) {
+        alertify.message(`${empName} 님과 메신저 대화로 이동합니다.`);
+      } else if ($(this).hasClass('action-info')) {
+        // 정보보기는 굳이 토스트 안 띄워도 됩니다.
+      }
+      // 링크 자체로 이동하므로 e.preventDefault() 하지 않음.
+    });
+
+    // XSS-safe 텍스트 출력
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#039;');
+    }
+</script>
+</body>
+</html>

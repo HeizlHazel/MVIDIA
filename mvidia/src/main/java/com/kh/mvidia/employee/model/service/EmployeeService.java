@@ -2,7 +2,13 @@ package com.kh.mvidia.employee.model.service;
 
 
 import com.kh.mvidia.common.model.vo.Attachment;
+import com.kh.mvidia.common.model.vo.Department;
+import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.vo.Employee;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public interface EmployeeService {
 
@@ -15,16 +21,33 @@ public interface EmployeeService {
 	int insertEmpInfo(Employee emp);
 	
 	// 사원 수정 서비스
+	Employee selectEmpNo(String empNo);
+	
+	int insertEmpModifyRequests(List<EmpModifyReq> reqList);
+	
+	ArrayList<EmpModifyReq> selectReq(String empNo);
+	
+	int updateEmpModifyReqStatus(Map<String, Object> params);
+	
 	int updateFile(Attachment atch);
 	
-	int updateEmp(Employee emp);
+	EmpModifyReq findEmpModifyReqById(String reqId);
+	
+	int updateEmpSelective(Employee patch);
 	
 	Attachment selectProfile(String empNo);
 	
 	// 사원 삭제 서비스
 	int deleteEmp(String empNo);
 	
+	ArrayList<Department> selectDeptList();
+	
+	ArrayList<Employee> selectEmpAllList();
+	
+	ArrayList<Employee> selectEmpByDept(String deptName);
+	
 	// 사번 확인 서비스
-	int EmpNoCheck(String employeeId);
+	Employee checkEmpNo(String empNo);
+	
 	
 }

@@ -1,11 +1,18 @@
 package com.kh.mvidia.employee.model.service;
 
 import com.kh.mvidia.common.model.vo.Attachment;
+import com.kh.mvidia.common.model.vo.Department;
+import com.kh.mvidia.common.model.vo.EmpModifyReq;
 import com.kh.mvidia.employee.model.dao.EmployeeDao;
 import com.kh.mvidia.employee.model.vo.Employee;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService{
@@ -32,13 +39,39 @@ public class EmployeeServiceImpl implements EmployeeService{
 	}
 	
 	@Override
-	public int updateFile(Attachment atch){
-		return 0;
+	public Employee selectEmpNo(String empNo) {
+		return empDao.selectEmpNo(sqlSession,empNo);
 	}
 	
 	@Override
-	public int updateEmp(Employee emp) {
-		return 0;
+	@Transactional
+	public int insertEmpModifyRequests(List<EmpModifyReq> reqList){
+			return empDao.insertEmpModifyRequests(sqlSession, reqList);
+	}
+	
+	@Override
+	public ArrayList<EmpModifyReq> selectReq(String empNo) {
+		return empDao.selectReq(sqlSession, empNo);
+	}
+	
+	@Override
+	public int updateEmpModifyReqStatus(Map<String, Object> params) {
+		return empDao.updateEmpModifyReqStatus(sqlSession,params);
+	}
+	
+	@Override
+	public int updateFile(Attachment atch) {
+		return empDao.updateFile(sqlSession, atch);
+	}
+	
+	@Override
+	public EmpModifyReq findEmpModifyReqById(String reqId) {
+		return empDao.findEmpModifyReqById(sqlSession, reqId);
+	}
+	
+	@Override
+	public int updateEmpSelective(Employee patch) {
+		return empDao.updateEmpSelective(sqlSession, patch);
 	}
 	
 	@Override
@@ -48,11 +81,26 @@ public class EmployeeServiceImpl implements EmployeeService{
 	
 	@Override
 	public int deleteEmp(String empNo) {
-		return 0;
+		return empDao.deleteEmp(sqlSession, empNo);
 	}
 	
 	@Override
-	public int EmpNoCheck(String employeeId) {
-		return 0;
+	public ArrayList<Department> selectDeptList() {
+		return empDao.selectDeptList(sqlSession);
+	}
+	
+	@Override
+	public ArrayList<Employee> selectEmpAllList() {
+		return empDao.selectEmpAllList(sqlSession);
+	}
+	
+	@Override
+	public ArrayList<Employee> selectEmpByDept(String deptName) {
+		return empDao.selectEmpByDept(sqlSession, deptName);
+	}
+	
+	@Override
+	public Employee checkEmpNo(String empNo) {
+		return empDao.checkEmpNo(sqlSession, empNo);
 	}
 }

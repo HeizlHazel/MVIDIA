@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="vacationMapper">
+    <resultMap id="vacationResultSet" type="Vacation">
+        <result column="va_id" property="vaId"/>
+        <result column="emp_no" property="empNo"/>
+        <result column="emp_name" property="empName"/>
+        <result column="auth_no" property="authNo"/>
+        <result column="emp_name" property="authName"/>
+        <result column="va_category" property="vaCategory"/>
+        <result column="va_name" property="vaName"/>
+        <result column="va_start" property="vaStart"/>
+        <result column="va_end" property="vaEnd"/>
+        <result column="va_days" property="vaDays"/>
+        <result column="va_reason" property="vaReason"/>
+        <result column="alter_emp" property="alterEmp"/>
+        <result column="emp_name" property="alterEmpName"/>
+        <result column="va_status" property="vaStatus"/>
+        <result column="status_name" property="vaStatusName"/>
+    </resultMap>
+
+    <select id="selectRecentVacations" resultMap="vacationResultSet">
+        select *
+          from (
+                 select
+                        va_id
+                      , emp_no
+                      , emp_lname || emp_name as "emp_name"
+                      , va_category
+                      , va_name
+                      , to_char(va_start, 'YYYY-MM-DD') as "va_start"
+                      , to_char(va_end, 'YYYY-MM-DD') as "va_end"
+                      , va_reason
+                      , va_status
+                      , status_name
+                   from tb_vacation
+                   join tb_employee using (emp_no)
+                   join tb_vacation_type using (va_category)
+                   join tb_status on (va_status = status_code)
+                  order
+                     by va_id desc
+                )
+         where rownum &lt;= 5
+    </select>
+
+    <select id="selectVaListCount" resultType="_int">
+        select count(*)
+          from tb_vacation
+          join tb_employee using (emp_no)
+          join tb_vacation_type using (va_category)
+          join tb_status on (va_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="keyword != null and keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or va_reason like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="status != null and status != ''">
+                and va_status = #{searchMap.status}
+            </if>
+            <if test="type != null and type != ''">
+                and va_category = #{searchMap.type}
+            </if>
+        </trim>
+    </select>
+
+    <select id="selectVacationList" resultMap="vacationResultSet">
+        select *
+          from (
+                 select rownum rnum, a.*
+                   from (
+                          select
+                                 va_id
+                               , emp_no
+                               , emp_lname || emp_name as "emp_name"
+                               , va_category
+                               , va_name
+                               , to_char(va_start, 'YYYY-MM-DD') as "va_start"
+                               , to_char(va_end, 'YYYY-MM-DD') as "va_end"
+                               , va_reason
+                               , va_status
+                               , status_name
+                            from tb_vacation
+                            join tb_employee using (emp_no)
+                            join tb_vacation_type using (va_category)
+                            join tb_status on (va_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="searchMap.keyword != null and searchMap.keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or va_reason like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="searchMap.status != null and searchMap.status != ''">
+                and va_status = #{searchMap.status}
+            </if>
+            <if test="searchMap.type != null and searchMap.type != ''">
+                and va_category = #{searchMap.type}
+            </if>
+        </trim>
+                            order by va_id desc
+                        ) a
+            )
+         where rnum between #{pi.startRow} and #{pi.endRow}
+    </select>
+
+    <update id="updateVacation">
+        update tb_vacation
+            set va_status = #{vaStatus}
+              , va_category = #{vaCategory}
+              , auth_no = #{authNo}
+         where va_id = #{vaId}
+    </update>
+
+    <insert id="insertVacation">
+        <selectKey keyProperty="vaId" resultType="string" order="BEFORE">
+            SELECT 'VA' || LPAD(SEQ_EMP.NEXTVAL, 4, '0')
+            FROM dual
+        </selectKey>
+
+        insert
+            into tb_vacation
+            (
+              va_id
+            , emp_no
+            , auth_no
+            , va_category
+            , va_start
+            , va_end
+            , va_reason
+            , va_status
+            )
+        values
+            (
+              #{vaId}
+            , #{empNo}
+            , '22010001'
+            , #{vaCategory}
+            , #{vaStart}
+            , #{vaEnd}
+            , #{vaReason}
+            , 'W'
+            )
+    </insert>
+
+    <select id="selectEmpVacationList" resultMap="vacationResultSet">
+        select
+               va_id
+              , emp_no
+              , emp_lname || emp_name as "emp_name"
+              , va_category
+              , va_name
+              , to_char(va_start, 'YYYY-MM-DD') as "va_start"
+              , to_char(va_end, 'YYYY-MM-DD') as "va_end"
+              ,case
+               when va_category = 'HDL'
+                    then 0.5
+               else (va_end - va_start) + 1
+               end as va_days
+              , va_reason
+              , va_status
+              , status_name
+              from tb_vacation
+              join tb_employee using (emp_no)
+              join tb_vacation_type using (va_category)
+              join tb_status on (va_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="searchMap.keyword != null and searchMap.keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or va_reason like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="searchMap.status != null and searchMap.status != ''">
+                and va_status = #{searchMap.status}
+            </if>
+            <if test="searchMap.type != null and searchMap.type != ''">
+                and va_category = #{searchMap.type}
+            </if>
+            and emp_no = #{searchMap.empNo}
+        </trim>
+        order
+           by va_id desc
+    </select>
+
+
+
+
+</mapper>

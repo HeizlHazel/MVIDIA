@@ -36,14 +36,18 @@ public class AttendanceDao {
         return sqlSession.selectOne("attendanceMapper.selectToday", empNo);
     }
 
-    public int checkInUpsert(SqlSessionTemplate sqlSession, String empNo) {
-        return sqlSession.insert("attendanceMapper.checkInUpsert", empNo);
+    public int checkInUpsert(SqlSessionTemplate sqlSession, HashMap<String, Object> param) {
+        return sqlSession.insert("attendanceMapper.checkInUpsert", param);
     }
 
     public int checkOut(SqlSessionTemplate sqlSession, String empNo) {
         return sqlSession.update("attendanceMapper.checkOut", empNo);
     }
-
+	
+	public int updateStatusToday(SqlSessionTemplate sqlSession, HashMap<String,Object> param) {
+		return sqlSession.update("attendanceMapper.updateStatusToday", param);
+	}
+	
     public Attendance selectTodayTimes(SqlSessionTemplate sqlSession, String empNo) {
         return sqlSession.selectOne("attendanceMapper.selectTodayTimes", empNo);
     }

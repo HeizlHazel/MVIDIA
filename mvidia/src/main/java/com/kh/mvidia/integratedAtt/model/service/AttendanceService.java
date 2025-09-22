@@ -20,9 +20,9 @@ public interface AttendanceService {
 
     Attendance selectToday(String empNo);
 
-    public int checkInUpsert(String empNo);
+    public HashMap<String,Object> checkInUpsert(String empNo);
 
-    public int checkOut(String empNo);
+    public HashMap<String,Object> checkOut(String empNo);
 
     public Attendance selectTodayTimes(String empNo);
 }

@@ -39,7 +39,7 @@
           join tb_employee using (emp_no)
           join tb_status on (att_status = status_code)
         <trim prefix="where" prefixOverrides="and|or">
-            <if test="keyword != null and keyword != ''">
+            <if test="searchMap.keyword != null and searchMap.keyword != ''">
                 and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
             </if>
             <if test="status != null and status != ''">
@@ -128,26 +128,33 @@
     </select>
 
 
-    <update id="checkInUpsert">
+    <insert id="checkInUpsert">
         INSERT
-          INTO TB_ATTENDANCE
+            INTO TB_ATTENDANCE
              (
                ATT_NO
              , EMP_NO
              , HRM_NO
              , ATT_DATE
              , ARRIVING_TIME
-             , ATT_STATUS)
-        VALUES
+             , ATT_STATUS
+             )
+        SELECT
+               'ATT' || LPAD(SEQ_ATT.NEXTVAL, 4, '0')
+             , #{empNo}
+             , '22010001'
+             , TRUNC(SYSDATE)
+             , SYSDATE
+             , #{status}
+          FROM dual
+         WHERE NOT EXISTS
              (
-               ('ATT' || LPAD(SEQ_ATT_NO.NEXTVAL, 4, '0')
-               , #{empNo}
-               , '22010001'
-               , TRUNC(SYSDATE)
-               , SYSDATE
-               , 'N'
-            )
-    </update>
+               SELECT 1
+                 FROM TB_ATTENDANCE
+                WHERE EMP_NO = #{empNo}
+                  AND ATT_DATE = TRUNC(SYSDATE)
+              )
+    </insert>
 
     <update id="checkOut">
         UPDATE TB_ATTENDANCE
@@ -157,15 +164,21 @@
            AND LEAVING_TIME IS NULL
     </update>
 
+    <update id="updateStatusToday">
+        UPDATE TB_ATTENDANCE
+           SET ATT_STATUS = #{status}
+         WHERE EMP_NO = #{empNo}
+            AND ATT_DATE = TRUNC(SYSDATE)
+    </update>
+
     <select id="selectTodayTimes"  resultMap="attendanceResultSet">
         SELECT
-               TO_CHAR(ARRIVING_TIME, 'HH24:MI') AS arriving
-             , TO_CHAR(LEAVING_TIME,  'HH24:MI') AS leaving
+               TO_CHAR(ARRIVING_TIME, 'HH24:MI') AS arriving_time
+             , TO_CHAR(LEAVING_TIME,  'HH24:MI') AS leaving_time
+             , ATT_STATUS
           FROM TB_ATTENDANCE
          WHERE EMP_NO = #{empNo}
            AND ATT_DATE = TRUNC(SYSDATE)
     </select>
-
-
 
 </mapper>

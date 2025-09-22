@@ -22,7 +22,7 @@
         .job-group .card-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:12px; margin-top:12px; }
 
         /* 카드 */
-        .emp-card {position: relative; border-radius: 12px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.06); border: 1px solid #e7eef3; padding: 12px; cursor: pointer; outline: none;}
+        .emp-card { width:30px; position: relative; border-radius: 12px; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.06); border: 1px solid #e7eef3; padding: 12px; cursor: pointer; outline: none;}
         .emp-card:focus { box-shadow: 0 0 0 3px rgba(0,123,255,.25); }
         .emp-head { display:flex; gap:12px; align-items:center; }
         .emp-avatar { width:54px; height:54px; border-radius:50%; object-fit:cover; background:#e1e9ee; }
@@ -58,7 +58,6 @@
 <script>
     // === 프로젝트 라우팅에 맞게 조정하세요 ===
     const NOTE_COMPOSE_URL = '/note/compose?toEmpNo=';     // 쪽지
-    const CHAT_OPEN_URL    = '/chat/open?empNo=';          // 메신저(채팅방 열기)
     const INFO_URL         = '/hr/accountModifyDetail.hr?empNo='; // 정보보기(기존)
 
     $(document).ready(function() {
@@ -154,9 +153,6 @@
             </a>
             <a class="card-action action-note" href="${NOTE_COMPOSE_URL + encodeURIComponent(empNo)}" title="쪽지 보내기">
               <span class="dot"></span>쪽지 보내기
-            </a>
-            <a class="card-action action-chat" href="${CHAT_OPEN_URL + encodeURIComponent(empNo)}" title="메시지 보내기">
-              <span class="dot"></span>메시지 보내기
             </a>
           </div>
         </div>

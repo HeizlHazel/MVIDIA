@@ -234,42 +234,52 @@
 
     <script>
         $(function(){
-            $("#notionAddForm").on("submit", function(e) {
-                e.preventDefault();
+        $("#notionAddForm").on("submit", function(e) {
+            e.preventDefault();
 
-                let activeTab = $(".tab.active").data("value");
+            let activeTab = $(".tab.active").data("value");
 
-                let formData = {
-                    applyWriter: $(this).find("input[name='applyWriter']").val(),
-                    applyDept: $(this).find("input[name='applyDept']").val(),
-                    applyDate: $(this).find("input[name='applyDate']").val(),
-                    applyTitle: $(this).find("input[name='applyTitle']").val(),
-                    approval: $(this).find("input[name='approval']").val(),
-                    details: $(this).find("textarea[name='details']").val(),
-                    file: $(this).find("input[name='file']").val(),
-                    swtch: activeTab
-                };
+            let formData = {
+                applyWriter: $(this).find("input[name='applyWriter']").val(),
+                applyDept: $(this).find("input[name='applyDept']").val(),
+                applyDate: $(this).find("input[name='applyDate']").val(),
+                applyTitle: $(this).find("input[name='applyTitle']").val(),
+                approval: $(this).find("input[name='approval']").val(),
+                details: $(this).find("textarea[name='details']").val(),
+                file: $(this).find("input[name='file']").val(),
+                swtch: activeTab
+            };
 
-                $.ajax({
-                    url:"add.notion",
-                    method:"POST",
-                    contentType:"application/json",
-                    data:JSON.stringify(formData),
-                    success:function(app){
-
-                        if(app === "success"){
+            $.ajax({
+                url:"add.notion",
+                method:"POST",
+                contentType:"application/json",
+                data:JSON.stringify(formData),
+                success:function(response){
+                    // 문자열 응답이 아닌 JSON 객체로 처리
+                    if(typeof response === 'string') {
+                        if(response === "success"){
                             alert("전자결재 신청이 등록되었습니다.");
                             location.href="approvalbox";
-                        }else{
+                        } else {
                             alert("전자결재 신청이 실패하였습니다.");
                         }
-                    },
-                    error:function(){
-                        alert("전자결재 ajax 통신 실패");
+                    } else if(typeof response === 'object') {
+                        // JSON 객체인 경우 (문서번호 포함)
+                        if(response.success){
+                            alert(`전자결재 신청이 등록되었습니다.\n문서번호: ${response.docNumber}`);
+                            location.href="approvalbox";
+                        } else {
+                            alert(response.message || "전자결재 신청이 실패하였습니다.");
+                        }
                     }
-                })
+                },
+                error:function(){
+                    alert("전자결재 ajax 통신 실패");
+                }
             })
         })
+    })
     </script>
 </body>
 </html>

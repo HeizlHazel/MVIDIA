@@ -118,40 +118,56 @@ public class DefectiveController {
     public Map<String, Object> searchDefective(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "defType", required = false) String defType,
-            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "defStatus", required = false) String defStatus,
             @RequestParam(value = "startDate", required = false) String startDate,
             @RequestParam(value = "endDate", required = false) String endDate,
             @RequestParam(value = "cpage", defaultValue = "1") int currentPage) {
 
         Map<String, Object> params = new HashMap<>();
-        params.put("keyword", keyword);
-        params.put("defType", defType);
-        params.put("status", status);
-        params.put("startDate", startDate);
-        params.put("endDate", endDate);
+
+        // null이 아니고 빈 값이 아닌 경우만 params에 추가
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            params.put("keyword", keyword.trim());
+        }
+        if (defType != null && !defType.trim().isEmpty()) {
+            params.put("defType", defType);
+        }
+        if (defStatus != null && !defStatus.trim().isEmpty()) {
+            params.put("defStatus", defStatus);
+        }
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            params.put("startDate", startDate);
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            params.put("endDate", endDate);
+        }
 
         Map<String, Object> response = new HashMap<>();
+
         try {
+            // 디버깅용 로그
+            System.out.println("검색 파라미터: " + params);
+
             int listCount = dService.selectSearchCount(params);
+            System.out.println("검색 결과 수: " + listCount);
 
             PageInfo pi = Pagination.getPageInfo(listCount, currentPage, 10, 5);
             ArrayList<DefectiveProduction> list = dService.selectSearchList(params, pi);
 
-            // 성공
             response.put("result", "success");
             response.put("list", list);
             response.put("pi", pi);
 
             if (listCount == 0) {
-                response.put("message", "해당 검색 결과가 없습니다.");
+                response.put("message", "검색 조건에 맞는 결과가 없습니다.");
             }
 
         } catch (Exception e) {
-            // 에러
+            e.printStackTrace(); // 콘솔에 상세 오류 출력
             response.put("result", "error");
-            response.put("message", "검색 중 오류가 발생했습니다.");
-
+            response.put("message", "검색 중 오류가 발생했습니다: " + e.getMessage());
         }
+
         return response;
     }
 

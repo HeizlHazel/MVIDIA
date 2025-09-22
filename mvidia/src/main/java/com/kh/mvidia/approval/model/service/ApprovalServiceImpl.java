@@ -48,7 +48,7 @@ public class ApprovalServiceImpl implements ApprovalService {
 
     // 전자결재 등록
     @Override
-    public HttpResponse<JsonNode> addPage(String writer, String dept, String date, String title, String approval, String details, String category, String empNo, String docNumber) {
+    public HttpResponse<JsonNode> addPage(String writer, String dept, String date, String title, String approval, String details, String category, String empNo) {
         String categoryMap = CATEGORY_MAP.getOrDefault(category, "기타결재");
         String url = "https://api.notion.com/v1/pages";
 
@@ -90,8 +90,6 @@ public class ApprovalServiceImpl implements ApprovalService {
 
         // 결재 상태 기본값
         properties.put("상태", Map.of("select", Map.of("name", "대기")));
-        properties.put("문서번호", Map.of("rich_text",
-                List.of(Map.of("text", Map.of("content", docNumber)))));
 
         JSONObject body = new JSONObject();
 
@@ -396,25 +394,6 @@ public class ApprovalServiceImpl implements ApprovalService {
 
     private final Map<String, AtomicInteger> yearlyCounters = new ConcurrentHashMap<>();
 
-    @Override
-    public String generateApprovalDocNumber() {
-        String currentYear = String.valueOf(Year.now().getValue());
-
-        // 해당 년도의 카운터 가져오기 (없으면 1부터 시작)
-        AtomicInteger counter = yearlyCounters.computeIfAbsent(currentYear, k -> new AtomicInteger(0));
-
-        // 순번 증가
-        int sequence = counter.incrementAndGet();
-
-        // APV-2024-001 형식으로 반환
-        return String.format("APV-%s-%03d", currentYear, sequence);
-    }
-
-    @PostConstruct
-    public void initializeCounters() {
-        // 필요시 초기화 로직
-    }
-
     // ===================== 유틸리티 메서드들 =====================
 
     /**
@@ -536,19 +515,6 @@ public class ApprovalServiceImpl implements ApprovalService {
                     } catch (Exception e) {
                         item.setApprovers("");
                     }
-
-                    // 문서 번호 파싱
-                    try {
-                        JSONArray docNumberArray = properties.getJSONObject("문서번호").getJSONArray("rich_text");
-                        if (docNumberArray.length() > 0) {
-                            item.setDocNumber(docNumberArray.getJSONObject(0).getString("plain_text"));
-                        } else {
-                            item.setDocNumber(null);
-                        }
-                    } catch (Exception e) {
-                        item.setDocNumber(null);
-                    }
-
                     items.add(item);
 
                 } catch (Exception e) {

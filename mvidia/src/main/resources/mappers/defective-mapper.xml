@@ -17,16 +17,7 @@
         <result column="status_name" property="statusName" />
     </resultMap>
 
-    <!-- 불량 제품 리스트 카운트 -->
-    <select id="selectListCount" resultType="int">
-        select
-               count(*)
-          from tb_defective_production
-         where def_status != 'R'
-    </select>
-
-    <!-- 불량 제품 리스트 조회 (불량)-->
-    <select id="selectList" resultMap="DefectiveResultSet">
+    <select id="selectList" resultMap="DefectiveResultSet" parameterType="map">
         select
                d.def_no
              , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
@@ -34,49 +25,7 @@
              , p.prod_name as "prod_name"
              , t.def_type as "def_type"
              , d.def_qty
-             , s.status_name as "status_name"
-             , d.remarks
-          from tb_defective_production d
-          left join tb_production_quality p on p.prod_code = d.prod_code
-          left join tb_defective_type t on t.def_code = d.def_code
-          left join tb_status s on s.status_code = d.def_status
-         where d.def_status != 'R'
-         order
-            by d.def_no desc
-    </select>
-
-    <select id="selectSearchCount" resultType="int">
-        select count(*)
-        from tb_defective_production d
-        left join tb_production_quality p on p.prod_code = d.prod_code
-        where d.def_status != 'R'
-        <if test="keyword != null and keyword != ''">
-            and (d.prod_code like concat('%', #{keyword}, '%')
-            or p.prod_name like concat('%', #{keyword}, '%'))
-        </if>
-        <if test="defType != null and defType != ''">
-            and d.def_code = #{defType}
-        </if>
-        <if test="defStatus != null and defStatus != ''">
-            and d.def_status = #{defStatus}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            and d.occur_date &gt;= to_date(#{startDate}, 'YYYY-MM-DD')
-        </if>
-        <if test="endDate != null and endDate != ''">
-            and d.occur_date &lt;= to_date(#{endDate}, 'YYYY-MM-DD')
-        </if>
-    </select>
-
-    <!-- 불량 제품 검색 -->
-    <select id="searchList" resultMap="DefectiveResultSet">
-        select
-               d.def_no
-             , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
-             , d.prod_code
-             , p.prod_name as "prod_name"
-             , t.def_type as "def_type"
-             , d.def_qty
+             , d.def_status
              , s.status_name as "status_name"
              , d.remarks
           from tb_defective_production d
@@ -87,57 +36,161 @@
           left
           join tb_status s on s.status_code = d.def_status
          where d.def_status != 'R'
-        <if test="keyword != null and keyword != ''">
-            and (d.prod_code like concat('%', #{keyword}, '%')
-            or p.prod_name like concat('%', #{keyword}, '%'))
-        </if>
-        <if test="defType != null and defType != ''">
-            and d.def_code = #{defType}
-        </if>
-        <if test="status != null and status != ''">
-            and d.def_status = #{defstatus}
-        </if>
-        <if test="startDate != null and startDate != ''">
-            and d.occur_date &gt;= to_date(#{startDate}, 'YYYY-MM-DD')
-        </if>
-        <if test="endDate != null and endDate != ''">
-            and d.occur_date &lt;= to_date(#{endDate}, 'YYYY-MM-DD')
-        </if>
          order
             by d.def_no desc
     </select>
 
+    <!-- 불량 제품 리스트 카운트 -->
+    <select id="selectListCount" resultType="int" parameterType="map">
+        select
+               count(*)
+          from tb_defective_production d
+          left
+          join tb_production_quality p on p.prod_code = d.prod_code
+          left
+          join tb_defective_type t on t.def_code = d.def_code
+          left
+          join tb_status s on s.status_code = d.def_status
+        <where>
+            def_status != 'R'
+            <if test="keyword != null and keyword.trim() != ''">
+                and (
+                        upper(d.def_no) like '%' || upper(#{keyword}) || '%'
+                     or upper(d.prod_code) like '%' || upper(#{keyword}) || '%'
+                     or upper(p.prod_name) like '%' || upper(#{keyword}) || '%'
+                )
+            </if>
+            <if test="defType != null and defType != ''">
+                and d.def_type = #{defType}
+            </if>
+            <if test="defStatus != null and defStatus != ''">
+                and d.def_status = #{defStatus}
+            </if>
+            <if test="occurDate != null and occurDate != ''">
+                and d.occur_date = TO_DATE(#{occurDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and d.occur_date &gt;= to_date(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                and d.occur_date &lt;= to_date(#{endDate}, 'YYYY-MM-DD')
+            </if>
+        </where>
+    </select>
+
+    <!-- 불량 제품 리스트 조회 & 키워드 검색 -->
+    <select id="selectSearchList" resultMap="DefectiveResultSet" parameterType="map">
+        select
+               d.def_no
+             , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
+             , d.prod_code
+             , p.prod_name as "prod_name"
+             , t.def_type as "def_type"
+             , d.def_qty
+             , d.def_status
+             , s.status_name as "status_name"
+             , d.remarks
+          from tb_defective_production d
+          left
+          join tb_production_quality p on p.prod_code = d.prod_code
+          left
+          join tb_defective_type t on t.def_code = d.def_code
+          left
+          join tb_status s on s.status_code = d.def_status
+        <where>
+            d.def_status != 'R'
+            <if test="keyword != null and keyword.trim() != ''">
+                and (
+                upper(d.def_no) like '%' || upper(#{keyword}) || '%'
+                or upper(d.prod_code) like '%' || upper(#{keyword}) || '%'
+                or upper(p.prod_name) like '%' || upper(#{keyword}) || '%'
+                )
+            </if>
+            <if test="defType != null and defType != ''">
+                and d.def_type = #{defType}
+            </if>
+            <if test="defStatus != null and defStatus != ''">
+                and d.def_status = #{defStatus}
+            </if>
+            <if test="occurDate != null and occurDate != ''">
+                and d.occur_date = TO_DATE(#{occurDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and d.occur_date &gt;= to_date(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                and d.occur_date &lt;= to_date(#{endDate}, 'YYYY-MM-DD')
+            </if>
+        </where>
+        order
+           by d.def_no desc
+    </select>
+
+    <!-- 검색 카운트용 쿼리 추가 -->
+    <select id="selectSearchCount" resultType="int" parameterType="map">
+        select count(*)
+        from tb_defective_production d
+        left join tb_production_quality p on p.prod_code = d.prod_code
+        left join tb_defective_type t on t.def_code = d.def_code
+        left join tb_status s on s.status_code = d.def_status
+        <where>
+            d.def_status != 'R'
+            <if test="keyword != null and keyword.trim() != ''">
+                and (
+                upper(d.def_no) like '%' || upper(#{keyword}) || '%'
+                or upper(d.prod_code) like '%' || upper(#{keyword}) || '%'
+                or upper(p.prod_name) like '%' || upper(#{keyword}) || '%'
+                )
+            </if>
+            <if test="defType != null and defType != ''">
+                and d.def_code = #{defType}
+            </if>
+            <if test="defStatus != null and defStatus != ''">
+                and d.def_status = #{defStatus}
+            </if>
+            <if test="occurDate != null and occurDate != ''">
+                and d.occur_date = TO_DATE(#{occurDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and d.occur_date &gt;= to_date(#{startDate}, 'YYYY-MM-DD')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                and d.occur_date &lt;= to_date(#{endDate}, 'YYYY-MM-DD')
+            </if>
+        </where>
+    </select>
+
+
+
     <!-- 불량 제품 등록 -->
     <insert id="insertDefective">
         insert
-        into tb_defective_production
-        (
-          prod_code
-        , def_code
-        , def_qty
-        , occur_date
-        , remarks
-        , def_status
-        )
-        values
-        (
-          #{prodCode}
-        , #{defCode}
-        , #{defQty}
-        , #{occurDate}
-        , #{remarks}
-        , 'W'
-        )
+          into tb_defective_production
+               (
+               prod_code
+             , def_code
+             , def_qty
+             , occur_date
+             , remarks
+             , def_status
+             )
+             values
+            (
+              #{prodCode}
+            , #{defCode}
+            , #{defQty}
+            , #{occurDate}
+            , #{remarks}
+            , 'W'
+            )
     </insert>
-
 
     <!-- 불량 제품 리스트 삭제(체크박스를 통해 다중 선택) -->
     <update id="deleteDefective">
         update tb_defective_production
-        set def_status = 'R'
-        where def_no IN
-        <foreach collection="list" item="defNo"
-                 open="(" close=")" separator=",">
+           set def_status = 'R'
+         where def_no IN
+        <foreach collection="list" item="defNo" open="(" close=")" separator=",">
             #{defNo}
         </foreach>
     </update>

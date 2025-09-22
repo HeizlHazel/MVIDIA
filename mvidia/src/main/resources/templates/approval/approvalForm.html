@@ -133,6 +133,25 @@
             margin-top: 4px;
             display: block;
         }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -149,7 +168,7 @@
                 <button class="tab" data-value="etc">기타 결재</button>
             </div>
 
-            <form id="notionAddForm" class="form" method="post" action="" enctype="">
+            <form id="notionAddForm" class="form">
                 <div class="row">
                     <div class="col-4">
                         <label for="applyWriter">작성자 <span class="required">*</span></label>
@@ -233,51 +252,42 @@
     </script>
 
     <script>
-        $("#notionAddForm").on("submit", function(e) {
-                    e.preventDefault();
+        $(function(){
+            $("#notionAddForm").on("submit", function(e) {
+                e.preventDefault();
 
-                    let activeTab = $(".tab.active").data("value");
+                let activeTab = $(".tab.active").data("value");
 
-                    let formData = {
-                        applyWriter: $(this).find("input[name='applyWriter']").val(),
-                        applyDept: $(this).find("input[name='applyDept']").val(),
-                        applyDate: $(this).find("input[name='applyDate']").val(),
-                        applyTitle: $(this).find("input[name='applyTitle']").val(),
-                        approval: $(this).find("input[name='approval']").val(),
-                        details: $(this).find("textarea[name='details']").val(),
-                        swtch: activeTab
-                    };
+                let formData = {
+                    applyWriter: $(this).find("input[name='applyWriter']").val(),
+                    applyDept: $(this).find("input[name='applyDept']").val(),
+                    applyDate: $(this).find("input[name='applyDate']").val(),
+                    applyTitle: $(this).find("input[name='applyTitle']").val(),
+                    approval: $(this).find("input[name='approval']").val(),
+                    details: $(this).find("textarea[name='details']").val(),
+                    file: $(this).find("input[name='file']").val(),
+                    swtch: activeTab
+                };
 
-                    $.ajax({
-                        url:"add.notion",
-                        method:"POST",
-                        contentType:"application/json",
-                        data:JSON.stringify(formData),
-                        success:function(response){
-                            // 문자열 응답이 아닌 JSON 객체로 처리
-                            if(typeof response === 'string') {
-                                if(response === "success"){
-                                    alert("전자결재 신청이 등록되었습니다.");
-                                    location.href="approvalbox";
-                                }else {
-                                    alert("전자결재 신청이 실패하였습니다.");
-                                }
-                            } else if(typeof response === 'object') {
-                                // JSON 객체인 경우 (문서번호 포함)
-                                if(response.success){
-                                    alert(`전자결재 신청이 등록되었습니다.\n문서번호: ${response.docNumber}`);
-                                    location.href="approvalbox";
-                                } else {
-                                    alert(response.message || "전자결재 신청이 실패하였습니다.");
-                                }
-                            }
-                        },
-                        error:function(){
-                            alert("전자결재 ajax 통신 실패");
+                $.ajax({
+                    url:"add.notion",
+                    method:"POST",
+                    contentType:"application/json",
+                    data:JSON.stringify(formData),
+                    success:function(app){
+                        if(app === "success"){
+                                      alert("전자결재 신청이 등록되었습니다.");
+                            location.href="approvalbox";
+                        }else{
+                              alert("전자결재 신청이 실패하였습니다.");
                         }
-                    })
+                    },
+                    error:function(){
+                        alert("전자결재 ajax 통신 실패");
+                    }
                 })
             })
+        })
     </script>
 </body>
 </html>

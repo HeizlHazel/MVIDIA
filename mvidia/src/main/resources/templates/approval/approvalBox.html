@@ -605,12 +605,12 @@
             if (item.status === '승인') statusClass = 'status-approved';
             else if (item.status === '반려') statusClass = 'status-rejected';
 
-            // 문서번호 불러오기
-            const docNumber = item.docNumber;
+            // 번호 계산
+            const itemNumber = allData.length - startIndex - index;
 
             tbody.innerHTML += `
                 <tr>
-                    <td><span class="doc-number">${docNumber}</span></td>
+                    <td>${itemNumber}</td>
                     <td>${item.category}</td>
                     <td class="title-col">
                         <a href="#" class="title-link" data-id="${item.id}">${item.title}</a>

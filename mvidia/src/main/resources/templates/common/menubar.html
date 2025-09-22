@@ -119,12 +119,10 @@
                 </li>
             </th:block>
 
-            <!-- 조직도 조회 권한 있을 때 -->
-            <th:block th:if="${session.grantedPerms.contains('PERM0003')}">
-                <li sec:authorize="hasAnyRole('MANAGER','ADMIN')">
+                <!-- 조직도 조회 권한 있을 때 -->
+                <li th:if="${session.grantedPerms.contains('PERM0003')}">
                     <a class="link" th:href="@{/organizationalChart}">🧩 조직도</a>
                 </li>
-            </th:block>
         </ul>
     </div>
 

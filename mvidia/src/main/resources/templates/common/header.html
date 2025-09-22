@@ -6,80 +6,86 @@
       th:fragment="header">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>MVIDIA ERP</title>
     <style>
         .tb{height:64px;background:#002B39;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+        .logo{display:flex;align-items:center;gap:10px;font-weight:800;cursor:pointer}
         .logo-img{width:40px;height:40px;object-fit:contain;margin-right:10px;display:block}
-        .tb .logo{display:flex;align-items:center;gap:10px;font-weight:800; cursor:pointer;}
         .top-right{display:flex;align-items:center;gap:16px}
         .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 10px;font-variant-numeric:tabular-nums;font-weight:700}
         .session-box{display:flex;align-items:center;gap:8px}
-        .mini-btn{height:30px;background:transparent;color:#fff;border:1px solid #000000;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:50%}
+        .mini-btn{height:30px;background:transparent;color:#fff;border:1px solid #000;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:50%}
         .mini-btn:hover{background:rgba(255,255,255,.12)}
-        .countdown{min-width:78px;padding:6px 10px;font-variant-numeric:tabular-nums;text-align:center;font-weight:800;background-color:#1F4551;border-color:#1F4551;border-radius:999px}
-        .logout{border-radius:999px; background:#dc3545; border-color:#dc3545;}
-        .extend{border-radius:999px; background-color: #6C757D; border-color: #6C757D;}
-        .icon{position:relative;font-size:20px;padding:8px;border-radius:50%; cursor:pointer;}
+        .countdown{min-width:78px;padding:6px 10px;text-align:center;font-weight:800;background:#1F4551;border-color:#1F4551;border-radius:999px}
+        .logout{border-radius:999px;background:#dc3545;border-color:#dc3545}
+        .extend{border-radius:999px;background:#6C757D;border-color:#6C757D}
+
+        /* 출퇴근 위젯 */
+        .att-box{display:flex;align-items:center;gap:8px}
+        .checkin-btn{background:#28a745;border-color:#28a745}
+        .checkout-btn{background:#007bff;border-color:#007bff}
+        .chip{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 10px;font-weight:700}
+        .chip.green{background:rgba(40,167,69,.2)}
+        .chip.orange{background:rgba(255,193,7,.25)}
+        .chip.red{background:rgba(220,53,69,.25)}
+        .chip span{font-variant-numeric:tabular-nums}
+        .icon{position:relative;font-size:20px;padding:8px;border-radius:50%;cursor:pointer}
         .badge{position:absolute;top:0;right:0;min-width:18px;height:18px;border-radius:9px;background:#ff4444;display:grid;place-items:center;font-size:10px}
-        .tb .profile{display:flex;align-items:center;gap:10px; cursor:pointer;}
-        .avatar{width:32px;height:32px;border-radius:50%;background:#e1e9ee}
+        .profile{display:flex;align-items:center;gap:10px;cursor:pointer}
+        .pf{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #ddd}
         .meta{display:flex;flex-direction:column;line-height:1.5}
-        .meta .name{font-weight:600;font-size:15px; text-align:center;}
-        .meta .dept{font-size:11px;opacity:.9; text-align:center;}
+        .meta .name{font-weight:600;font-size:15px;text-align:center}
+        .meta .dept{font-size:11px;opacity:.9;text-align:center}
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
-    <!-- JavaScript -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
-    <!-- CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css"/>
-    <!-- Default theme -->
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css"/>
-    <!-- Semantic UI theme -->
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/semantic.min.css"/>
 </head>
 <body>
-    <script>
-        alertify.defaults = {
+<script>
+    alertify.defaults = {
         // dialogs defaults
-        autoReset:true,
-        basic:false,
-        closable:true,
-        closableByDimmer:true,
-        invokeOnCloseOff:false,
-        frameless:false,
-        defaultFocusOff:false,
-        maintainFocus:true, // <== global default not per instance, applies to all dialogs
-        maximizable:true,
-        modal:true,
-        movable:true,
-        moveBounded:false,
-        overflow:true,
+        autoReset: true,
+        basic: false,
+        closable: true,
+        closableByDimmer: true,
+        invokeOnCloseOff: false,
+        frameless: false,
+        defaultFocusOff: false,
+        maintainFocus: true, // <== global default not per instance, applies to all dialogs
+        maximizable: true,
+        modal: true,
+        movable: true,
+        moveBounded: false,
+        overflow: true,
         padding: true,
-        pinnable:true,
-        pinned:true,
-        preventBodyShift:false, // <== global default not per instance, applies to all dialogs
-        resizable:true,
-        startMaximized:false,
-        transition:'pulse',
-        transitionOff:false,
-        tabbable:'button:not(:disabled):not(.ajs-reset),[href]:not(:disabled):not(.ajs-reset),input:not(:disabled):not(.ajs-reset),select:not(:disabled):not(.ajs-reset),textarea:not(:disabled):not(.ajs-reset),[tabindex]:not([tabindex^="-"]):not(:disabled):not(.ajs-reset)',  // <== global default not per instance, applies to all dialogs
+        pinnable: true,
+        pinned: true,
+        preventBodyShift: false, // <== global default not per instance, applies to all dialogs
+        resizable: true,
+        startMaximized: false,
+        transition: 'pulse',
+        transitionOff: false,
+        tabbable: 'button:not(:disabled):not(.ajs-reset),[href]:not(:disabled):not(.ajs-reset),input:not(:disabled):not(.ajs-reset),select:not(:disabled):not(.ajs-reset),textarea:not(:disabled):not(.ajs-reset),[tabindex]:not([tabindex^="-"]):not(:disabled):not(.ajs-reset)',  // <== global default not per instance, applies to all dialogs
 
         // notifier defaults
-        notifier:{
-        // auto-dismiss wait time (in seconds)
-            delay:5,
-        // default position
-            position:'bottom-right',
-        // adds a close button to notifier messages
+        notifier: {
+            // auto-dismiss wait time (in seconds)
+            delay: 5,
+            // default position
+            position: 'bottom-right',
+            // adds a close button to notifier messages
             closeButton: false,
-        // provides the ability to rename notifier classes
-            classes : {
+            // provides the ability to rename notifier classes
+            classes: {
                 base: 'alertify-notifier',
-                prefix:'ajs-',
+                prefix: 'ajs-',
                 message: 'ajs-message',
                 top: 'ajs-top',
                 right: 'ajs-right',
@@ -93,95 +99,286 @@
         },
 
         // language resources
-        glossary:{
+        glossary: {
             // dialogs default title
-            title:'MVIDIA ALERT',
+            title: 'MVIDIA ALERT',
             // ok button text
-            ok: 'OK',
+            ok: '확인',
             // cancel button text
-            cancel: 'Cancel'
+            cancel: '취소'
         },
 
         // theme settings
-        theme:{
+        theme: {
             // class name attached to prompt dialog input textbox.
-            input:'ajs-input',
+            input: 'ajs-input',
             // class name attached to ok button
-            ok:'ajs-ok',
+            ok: 'ajs-ok',
             // class name attached to cancel button
-            cancel:'ajs-cancel'
+            cancel: 'ajs-cancel'
         },
         // global hooks
-        hooks:{
+        hooks: {
             // invoked before initializing any dialog
-            preinit:function(instance){},
+            preinit: function (instance) {
+            },
             // invoked after initializing any dialog
-            postinit:function(instance){},
+            postinit: function (instance) {
+            },
         },
     };
-    </script>
-    <th:block th:if="${alertMsg != null}">
-        <script th:inline="javascript">
-            alertify.alert([[${alertMsg}]]);
-        </script>
-    </th:block>
+</script>
+<!-- header.html (Spring Security 미사용 버전) -->
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      th:fragment="header">
 
-    <div th:fragment="header (sessionSeconds=3600, logoPath=@{/images/mVIDIA_2-Photoroom.png})" class="tb">
-        <div class="logo" onclick="clickLogo()">
-            <img class="logo-img" th:src="@{/images/MVIDIA_Logo.png}" alt="MVIDIA 로고">
-            <div>MVIDIA · ERP</div>
+<head>
+    <meta charset="UTF-8" />
+    <title>MVIDIA ERP</title>
+
+    <!-- 필요 시 프로젝트 공통으로 이미 불러오면 아래 둘은 중복 제거하세요 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css"/>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
+
+    <style>
+        .tb{height:64px;background:#002B39;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+        .logo{display:flex;align-items:center;gap:10px;font-weight:800;cursor:pointer}
+        .logo-img{width:40px;height:40px;object-fit:contain;margin-right:10px;display:block}
+        .top-right{display:flex;align-items:center;gap:16px}
+        .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 10px;font-variant-numeric:tabular-nums;font-weight:700}
+        .session-box{display:flex;align-items:center;gap:8px}
+        .mini-btn{height:30px;background:transparent;color:#fff;border:1px solid #000;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:50%}
+        .mini-btn:hover{background:rgba(255,255,255,.12)}
+        .countdown{min-width:78px;padding:6px 10px;text-align:center;font-weight:800;background:#1F4551;border-color:#1F4551;border-radius:999px}
+        .logout{border-radius:999px;background:#dc3545;border-color:#dc3545}
+        .extend{border-radius:999px;background:#6C757D;border-color:#6C757D}
+
+        /* 출퇴근 위젯 */
+        .att-box{display:flex;align-items:center;gap:8px}
+        .checkin-btn{background:#28a745;border-color:#28a745}
+        .checkout-btn{background:#007bff;border-color:#007bff}
+        .chip{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 10px;font-weight:700}
+        .chip.green{background:rgba(40,167,69,.2)}
+        .chip.orange{background:rgba(255,193,7,.25)}
+        .chip.red{background:rgba(220,53,69,.25)}
+        .chip span{font-variant-numeric:tabular-nums}
+        .icon{position:relative;font-size:20px;padding:8px;border-radius:50%;cursor:pointer}
+        .badge{position:absolute;top:0;right:0;min-width:18px;height:18px;border-radius:9px;background:#ff4444;display:grid;place-items:center;font-size:10px}
+        .profile{display:flex;align-items:center;gap:10px;cursor:pointer}
+        .pf{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #ddd}
+        .meta{display:flex;flex-direction:column;line-height:1.5}
+        .meta .name{font-weight:600;font-size:15px;text-align:center}
+        .meta .dept{font-size:11px;opacity:.9;text-align:center}
+    </style>
+</head>
+
+<body>
+<!-- 헤더 바 -->
+<div th:fragment="header (sessionSeconds=3600)" class="tb">
+    <div class="logo" onclick="location.href='/mainPage'">
+        <img class="logo-img" th:src="@{/images/MVIDIA_Logo.png}" alt="MVIDIA 로고">
+        <div>MVIDIA · ERP</div>
+    </div>
+
+    <div class="top-right">
+        <!-- 세션/로그아웃 -->
+        <div class="session-box" aria-label="세션 제어">
+      <span id="sessionCountdown" class="countdown"
+            th:attr="data-seconds=${sessionSeconds?:0}"
+            th:text="${#numbers.formatInteger((sessionSeconds?:0)/60, 2)} + ':' + ${#numbers.formatInteger((sessionSeconds?:0)%60, 2)}">
+        60:00
+      </span>
+
+            <!-- Spring Security 미사용: CSRF hidden 제거 -->
+            <form id="extendForm" action="/session/extend" method="post" class="extend">
+                <button class="mini-btn" type="submit">연장</button>
+            </form>
+
+            <form id="logoutForm" action="/logout.emp" method="post" class="logout">
+                <button class="mini-btn" type="submit">로그아웃</button>
+            </form>
         </div>
 
-        <div class="top-right">
-            <!-- 세션 타이머/연장/로그아웃 -->
-            <div class="session-box" aria-label="세션 제어">
-          <span id="sessionCountdown" class="countdown"
-                th:attr="data-seconds=${sessionSeconds?:0}"
-                th:text="${#numbers.formatInteger(((sessionSeconds?:0)/60),2)} + ':'
-              + ${#numbers.formatInteger(((sessionSeconds?:0)%60),2)}">
-                60:00
-            </span>
+        <!-- 출퇴근 위젯 -->
+        <div class="att-box" aria-label="출퇴근 제어">
+            <button id="btnCheckin"  class="mini-btn checkin-btn"  type="button" title="출근">출근</button>
+            <button id="btnCheckout" class="mini-btn checkout-btn" type="button" title="퇴근">퇴근</button>
 
-                <form id="extendForm" th:action="@{/session/extend}" method="post" class="extend">
-                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}"/>
-                    <button class="mini-btn" type="submit">연장</button>
-                </form>
+            <!-- 오늘 시간 표시 -->
+            <span id="attTimes" class="pill" title="오늘 출/퇴근">--:-- / --:--</span>
+            <!-- 상태 칩: N/T/E -->
+            <span id="attStatusChip" class="chip" title="근태 상태">-</span>
+        </div>
 
-                <form id="logoutForm" th:action="@{/logout.emp}" method="post" class="logout">
-                    <input type="hidden" name="_csrf" th:value="${_csrf?.token}"/>
-                    <button class="mini-btn" type="submit">로그아웃</button>
-                </form>
+        <!-- 프로필 -->
+        <div class="profile" onclick="location.href='/myPage/profile'">
+            <div class="avatar">
+                <th:block th:unless="${session.loginEmp.changeName != null}">
+                    <img id="profile-preview" class="pf" th:src="@{/images/default_profile.png}" alt="기본 프로필">
+                </th:block>
+                <th:block th:if="${session.loginEmp.changeName != null}">
+                    <img id="profile-preview" th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="pf">
+                </th:block>
             </div>
-
-            <div class="icon" title="쪽지">📧<span class="badge" id="messageCount" th:text="${messageCount?:0}">0</span></div>
-            <div class="icon" title="알림">🔔<span class="badge" id="notificationCount" th:text="${notificationCount?:0}">0</span></div>
-
-            <div class="profile" onclick="clickProf()">
-                <div class="avatar"
-                     style="background-image:url('data:image/svg+xml;base64,PHN2ZyB3aWQ9IiIgdmlld0JveD0iMCAwIDM1IDM1IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxjaXJjbGUgY3g9IjE3LjUiIGN5PSIxNy41IiByPSIxNy41IiBmaWxsPSIjZGRkIi8+PHBhdGggZD0iTTE3LjUgMTBDMTMuOSAxMCAxMSAxMi45IDExIDE2LjVTMTMuOSAyMyAxNy41IDIzUzI0IDIwLjEgMjQgMTYuNVMyMS4xIDEwIDE3LjUgMTBaTTE3LjUgMTNDMTkuNDMgMTMgMjEgMTQuNTcgMjEgMTYuNVMxOS40MyAyMCAxNy41IDIwUzE0IDE4LjQzIDE0IDE2LjVTMTUuNTcgMTMgMTcuNSAxM1oiIGZpbGw9IiM5OTkiLz48L3N2Zz4=')">
-                </div>
-                <div class="meta">
-                    <div class="name" id="userName" th:text="|${session.loginEmp.empLName}${session.loginEmp.empName}|"></div>
-                    <div class="dept" id="userDept" th:text="${session.loginEmp.deptName}"></div>
-                </div>
+            <div class="meta">
+                <div class="name" th:text="|${session.loginEmp.empLName}${session.loginEmp.empName}|"></div>
+                <div class="dept" th:text="${session.loginEmp.deptName}"></div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        function clickLogo(){
-            location.href = "/mainPage";
-        }
+<!-- 페이지 진입 알림 -->
+<th:block th:if="${alertMsg != null}">
+    <script th:inline="javascript">alertify.alert([[${alertMsg}]]);</script>
+</th:block>
 
-        function clickProf(){
-            location.href = "/myPage/profile";
-        }
-    </script>
+<script>
+    // ===== 세션 연장/로그아웃: 폼 submit을 AJAX로 전환(페이지 깜빡임 방지) =====
+    $('#extendForm').on('submit', function(e){
+      e.preventDefault();
+      $.post('/session/extend')
+        .done(function(){ alertify.success('세션 연장 완료'); })
+        .fail(function(){ alertify.error('세션 연장 실패'); });
+    });
 
+    $('#logoutForm').on('submit', function(e){
+      e.preventDefault();
+      $.post('/logout.emp')
+        .done(function(){ alertify.message('로그아웃 되었습니다.'); location.href = '/'; })
+        .fail(function(){ alertify.error('로그아웃 실패'); });
+    });
 
+    // ===== 출퇴근 위젯 =====
+    let workTimerId = null;
 
-    <!-- 필요한 스크립트들(프로젝트 공통 레이아웃에서 한번만 로드해도 됨) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script th:src="@{/js/layout.js}"></script>
+    function hmToToday(hm){ // 'HH:MM' -> 오늘 그 시각의 Date
+      if(!hm) return null;
+      const [h,m] = hm.split(':').map(Number);
+      const d = new Date();
+      d.setHours(h||0, m||0, 0, 0);
+      return d;
+    }
+    function fmtHMS(ms){
+      const sec = Math.max(0, Math.floor(ms/1000));
+      const h   = Math.floor(sec/3600);
+      const m   = Math.floor((sec%3600)/60);
+      const s   = sec%60;
+      return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+    function stopWorkTicker(){
+      if(workTimerId){ clearInterval(workTimerId); workTimerId = null; }
+    }
+    // ✅ attTimes 를 "출/퇴근 · 근무경과" 로 계속 갱신
+    function startWorkTicker(arrivingHM, leavingHM){
+      stopWorkTicker();
+
+      // 표시 문자열 빌더
+      const base = (a,l) => (a || '--:--') + ' / ' + (l || '--:--');
+
+      if(!arrivingHM){ // 출근 전
+        $('#attTimes').text(base(null, null));
+        return;
+      }
+
+      const arrDate = hmToToday(arrivingHM);
+
+      if(leavingHM){ // 퇴근 완료 → 고정 합계
+        const levDate = hmToToday(leavingHM);
+        const worked  = levDate && arrDate ? fmtHMS(levDate - arrDate) : '00:00:00';
+        $('#attTimes').text(base(arrivingHM, leavingHM) + ' · 근무 ' + worked);
+        return;
+      }
+
+      // 출근만 된 상태 → 경과시간 실시간
+      const tick = () => {
+        const now = new Date();
+        const worked = fmtHMS(now - arrDate);
+        $('#attTimes').text(base(arrivingHM, null) + ' · 근무 ' + worked);
+      };
+      tick();
+      workTimerId = setInterval(tick, 1000); // 1초마다 갱신
+    }
+
+    function setStatusChip(status){
+      const chip = $('#attStatusChip');
+      chip.removeClass('green orange red').text('-');
+      if(!status) return;
+      if(status === 'N'){ chip.addClass('green').text('정상'); }
+      else if(status === 'T'){ chip.addClass('red').text('지각'); }
+      else if(status === 'E'){ chip.addClass('orange').text('조퇴'); }
+      else { chip.text(status); }
+    }
+    function applyButtonStates(arriving, leaving){
+      $('#btnCheckin').prop('disabled', !!arriving);
+      $('#btnCheckout').prop('disabled', !!leaving);
+    }
+
+    // 출근
+    $('#btnCheckin').on('click', function(){
+      const $btn = $(this).prop('disabled', true);
+      $.post('/att/checkin')
+        .done(function(res){
+          startWorkTicker(res.arriving, res.leaving);     // ✅ 타이머 시작
+          setStatusChip(res.status);
+          applyButtonStates(res.arriving, res.leaving);
+
+          if(res.duplicated){
+            alertify.message(res.message || '이미 출근 처리됨');
+          }else{
+            if(res.status === 'T') alertify.error('지각 처리');
+            else alertify.success('출근 처리 완료');
+          }
+        })
+        .fail(function(){
+          alertify.error('출근 처리 실패');
+          $btn.prop('disabled', false);
+        });
+    });
+
+    // 퇴근
+    $('#btnCheckout').on('click', function(){
+      const $btn = $(this).prop('disabled', true);
+      $.post('/att/checkout')
+        .done(function(res){
+          if(res.message && res.message.indexOf('출근 기록이 없습니다') > -1){
+            alertify.message(res.message);
+            $btn.prop('disabled', false);
+            return;
+          }
+          startWorkTicker(res.arriving, res.leaving);     // ✅ 타이머 정지 + 총 근무 표시
+          setStatusChip(res.status);
+          applyButtonStates(res.arriving, res.leaving);
+
+          if(res.status === 'E') alertify.message('조퇴 처리');
+          else alertify.success('퇴근 처리 완료');
+        })
+        .fail(function(){
+          alertify.error('퇴근 처리 실패');
+          $btn.prop('disabled', false);
+        });
+    });
+
+    // 초기 상태 로딩
+    $(function(){
+      $.getJSON('/att/today')
+        .done(function(res){
+          startWorkTicker(res.arriving, res.leaving);     // ✅ 초기에도 반영
+          setStatusChip(res.status);
+          applyButtonStates(res.arriving, res.leaving);
+        })
+        .fail(function(){
+          alertify.error("로딩 실패");
+        });
+    });
+</script>
+
+<script th:src="@{/js/layout.js}"></script>
 </body>
 </html>

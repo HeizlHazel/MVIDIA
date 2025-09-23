@@ -380,12 +380,6 @@ public class MessageController {
             log.debug("senderName을 '{}'으로 설정", finalSenderName);
         }
 
-        String content = getStringValue(message, "content");
-        if (content == null || content.trim().isEmpty()) {
-            sanitized.put("content", "(내용이 없습니다)");
-            log.debug("content를 기본값으로 설정");
-        }
-
         Object sendDate = message.get("sendDate");
         if (sendDate == null) {
             sanitized.put("sendDate", new Date());

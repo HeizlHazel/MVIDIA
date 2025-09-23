@@ -420,11 +420,22 @@ function safeValue(value, defaultValue = '정보 없음') {
     return (value !== null && value !== undefined && value !== '') ? value : defaultValue;
 }
 
-// 모달 열기 전에 내용 초기화
-$('#inboxMessageModal').on('show.bs.modal', function(event){
-    const modal = $(this);
-    modal.find('.modal-body').html('<div class="text-center text-muted">로딩 중...</div>');
-    $('#deleteMessageBtn').hide();
+// 메시지 상세 보기 모달이 열릴 때
+$('#inboxMessageModal').on('show.bs.modal', function(event) {
+    const button = $(event.relatedTarget);
+    currentMsgId = button.data('msgid'); // 전역 변수에 msgId 저장
+
+    // 삭제 버튼 클릭 이벤트 설정
+    $('#deleteMessageBtn').off('click').on('click', function() {
+        deleteMessage(currentMsgId);
+    });
+
+    // 모달 열기 전에 내용 초기화
+    $('#inboxMessageModal').on('show.bs.modal', function(event){
+        const modal = $(this);
+        modal.find('.modal-body').html('<div class="text-center text-muted">로딩 중...</div>');
+        $('#deleteMessageBtn').hide();
+    });
 });
 
 
@@ -512,48 +523,6 @@ $(document).on('click', '.view-btn', function(e){
                 `);
         }
     });
-});
-
-// 삭제 버튼 클릭 이벤트
-$('#deleteMessageBtn').on('click', function() {
-    console.log("삭제 요청 전송 - msgId:", currentMsgId, "receiverNo:", CURRENT_USER_NO);
-    if (!currentMsgId) {
-        alert('삭제할 메시지를 찾을 수 없습니다.');
-        return;
-    }
-
-    // 확인 대화상자
-    if (confirm('이 메시지를 삭제하시겠습니까?')) {
-        $.ajax({
-            url: '/message/delete',
-            method: 'POST',
-            data: {
-                msgId: currentMsgId,
-                receiverNo: CURRENT_USER_NO
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert(response.message || '메시지가 삭제되었습니다.');
-
-                    // 모달 완전히 닫기
-                    $('#inboxMessageModal').modal('hide');
-                    $('.modal-backdrop').remove();
-                    $('body').removeClass('modal-open');
-
-                    // 페이지 새로고침하여 목록 업데이트
-                    setTimeout(() => {
-                        location.reload();
-                    }, 300);
-                } else {
-                    alert(response.message || '삭제에 실패했습니다.');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Delete Error:', {xhr, status, error});
-                alert('삭제 중 오류가 발생했습니다.');
-            }
-        });
-    }
 });
 
 // 모달 완전히 닫힐 때 정리 작업
@@ -802,7 +771,7 @@ function sendMessage() {
         return;
     }
 
-    if (!content) {
+    if (!content || content.trim() === '') {
         alert('내용을 입력해주세요.');
         $('#content').focus();
         return;
@@ -827,7 +796,7 @@ function sendMessage() {
         success: function(response) {
             if (response.success) {
                 alert(response.message);
-                location.href = '/message/inbox';
+                location.href = '/message/outbox';
             } else {
                 alert('전송 실패: ' + response.message);
             }
@@ -841,5 +810,31 @@ function sendMessage() {
     });
 }
 
+function deleteMessage(msgId) {
+    if (!confirm('정말 삭제하시겠습니까?')) {
+        return;
+    }
 
-
+    $.ajax({
+        url: '/message/delete',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            msgId: msgId,
+            receiverNo: CURRENT_USER_NO   // ✅ 세션에서 가져온 로그인 사번
+        }),
+        success: function(response) {
+            if (response.success) {
+                alert('쪽지가 삭제되었습니다.');
+                $('#inboxMessageModal').modal('hide');
+                location.reload();
+            } else {
+                alert('삭제 실패: ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("삭제 요청 오류:", {xhr, status, error});
+            alert('서버 오류로 삭제에 실패했습니다.');
+        }
+    });
+}

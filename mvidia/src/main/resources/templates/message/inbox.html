@@ -46,11 +46,47 @@
         .star-normal {
             color: #dee2e6;
         }
+        .inbox-detail-modal {
+            padding: 30px;
+            font-size: 18px;
+            line-height: 1.8;
+        }
+        .inbox-detail-modal .modal-header h4 {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .inbox-detail-modal .modal-body {
+            min-height: 400px;
+            background-color: #fdfdfd;
+            padding: 20px 30px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .inbox-detail-modal .modal-body strong {
+            display: inline-block;
+            width: 100px;
+        }
+        .detail-table th {
+            width: 20%;
+            background-color: #f8f9fa;
+            border-right: 3px solid #6c757d;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .detail-table td {
+            text-align: left;
+            padding-left: 15px;
+        }
+
     </style>
 </head>
 <script th:inline="javascript">
-    const CURRENT_USER_NO = /*[['${session.loginEmp.empNo}']]*/ "";
+    const CURRENT_USER_NO = /*[[${session.loginEmp.empNo}]]*/ "";
 </script>
+
 
 <body>
 
@@ -59,6 +95,7 @@
         <span class="material-symbols-outlined" style="font-size: 44px;">mail</span>
         수신함
     </h2>
+
     <div>
         <button type="button" class="btn btn-primary mr-2" onclick="location.href='/message/compose'">
             <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
@@ -74,7 +111,7 @@
 <div class="card custom p-4 mt-3">
     <div class="d-flex justify-content-end mb-3">
         <select class="form-control form-control-sm d-inline-block" style="width: auto;"
-            onchange="location.href='/message/inbox?filter=' + this.value">
+                onchange="location.href='/message/inbox?filter=' + this.value">
             <option value="all" th:selected="${filter == 'all'}">전체</option>
             <option value="unread" th:selected="${filter == 'unread'}">안읽음</option>
             <option value="read" th:selected="${filter == 'read'}">읽음</option>
@@ -90,7 +127,6 @@
                 <th width="20%">보낸 사람</th>
                 <th width="30%">제목</th>
                 <th width="10%">읽음 여부</th>
-                <th width="10%">중요 여부</th>
                 <th width="10%">날짜</th>
                 <th width="20%">관리</th>
             </tr>
@@ -152,26 +188,48 @@
 
 <!-- 수신 메시지 상세보기 모달 -->
 <div class="modal fade" id="inboxMessageModal" tabindex="-1" role="dialog" aria-labelledby="inboxMessageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content inbox-detail-modal">
             <div class="modal-header">
-                <h5 class="modal-title" id="inboxMessageModalLabel">쪽지 상세</h5>
+                <h4 class="modal-title" id="inboxMessageModalLabel">쪽지 내용</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
+
             <div class="modal-body" id="inboxMessageContent">
-                <!-- Ajax로 내용을 로드 -->
+                <table class="table table-bordered detail-table">
+                    <tr>
+                        <th>제목</th>
+                        <td id="detailTitle"></td>
+                    </tr>
+                    <tr>
+                        <th>보낸 사람</th>
+                        <td id="detailSender"></td>
+                    </tr>
+                    <tr>
+                        <th>발송일시</th>
+                        <td id="detailDate"></td>
+                    </tr>
+                    <tr>
+                        <th>내용</th>
+                        <td id="detailContent" style="white-space: pre-line;"></td>
+                    </tr>
+                </table>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" id="deleteMessageBtn" style="display:none;">
-                    <span style="font-size:16px;"></span> 삭제
+                    삭제
                 </button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
             </div>
         </div>
     </div>
 </div>
+
+
+
 
 <script src="/js/layout.js"></script>
 </body>

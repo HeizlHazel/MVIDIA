@@ -693,24 +693,52 @@ function updateTableAndPagination(list, pi, searchParams) {
         });
     }
 
-    // 리스트 새로고침 함수
+    // refreshDefList 함수 수정
     function refreshDefList() {
-        return new Promise((resolve, reject) => {
+        const currentSearchParams = {
+            keyword: $('#keyword').val(),
+            defType: $('#defType').val(),
+            defStatus: $('#status').val(),
+            startDate: $('#startDate').val(),
+            endDate: $('#endDate').val(),
+            cpage: 1
+        };
+
+        // 검색 조건이 있으면 검색 API, 없으면 기본 리스트 API 호출
+        const hasSearchCondition = Object.values(currentSearchParams)
+            .some(value => value && value.trim() !== '');
+
+        if (hasSearchCondition) {
+            // 검색 조건이 있으면 검색 API 호출
+            $.ajax({
+                url: '/search.bo',
+                type: 'GET',
+                data: currentSearchParams,
+                success: function(response) {
+                    if (response.result === 'success') {
+                        updateTableAndPagination(response.list, response.pi, currentSearchParams);
+                    }
+                }
+            });
+        } else {
+            // 검색 조건이 없으면 기본 리스트 호출
             $.ajax({
                 url: '/dlist.bo',
                 type: 'GET',
-                data: { ajax: true },
+                data: { ajax: true, cpage: 1 },
                 success: function(html) {
-                    $('#defTableArea').html(html);
-                    resolve();
-                },
-                error: function(xhr, status, error) {
-                    console.error("리스트 새로고침 실패:", error);
-                    bindTableEvents();
-                    reject(error);
+                    // HTML fragment를 파싱하여 데이터 추출
+                    const $tempDiv = $('<div>').html(html);
+                    const $tbody = $tempDiv.find('tbody');
+
+                    // 테이블 업데이트
+                    $('#defTable tbody').html($tbody.html());
+
+                    // 페이지네이션도 다시 로드
+                    location.reload(); // 임시 방법
                 }
             });
-        });
+        }
     }
 
     function bindTableEvents() {

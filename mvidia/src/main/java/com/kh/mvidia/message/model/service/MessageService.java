@@ -26,11 +26,6 @@ public interface MessageService {
     Map<String, Object> toggleImportant(String msgId, String receiverNo);
 
     /**
-     * 메시지 삭제
-     */
-    Map<String, Object> deleteMessage(String msgId, String receiverNo);
-
-    /**
      * 메시지 발송
      */
     Map<String, Object> sendMessage(Map<String, Object> messageData);
@@ -59,5 +54,9 @@ public interface MessageService {
 
     // 불필요한 2번째 파라미터 제거
     void markAsRead(String msgId);
+
+    int deleteInboxMessage(String msgId, String receiverNo);
+
+    int deleteOutboxMessage(String msgId, String senderNo);
 
 }

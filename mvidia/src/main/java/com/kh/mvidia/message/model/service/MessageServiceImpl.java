@@ -6,6 +6,7 @@ import com.kh.mvidia.message.model.vo.MessageBox;
 import com.kh.mvidia.message.model.vo.MessageRcpt;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.session.SqlSession;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +19,7 @@ import java.util.*;
 public class MessageServiceImpl implements MessageService {
 
     @Autowired
-    private SqlSession sqlSession;
+    private SqlSessionTemplate sqlSession;
 
     @Autowired
     private MessageDao messageDao;
@@ -86,34 +87,6 @@ public class MessageServiceImpl implements MessageService {
             }
         } catch (Exception e) {
             log.error("중요 표시 토글 중 오류", e);
-            response.put("success", false);
-            response.put("message", "시스템 오류가 발생했습니다.");
-        }
-
-        return response;
-    }
-
-    @Override
-    public Map<String, Object> deleteMessage(String msgId, String receiverNo) {
-        log.info("🗑️ [Service] deleteMessage 호출됨");
-        log.info("   전달된 msgId = {}", msgId);
-        log.info("   전달된 receiverNo = {}", receiverNo);
-
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            Map<String, Object> param = Map.of("msgId", msgId, "receiverNo", receiverNo);
-            int result = messageDao.deleteMessage(sqlSession, param);
-
-            if (result > 0) {
-                response.put("success", true);
-                response.put("message", "메시지가 삭제되었습니다.");
-            } else {
-                response.put("success", false);
-                response.put("message", "메시지 삭제에 실패했습니다.");
-            }
-        } catch (Exception e) {
-            log.error("메시지 삭제 중 오류", e);
             response.put("success", false);
             response.put("message", "시스템 오류가 발생했습니다.");
         }
@@ -218,6 +191,16 @@ public class MessageServiceImpl implements MessageService {
     public void markAsRead(String msgId) {
         Map<String, Object> param = Map.of("msgId", msgId);
         messageDao.updateReadStatus(sqlSession, param); // 기존 DAO 메서드 사용
+    }
+
+    @Override
+    public int deleteInboxMessage(String msgId, String receiverNo) {
+        return messageDao.deleteInboxMessage(sqlSession, msgId, receiverNo);
+    }
+
+    @Override
+    public int deleteOutboxMessage(String msgId, String senderNo) {
+        return messageDao.deleteOutboxMessage(sqlSession, msgId, senderNo);
     }
 
 }

@@ -474,6 +474,10 @@ $(document).on('click', '.view-btn', function(e){
                 return;
             }
 
+            $(`tr[data-msgid="${msgId}"] td:nth-child(4)`).text('읽음');
+            $(`tr[data-msgid="${msgId}"]`).removeClass('unread-row');
+            fetchUnreadCounts(); // 상단 안읽은 쪽지 개수도 새로고침
+
             // 안전한 데이터 추출
             const title = safeValue(response.title, '제목 없음');
             const senderName = safeValue(response.senderName, '알 수 없는 발신자');
@@ -500,7 +504,6 @@ $(document).on('click', '.view-btn', function(e){
                 `;
 
             $('#inboxMessageContent').html(contentHtml);
-            $('#deleteMessageBtn').show();
         },
         error: function(xhr, status, error) {
             console.error('AJAX Error:', {xhr, status, error});
@@ -810,23 +813,25 @@ function sendMessage() {
     });
 }
 
+// 쪽지 삭제
 function deleteMessage(msgId) {
     if (!confirm('정말 삭제하시겠습니까?')) {
         return;
     }
 
     $.ajax({
-        url: '/message/delete',
+        url: '/message/delete/inbox',
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
             msgId: msgId,
-            receiverNo: CURRENT_USER_NO   // ✅ 세션에서 가져온 로그인 사번
+            receiverNo: CURRENT_USER_NO   // 세션에서 로그인한 사번
         }),
         success: function(response) {
             if (response.success) {
                 alert('쪽지가 삭제되었습니다.');
                 $('#inboxMessageModal').modal('hide');
+                // 목록 갱신
                 location.reload();
             } else {
                 alert('삭제 실패: ' + response.message);
@@ -835,6 +840,31 @@ function deleteMessage(msgId) {
         error: function(xhr, status, error) {
             console.error("삭제 요청 오류:", {xhr, status, error});
             alert('서버 오류로 삭제에 실패했습니다.');
+        }
+    });
+}
+
+// 발신 쪽지 삭제
+function deleteSentMessage(msgId) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+
+    $.ajax({
+        url: '/message/delete/outbox',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ msgId: msgId }),
+        success: function(response) {
+            if (response.success) {
+                alert(response.message);
+                $('#sentMessageModal').modal('hide');
+                location.reload();
+            } else {
+                alert('삭제 실패: ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("발신 삭제 요청 오류:", {xhr, status, error});
+            alert('서버 오류로 발신 삭제에 실패했습니다.');
         }
     });
 }

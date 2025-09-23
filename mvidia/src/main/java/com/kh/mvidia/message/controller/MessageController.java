@@ -142,24 +142,6 @@ public class MessageController {
         return messageService.toggleImportant(msgId, empNo);
     }
 
-    @PostMapping("/delete")
-    @ResponseBody
-    public Map<String, Object> deleteMessage(@RequestParam("msgId") String msgId,
-                                             @RequestParam("receiverNo") String receiverNo,
-                                             HttpSession session) {
-
-        // 세션에서 로그인한 사용자 정보 가져오기
-        Employee loginEmp = (Employee) session.getAttribute("loginEmp");
-        String actualReceiverNo = (loginEmp != null) ? loginEmp.getEmpNo() : receiverNo;
-
-        log.info("🗑️ [Controller] 삭제 요청 수신");
-        log.info("   msgId = {}", msgId);
-        log.info("   receiverNo(파라미터) = {}", receiverNo);
-        log.info("   receiverNo(세션 적용 후) = {}", actualReceiverNo);
-
-        return messageService.deleteMessage(msgId, actualReceiverNo);
-    }
-
     /**
      * 발신함 페이지
      */
@@ -404,4 +386,41 @@ public class MessageController {
         if (value == null) return null;
         return value.toString();
     }
+
+    @PostMapping("/delete/inbox")
+    @ResponseBody
+    public Map<String, Object> deleteInbox(@RequestBody Map<String, Object> payload, HttpSession session) {
+        String msgId = (String) payload.get("msgId");
+
+        Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+        String receiverNo = (loginEmp != null) ? loginEmp.getEmpNo() : null;
+
+        int rows = (receiverNo != null) ? messageService.deleteInboxMessage(msgId, receiverNo) : 0;
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", rows > 0);
+        result.put("message", rows > 0 ? "삭제 성공" : "삭제 실패");
+        return result;
+    }
+
+    @PostMapping("/delete/outbox")
+    @ResponseBody
+    public Map<String, Object> deleteOutbox(@RequestBody Map<String, Object> payload, HttpSession session) {
+        String msgId = (String) payload.get("msgId");
+
+        Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+        String senderNo = (loginEmp != null) ? loginEmp.getEmpNo() : null;
+
+        System.out.println(">>> delete 요청 msgId=[" + msgId + "], senderNo=[" + senderNo + "]");
+
+        int rows = (senderNo != null) ? messageService.deleteOutboxMessage(msgId, senderNo) : 0;
+
+        log.info(">>> delete 결과 rows={}", rows);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", rows > 0);
+        result.put("message", rows > 0 ? "발신 쪽지가 삭제되었습니다." : "삭제 실패 (조건 불일치)");
+        return result;
+    }
+
 }

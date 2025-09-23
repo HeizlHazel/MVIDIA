@@ -153,6 +153,12 @@
                         <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
                         보기
                     </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger ml-1"
+                            th:attr="data-msgid=${msg.msgId}"
+                            onclick="deleteMessage(this.getAttribute('data-msgid'))">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
+                        삭제
+                    </button>
                 </td>
             </tr>
 
@@ -219,9 +225,6 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" id="deleteMessageBtn" style="display:none;">
-                    삭제
-                </button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
             </div>
         </div>

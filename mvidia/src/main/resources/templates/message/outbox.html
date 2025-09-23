@@ -78,7 +78,9 @@
 
     </style>
 </head>
-
+<script th:inline="javascript">
+    const CURRENT_USER_NO = /*[[${session.loginEmp.empNo}]]*/ "";
+</script>
 <body>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -134,6 +136,12 @@
                             th:attr="onclick=|viewSentMessage('${msg.msgId}')|">
                         <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
                         보기
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger ml-1"
+                            th:attr="data-msgid=${msg.msgId}"
+                            onclick="deleteSentMessage(this.getAttribute('data-msgid'))">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">delete</span>
+                        삭제
                     </button>
                 </td>
             </tr>

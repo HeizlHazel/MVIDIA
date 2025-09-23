@@ -13,7 +13,7 @@
             select
                    mb.msg_id as "msgId"
                  , mb.title as "title"
-                 , coalesce(e.emp_name, mb.sender_no) as "senderName"
+                 , coalesce(e.emp_lname || e.emp_name, mb.sender_no) as "senderName"
                  , mb.send_date as "sendDate"
                  , mr.read_yn as "readYn"
                  , mr.import_yn as "importYn"
@@ -55,7 +55,7 @@
         select
                mb.msg_id as "msgId"
              , mb.sender_no as "senderNo"
-             , coalesce(e.emp_name, mb.sender_no, '알 수 없음') as "senderName"
+             , coalesce(e.emp_lname || e.emp_name, mb.sender_no, '알 수 없음') as "senderName"
              , coalesce(mb.title, '제목 없음') as "title"
              , coalesce(mb.content, '내용 없음') as "content"
              , mb.send_date as "sendDate"
@@ -89,14 +89,6 @@
         update tb_message_rcpt
            set import_yn = #{importYn}
          where msg_id = #{msgId} and receiver_no = #{receiverNo}
-    </update>
-
-    <!-- 메시지 삭제 -->
-    <update id="deleteMessage">
-        update tb_message_rcpt
-           set del_yn = 'Y'
-         where msg_id = #{msgId}
-           and receiver_no = #{receiverNo}
     </update>
 
     <!-- 메시지박스 삽입 -->
@@ -138,7 +130,7 @@
                              , mb.send_date as "sendDate"
                              , mb.content as "content"
                              , (select count(*) from tb_message_rcpt r where r.msg_id = mb.msg_id) as "receiverCount"
-                             , coalesce(e.emp_name, r.receiver_no) as "firstReceiverName"
+                             , coalesce(e.emp_lname || e.emp_name , r.receiver_no) as "firstReceiverName"
                           from tb_message_box mb
                           left join (
                                     select msg_id
@@ -182,7 +174,7 @@
     <select id="selectMessageReceivers" resultType="map">
         select
                mr.receiver_no as "empNo"
-             , coalesce(e.emp_name, mr.receiver_no) as "empName"
+             , coalesce(e.emp_lname || e.emp_name, mr.receiver_no) as "empName"
           from tb_message_rcpt mr
           left join tb_employee e on mr.receiver_no = e.emp_no
          where mr.msg_id = #{msgId}
@@ -194,5 +186,21 @@
         VALUES ('MSG' || LPAD(SEQ_MSG.NEXTVAL, 4, '0'),
         #{senderNo}, #{title}, #{content}, SYSDATE, 'N')
     </insert>
+
+    <!-- 수신자가 삭제 -->
+    <update id="deleteInboxMessage">
+        update tb_message_rcpt
+        set del_yn = 'Y'
+        where msg_id = #{msgId}
+        and receiver_no = #{receiverNo}
+    </update>
+
+    <!-- 발신자가 삭제 -->
+    <update id="deleteOutboxMessage">
+        update tb_message_box
+        set del_yn = 'Y'
+        where msg_id = #{msgId}
+          and sender_no = #{senderNo}
+    </update>
 
 </mapper>

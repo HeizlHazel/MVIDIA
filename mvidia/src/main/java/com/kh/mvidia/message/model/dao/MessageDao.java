@@ -4,8 +4,10 @@ import com.kh.mvidia.employee.model.vo.Employee;
 import com.kh.mvidia.message.model.vo.MessageBox;
 import com.kh.mvidia.message.model.vo.MessageRcpt;
 import org.apache.ibatis.session.SqlSession;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,11 +51,6 @@ public class MessageDao {
         return sqlSession.update("messageMapper.updateImportantStatus", param);
     }
 
-    /** 메시지 삭제 */
-    public int deleteMessage(SqlSession sqlSession, Map<String, Object> param) {
-        return sqlSession.update("messageMapper.deleteMessage", param);
-    }
-
     /** 메시지 발송 */
     public int insertMessageBox(SqlSession sqlSession, Map<String, Object> param) {
         return sqlSession.insert("messageMapper.insertMessageBox", param);
@@ -62,7 +59,6 @@ public class MessageDao {
     public int insertMessageRcpt(SqlSession sqlSession, Map<String, Object> param) {
         return sqlSession.insert("messageMapper.insertMessageRcpt", param);
     }
-
 
     /** 발신함 관련 */
     public List<Map<String, Object>> selectMessageReceivers(SqlSession sqlSession, String msgId) {
@@ -116,5 +112,20 @@ public class MessageDao {
     public List<Map<String, Object>> selectOutboxMessages(SqlSession sqlSession, Map<String, Object> param) {
         return sqlSession.selectList("messageMapper.selectOutboxMessages", param);
     }
+
+    public int deleteInboxMessage(SqlSessionTemplate sqlSession, String msgId, String receiverNo) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("msgId", msgId);
+        params.put("receiverNo", receiverNo);
+        return sqlSession.update("messageMapper.deleteInboxMessage", params);
+    }
+
+    public int deleteOutboxMessage(SqlSessionTemplate sqlSession, String msgId, String senderNo) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("msgId", msgId);
+        params.put("senderNo", senderNo);
+        return sqlSession.update("messageMapper.deleteOutboxMessage", params);
+    }
+
 
 }

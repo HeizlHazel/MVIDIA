@@ -6,7 +6,7 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>전자결재 문서함</title>
+    <title>MVIDIA · ERP - 전자결재 · 내 문서함</title>
     <style>
         /* 개별 카드 스타일 */
         .innerOuter {
@@ -210,6 +210,29 @@
 
         .btn-new:hover {
             background: #033c4f;
+            color: white;
+            text-decoration: none;
+        }
+
+        .notion-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: #333333;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .notion-btn:hover {
+            background: #111111;
             color: white;
             text-decoration: none;
         }
@@ -457,6 +480,9 @@
     <div class="innerOuter">
         <h3>📃 내 문서함</h3>
         <div class="top-actions">
+            <a href="https://www.notion.so/26cc7f78b47a80cca783e994dbe369da?v=26cc7f78b47a806eb517000c9baf9039" target="_blank" class="notion-btn">
+                노션에서 보기
+            </a>
             <a href="approvalform" class="btn-new">+ 새 결재 신청</a>
         </div>
         <!-- 필터 탭 -->

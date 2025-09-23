@@ -8,13 +8,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📅 캘린더 일정 조회</title>
+    <title>MVIDIA · ERP - 근태관리 · 캘린더</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        .inquiryCalendar{ grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+        .inquiryCalendar{ grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); width: 1200px; margin: 0 auto; }
         .inquiryCalendar > .widget {font-family: 'Inter', sans-serif; background-color: #f7fafc; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, .1); }
-        .container {max-width: 900px; margin: 2rem auto; padding: 2rem; background-color: #fff; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);}
+        .container {max-width: 1100px; margin: 2rem auto; padding: 2rem; background-color: #fff; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);}
         .controls-row {display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;}
         #calendar-container {border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem;}
         .calendar-header {display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; text-align: center; font-weight: 600; }
@@ -45,8 +45,9 @@
 </head>
 <body>
 <div class="inquiryCalendar">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">📅 캘린더 일정 조회</h2>
     <div class="widget" id="home">
+        <h3>📅 캘린더 일정 조회</h3>
+        <br>
         <div class="container">
             <div class="controls-row">
                 <div class="flex items-center space-x-2">

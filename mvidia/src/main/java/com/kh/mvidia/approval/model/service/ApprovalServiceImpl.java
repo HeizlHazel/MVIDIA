@@ -84,7 +84,11 @@ public class ApprovalServiceImpl implements ApprovalService {
         String[] approverArray = approval.split(",");
         List<Map<String, String>> approverOptions = Arrays.stream(approverArray)
                 .map(String::trim)
-                .map(name -> Map.of("name", name))
+                .map(approverEmpNo -> {
+                    Employee emp = pDao.selectEmployee(sqlSession, approverEmpNo);
+                    String approverName = emp != null ? (emp.getEmpLName() + emp.getEmpName()) : approverEmpNo;
+                    return Map.of("name", approverName);
+                })
                 .collect(Collectors.toList());
         properties.put("결재자", Map.of("multi_select", approverOptions));
 

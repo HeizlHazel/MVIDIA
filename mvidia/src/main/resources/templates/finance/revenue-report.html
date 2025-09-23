@@ -6,7 +6,7 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>분기별 수익 조회</title>
+    <title>MVIDIA · ERP - 경영관리 · 분기별 수익 조회</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -34,6 +34,8 @@
             border-radius: 12px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             background: #ffffff;
+            width: 1200px;
+            margin: 0 auto;
         }
         .body div{
             flex: 1;
@@ -51,13 +53,14 @@
     </style>
 </head>
 <body>
-    <h2 class="mb-0 fw-bold">
-        <span class="material-symbols-outlined"
-            style="font-size: 35px; color: #212121;">add_chart</span>
-            분기별 수익조회
-    </h2>
     <div class="container-fluid">
         <div class="card custom p-3">
+            <h2 class="mb-0 fw-bold">
+                <span class="material-symbols-outlined"
+                      style="font-size: 35px; color: #212121;">add_chart</span>
+                        분기별 수익조회
+            </h2>
+
             <select id="yearSelect"
                     class="form-select form-select-sm"
                     style="width: 80px; font-size:17px; margin-left: auto;"

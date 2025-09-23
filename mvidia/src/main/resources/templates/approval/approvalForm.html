@@ -7,7 +7,7 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>결재 신청</title>
+    <title>MVIDIA · ERP - 전자결재 · 신청</title>
 
     <style>
         /* 개별 카드 스타일 */
@@ -312,8 +312,8 @@
 
         managers.forEach(manager => {
             const option = document.createElement("option");
-            option.value = manager.empNo; // ✅ 사번 같은 고유값으로 지정
-            option.textContent = `${manager.empName}-${manager.jobName}(${manager.empNo})`; // ✅ VO 필드 사용
+            option.value = manager.empNo;
+            option.textContent = `${manager.empName}-${manager.jobName}(${manager.empNo})`; //
             approvalSelect.appendChild(option);
         });
     }

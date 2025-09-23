@@ -17,5 +17,17 @@ public class ApprovalDetail {
     private String createdDate; // 작성일
     private String approvers;
     private String writer;
+    private String rejectReason;
+
+    public ApprovalDetail(String id, String title, String content, String category, String status, String createdDate, String approvers, String writer) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.status = status;
+        this.createdDate = createdDate;
+        this.approvers = approvers;
+        this.writer = writer;
+    }
 
 }

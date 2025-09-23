@@ -176,13 +176,15 @@ public class DefectiveController {
 
         switch (defStatus){
             case "대기":
-                return  "W";
+                return "W";
             case "접수":
-                return  "K";
+                return "K";
             case "처리중":
                 return "P";
             case "완료":
                 return "C";
+            case "삭제":
+                return "R";
             default:
                 return defStatus;
 

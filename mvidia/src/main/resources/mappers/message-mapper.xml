@@ -21,6 +21,7 @@
               join tb_message_rcpt mr on mb.msg_id = mr.msg_Id
               left join tb_employee e on mb.sender_no = e.emp_no
              where mr.receiver_no = #{receiverNo, jdbcType=VARCHAR}
+               and mr.del_yn = 'N'
             <if test="filter == 'unread'">
                 and mr.read_yn = 'G'
             </if>
@@ -40,6 +41,7 @@
           from tb_message_box mb
           join tb_message_rcpt mr on mb.msg_id = mr.msg_id
          where mr.receiver_no = #{receiverNo}
+           and mr.del_yn = 'N'
         <if test="filter == 'unread'">
             and mr.read_yn = 'G'
         </if>
@@ -64,6 +66,7 @@
           left join tb_employee e on mb.sender_no = e.emp_no
          where mb.msg_id = #{msgId}
            and mr.receiver_no = #{receiverNo}
+           and mr.del_yn = 'N'
     </select>
 
     <!-- 읽음 상태 업데이트 -->
@@ -97,21 +100,16 @@
     </update>
 
     <!-- 메시지박스 삽입 -->
-    <insert id="insertMessageBox" parameterType="map">
-        insert into tb_message_box (sender_no, title, content, send_date)
-        values (#{senderNo}, #{title}, #{content}, sysdate)
+    <insert id="insertMessageRcpt">
+        insert into tb_message_rcpt (msg_id, receiver_no, del_yn)
+        values (#{msgId}, #{receiverNo}, 'N')
     </insert>
+
 
     <!-- 현재 메시지 ID 조회 -->
     <select id="selectCurrMessageId" resultType="string">
         select 'MSG' || lpad(seq_msg.currval, 4, '0') from dual
     </select>
-
-    <!-- 메시지 수신자 삽입 -->
-    <insert id="insertMessageRcpt">
-        insert into tb_message_rcpt (msg_id, receiver_no)
-        values (#{msgId}, #{receiverNo})
-    </insert>
 
     <!-- 전체 사원 조회 -->
     <select id="findAllEmployees" resultType="com.kh.mvidia.employee.model.vo.Employee">
@@ -147,9 +145,11 @@
                                          , receiver_no
                                          , row_number() over(partition by msg_id order by receiver_no) as rn
                                       from tb_message_rcpt
+                                     where del_yn = 'N'
                                     ) r on mb.msg_id = r.msg_id and r.rn = 1
                           left join tb_employee e on r.receiver_no = e.emp_no
                          where mb.sender_no = #{senderNo}
+                           and mb.del_yn = 'N'
                          order by mb.send_date desc
                      ) sub
                  where rownum &lt;= #{offset} + #{pageSize}
@@ -163,6 +163,7 @@
         select count(*)
           from tb_message_box
          where sender_no = #{senderNo}
+           and del_yn = 'N'
     </select>
 
     <!-- 발신 메시지 상세 조회 -->
@@ -174,6 +175,7 @@
              , mb.send_date as "sendDate"
           from tb_message_box mb
          where mb.msg_id = #{msgId}
+           and mb.del_yn = 'N'
     </select>
 
     <!-- 발신 메시지 수신자 조회 -->
@@ -184,6 +186,13 @@
           from tb_message_rcpt mr
           left join tb_employee e on mr.receiver_no = e.emp_no
          where mr.msg_id = #{msgId}
+           and del_yn = 'N'
     </select>
+
+    <insert id="insertMessageBox">
+        INSERT INTO tb_message_box (msg_id, sender_no, title, content, send_date, del_yn)
+        VALUES ('MSG' || LPAD(SEQ_MSG.NEXTVAL, 4, '0'),
+        #{senderNo}, #{title}, #{content}, SYSDATE, 'N')
+    </insert>
 
 </mapper>

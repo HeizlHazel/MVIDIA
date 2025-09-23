@@ -79,5 +79,8 @@ public class PermissionDao {
         return sqlSession.selectList("adminMapper.selectApprovalLogList", params);
     }
 
-
+    // 결재권자 부장 직급 조회
+    public List<Employee> selectManagerEmployees(SqlSessionTemplate sqlSession){
+        return sqlSession.selectList("adminMapper.selectManagerEmployees");
+    }
 }

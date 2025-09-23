@@ -29,9 +29,53 @@
         }
 
         .receiver-count {
-            font-size: 0.8rem;
+            font-size: 14px;
             color: #6c757d;
         }
+        .inbox-detail-modal {
+            padding: 30px;
+            font-size: 18px;
+            line-height: 1.8;
+        }
+
+        .inbox-detail-modal .modal-header h4 {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .inbox-detail-modal .modal-body {
+            min-height: 400px;
+            background-color: #fdfdfd;
+            padding: 20px 30px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+        }
+
+        .detail-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .detail-table th {
+            width: 20%;
+            background-color: #f8f9fa;
+            border-right: 3px solid #6c757d;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 17px;
+            line-height: 1.8;
+            padding: 24px 20px;
+        }
+
+        .detail-table td {
+            text-align: left;
+            padding: 24px 20px;
+            font-size: 17px;
+            line-height: 1.8;
+            vertical-align: top;
+        }
+
     </style>
 </head>
 
@@ -84,7 +128,7 @@
                     <!-- 수신자가 없을 때 -->
                     <span th:if="${msg.receiverCount == 0}">수신자 없음</span>
                 </td>
-                <td th:text="${#dates.format(msg.sendDate, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                <td th:text="${#dates.format(msg.sendDate, 'yyyy-MM-dd')}"></td>
                 <td>
                     <button type="button" class="btn btn-sm btn-outline-primary"
                             th:attr="onclick=|viewSentMessage('${msg.msgId}')|">
@@ -127,17 +171,37 @@
 
 <!-- 발송 메시지 상세보기 모달 -->
 <div class="modal fade" id="sentMessageModal" tabindex="-1" role="dialog" aria-labelledby="sentMessageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
+    <div class="modal-dialog modal-xl" role="document"> <!-- modal-lg → modal-xl 로 확장 -->
+        <div class="modal-content inbox-detail-modal">
             <div class="modal-header">
-                <h5 class="modal-title" id="sentMessageModalLabel">발송 메시지</h5>
+                <h4 class="modal-title" id="sentMessageModalLabel">발송 메시지 내용</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
+
             <div class="modal-body" id="sentMessageContent">
-                <!-- Ajax로 내용을 로드 -->
+                <table class="table detail-table">
+                    <tr>
+                        <th>제목</th>
+                        <td id="sentDetailTitle"></td>
+                    </tr>
+                    <tr>
+                        <th>수신자</th>
+                        <td id="sentDetailReceivers"></td>
+                    </tr>
+                    <tr>
+                        <th>발송일시</th>
+                        <td id="sentDetailDate"></td>
+                    </tr>
+                    <tr>
+                        <th>내용</th>
+                        <td id="sentDetailContent" style="white-space: pre-line;"></td>
+                    </tr>
+                </table>
             </div>
+
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
             </div>

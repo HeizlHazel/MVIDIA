@@ -14,10 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class ApprovalController {
@@ -121,7 +118,27 @@ public class ApprovalController {
             return Collections.emptyList();
         }
 
-        return aService.getMyDocuments(loginEmp, filter);
+        List<ApprovalItem> documents = aService.getMyDocuments(loginEmp, filter);
+
+        // 결재자 사번을 이름으로 변환
+        for (ApprovalItem doc : documents) {
+            if (doc.getApprovers() != null && !doc.getApprovers().trim().isEmpty()) {
+                String[] empNos = doc.getApprovers().split(",");
+                StringBuilder approverNames = new StringBuilder();
+
+                for (String empNo : empNos) {
+                    Employee emp = pService.selectEmployee(empNo.trim());
+                    if (approverNames.length() > 0) {
+                        approverNames.append(",");
+                    }
+                    String fullName = emp != null ? (emp.getEmpLName() + emp.getEmpName()) : empNo.trim();
+                    approverNames.append(fullName);
+                }
+                doc.setApprovers(approverNames.toString());
+            }
+        }
+
+        return documents;
     }
 
     // 승인함 데이터 조회 (AJAX용)
@@ -224,5 +241,33 @@ public class ApprovalController {
         }
         return 0;
     }
+
+    /**
+     * 부장급 직원 목록 조회 API (결재자 선택용)
+     */
+    @GetMapping("api/managers")
+    @ResponseBody
+    public List<Employee> getManagers() {
+        try {
+            List<Employee> managers = aService.getManagerEmployees();
+
+            System.out.println("조회된 부장 수: " + managers.size());
+            for (Employee manager : managers) {
+                System.out.println("Manager data: " + manager);
+            }
+
+            if (managers.isEmpty()) {
+                System.out.println("부장급 직원이 조회되지 않았습니다.");
+                return Collections.emptyList();
+            }
+
+            return managers; // ✅ 그대로 리턴
+        } catch (Exception e) {
+            System.err.println("부장급 직원 목록 조회 실패: " + e.getMessage());
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
 
 }

@@ -7,6 +7,52 @@
 <head>
     <meta charset="UTF-8">
     <title>DefProductTable</title>
+    <style>
+        table#defTable {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            table-layout: fixed;
+        }
+
+        th {
+            text-align: center; /* 헤더 중앙 정렬 */
+            background-color: #f8f9fa;
+            padding: 12px;
+            font-weight: 600;
+            border-bottom: 2px solid #dee0ea;
+        }
+
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        /* 체크박스 컬럼 */
+        td:first-child {
+            width: 40px;
+            padding: 0;
+        }
+
+        /* 비고 컬럼 */
+        th:last-child, td:last-child {
+            width: 300px; /* 필요에 따라 조정 */
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        th.remarks, td.remarks {
+            width: 300px;       /* 필요에 따라 조정 */
+            text-align: left;   /* 내용은 왼쪽 정렬 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body>
     <div th:fragment="defTable">
@@ -21,7 +67,7 @@
                 <th>불량유형</th>
                 <th>수량</th>
                 <th>처리 상태</th>
-                <th>비고</th>
+                <th class="remarks">비고</th>
             </tr>
             </thead>
             <tbody>
@@ -34,7 +80,7 @@
                 <td th:text="${d.defType}"></td>
                 <td th:text="${d.defQty}"></td>
                 <td th:text="${d.statusName}"></td>
-                <td th:text="${d.remarks}"></td>
+                <td class="remarks" th:text="${d.remarks}"></td>
             </tr>
             </tbody>
         </table>

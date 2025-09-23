@@ -250,5 +250,59 @@
         ) > 0
     </select>
 
+    <!-- 노션 업체별 전체 진행률, 전체 검사 수, 불량, 완료 -->
+    <select id="selectAllSchrWithProgRate" resultMap="ChartResultSet">
+        select
+               s.bp_partner
+             , s.schr_id
+             , s.sch_no
+             , sc.sch_name AS schName
+             , s.start_date
+             , s.end_date
+             , s.total_count
+             , s.def_count
+             , sum(case when q.check_status='C' then nvl(q.status_count,0) else 0 end) AS doneCount
+             , SUM(CASE WHEN q.check_status='P' THEN NVL(q.status_count,0) ELSE 0 END) AS ingCount
+             , SUM(CASE WHEN q.check_status='S' THEN NVL(q.status_count,0) ELSE 0 END) AS delayCount
+             , SUM(CASE WHEN q.check_status='W' THEN NVL(q.status_count,0) ELSE 0 END) AS waitCount
+             , NVL(s.def_count,0) AS totalDefCount
+             , CASE WHEN s.total_count > 0 THEN ROUND( SUM(CASE WHEN q.check_status='C' THEN NVL(q.status_count,0) ELSE 0 END) * 100.0 / s.total_count , 2 ) ELSE 0 END AS progRate
+          FROM tb_schedule_registration s
+          LEFT
+          JOIN tb_schedule sc ON s.sch_no = sc.sch_no
+          LEFT
+          JOIN tb_quality_check q ON s.schr_id = q.schr_id
+         GROUP
+            BY s.bp_partner, s.schr_id, s.sch_no, sc.sch_name, s.start_date, s.end_date, s.total_count, s.def_count ORDER BY s.bp_partner, s.end_date;
+    </select>
+
+    <select id="selectCompanySummaryByBp" resultMap="DefTypeResultSet">
+        SELECT
+               bp.bpPartner
+             , bp.doneCount
+             , df.defCountType AS defCount
+             , bp.totalCount
+             , ROUND(CASE WHEN bp.totalCount > 0 THEN bp.doneCount*100/bp.totalCount ELSE 0 END, 2) AS progRate
+          FROM (
+               SELECT
+                      s.bp_partner AS bpPartner
+                    , SUM(CASE WHEN q.check_status='C' THEN NVL(q.status_count,0) ELSE 0 END) AS doneCount
+                    , SUM(NVL(s.total_count,0)) AS totalCount
+                 FROM tb_schedule_registration s
+                 LEFT
+                 JOIN tb_quality_check q ON s.schr_id = q.schr_id
+                GROUP
+                   BY s.bp_partner ) bp
+          LEFT
+          JOIN (
+               SELECT
+                      s.bp_partner AS bpPartner
+                    , SUM(NVL(s.def_count,0)) AS defCountType
+                 FROM tb_schedule_registration s GROUP BY s.bp_partner ) df ON bp.bpPartner = df.bpPartner
+         ORDER
+            BY bp.bpPartner;
+    </select>
+
+
 
  </mapper>

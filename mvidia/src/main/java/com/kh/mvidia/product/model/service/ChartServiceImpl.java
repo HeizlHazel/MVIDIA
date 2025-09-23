@@ -1,5 +1,6 @@
 package com.kh.mvidia.product.model.service;
 
+import com.kh.mvidia.notion.dto.ScheduleSummaryDto;
 import com.kh.mvidia.product.model.dao.ChartDao;
 import com.kh.mvidia.product.model.vo.ProgressChart;
 import com.kh.mvidia.product.model.vo.ScheduleRegistration;
@@ -11,8 +12,11 @@ import java.util.List;
 @Service
 public class ChartServiceImpl implements ChartService{
 
-    @Autowired
-    private ChartDao cDao;
+    private final ChartDao cDao;
+
+    public ChartServiceImpl(ChartDao chartDao) {
+        this.cDao = cDao;
+    }
 
     @Override
     public List<ScheduleRegistration> selectSchrList(){ return cDao.selectSchrList(); }
@@ -35,5 +39,14 @@ public class ChartServiceImpl implements ChartService{
     @Override
     public List<ScheduleRegistration> selectAllSchrDonut(String bpPartner){ return cDao.selectAllSchrDonut(bpPartner); }
 
+    @Override
+    public List<ScheduleSummaryDto> getScheduleDetail() {
+        return cDao.selectScheduleDetail(); // ✅ 인스턴스로 호출
+    }
+
+    @Override
+    public List<ScheduleSummaryDto> getCompanySummary() {
+        return cDao.selectCompanySummary(); // ✅ 인스턴스로 호출
+    }
 
 }

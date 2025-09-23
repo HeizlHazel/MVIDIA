@@ -43,6 +43,9 @@ dependencies {
     implementation 'com.google.apis:google-api-services-calendar:v3-rev20250404-2.0.0' // Google Calendar API Library
     implementation("com.konghq:unirest-java:3.13.6") // 노션 연동 관련 unirest 라이브러리
     implementation("com.googlecode.json-simple:json-simple:1.1.1") // json 라이브러리
+    implementation 'org.json:json:20240303' // JSON 객체 처리를 위한 라이브러리 추가
+    implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10' // pdf 생성 엔진
+    implementation 'com.openhtmltopdf:openhtmltopdf-slf4j:1.0.10' // pdf 로그관리용
 }
 
 tasks.named('test') {

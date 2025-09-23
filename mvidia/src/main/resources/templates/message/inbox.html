@@ -28,10 +28,28 @@
         .important {
             color: #dc3545;
         }
+        .star-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 0;
+            margin: 0;
+            transition: color 0.2s ease;
+        }
+        .star-btn:hover {
+            opacity: 0.7;
+        }
+        .star-important {
+            color: #ffc107;
+        }
+        .star-normal {
+            color: #dee2e6;
+        }
     </style>
 </head>
-<script>
-    const CURRENT_USER_NO = /*[[${session.empNo}]]*/ '22010001'; // 임시 값
+<script th:inline="javascript">
+    const CURRENT_USER_NO = /*[['${session.loginEmp.empNo}']]*/ "";
 </script>
 
 <body>
@@ -68,7 +86,7 @@
         <table class="table table-bordered text-center table-hover">
             <thead class="table-primary">
             <tr>
-                <th width="10%">번호</th>
+                <th width="10%">중요</th>
                 <th width="20%">보낸 사람</th>
                 <th width="30%">제목</th>
                 <th width="10%">읽음 여부</th>
@@ -79,17 +97,19 @@
             </thead>
             <tbody>
             <tr th:each="msg : ${messages}" class="message-row" th:attr="data-msgid=${msg.msgId}">
-                <td th:text="${#strings.substring(msg.msgId, 3)}"></td>
+                <td>
+                    <button type="button" class="star-btn"
+                            th:classappend="${msg.importYn == 'Z'} ? 'star-important' : 'star-normal'"
+                            th:attr="data-msgid=${msg.msgId}, data-current-status=${msg.importYn}"
+                            onclick="toggleImportance(event, this)">
+                        <span class="material-symbols-outlined">star</span>
+                    </button>
+                </td>
                 <td th:text="${msg.senderName != null ? msg.senderName : msg.senderNo}"></td>
                 <td class="text-left pl-3">
-                    <span th:if="${msg.importYn == 'Z'}" class="material-symbols-outlined important mr-1" style="font-size: 16px;">star</span>
                     <span th:text="${msg.title}"></span>
                 </td>
                 <td th:text="${msg.readYn == 'S' ? '읽음' : '안읽음'}"></td>
-                <td>
-                    <span th:if="${msg.importYn == 'Z'}" class="text-danger fw-bold">중요</span>
-                    <span th:if="${msg.importYn != 'Z'}">일반</span>
-                </td>
                 <td th:text="${#dates.format(msg.sendDate, 'yyyy-MM-dd')}"></td>
 
                 <td>
@@ -144,6 +164,9 @@
                 <!-- Ajax로 내용을 로드 -->
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="deleteMessageBtn" style="display:none;">
+                    <span style="font-size:16px;"></span> 삭제
+                </button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
             </div>
         </div>

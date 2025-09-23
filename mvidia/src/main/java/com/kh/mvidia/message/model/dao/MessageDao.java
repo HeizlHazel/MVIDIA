@@ -51,7 +51,7 @@ public class MessageDao {
 
     /** 메시지 삭제 */
     public int deleteMessage(SqlSession sqlSession, Map<String, Object> param) {
-        return sqlSession.delete("messageMapper.deleteMessage", param);
+        return sqlSession.update("messageMapper.deleteMessage", param);
     }
 
     /** 메시지 발송 */

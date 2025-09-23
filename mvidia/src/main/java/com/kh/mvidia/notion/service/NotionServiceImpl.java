@@ -24,10 +24,10 @@ import java.util.List;
 @Service
 public class NotionServiceImpl implements NotionService {
 
-    @Value("${notion.api-token}")
+    @Value("${notion.api.token}")
     private String notionToken;
 
-    @Value("${notion.database-id}")
+    @Value("${notion.finance.database.id}")
     private String databaseId;
 
     private static final String NOTION_URL = "https://api.notion.com/v1/pages";

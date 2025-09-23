@@ -1,10 +1,10 @@
 package com.kh.mvidia.finance.model.service;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.kh.mvidia.finance.model.dao.FinanceDao;
-import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Comp;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.kh.mvidia.finance.model.vo.Tax;
+import com.kh.mvidia.integratedAtt.model.vo.Attendance;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

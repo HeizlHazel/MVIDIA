@@ -34,14 +34,14 @@ public class FinanceController {
     @Autowired
     private SalesService salesService;
 
-    /** 메인 대시보드 */
+    // 메인 대시보드
     @GetMapping("/main")
     public String mainPage(Model model) {
         LocalDate now = LocalDate.now();
         String year = String.valueOf(now.getYear());
         String yearMonth = now.format(DateTimeFormatter.ofPattern("yyyy-MM"));
 
-        // ✅ 급여 관련 데이터
+        // 급여 관련 데이터
         List<Salary> salaryList = financeService.getFilteredSalary(yearMonth, null, null, null);
         int empCount = salaryList.size();
         int totalNetPay = salaryList.stream()
@@ -54,7 +54,7 @@ public class FinanceController {
         model.addAttribute("avgNetPay", avgNetPay);
         model.addAttribute("thisMonth", yearMonth);
 
-        // ✅ 현재 분기 계산
+        // 현재 분기 계산
         int month = now.getMonthValue();
         int quarter = (month - 1) / 3 + 1;
 
@@ -63,7 +63,7 @@ public class FinanceController {
         model.addAttribute("year", year);
         model.addAttribute("quarter", quarter);
 
-        // ✅ 부품 현황
+        // 부품 현황
         List<Comp> compList = financeService.getAllComponents();
         applyMinQtyAndStatus(compList, model);
 
@@ -72,7 +72,7 @@ public class FinanceController {
                 .toList();
         model.addAttribute("lowList", lowList);
 
-        // ✅ 제품별 수익 순위 Top3
+        // 제품별 수익 순위 Top3
         Map<String, Long> productRevenueMap = salesService.getQuarterlyProductRevenue(year, quarter);
         List<Map.Entry<String, Long>> productRevenueTop3 = productRevenueMap.entrySet().stream()
                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
@@ -80,7 +80,7 @@ public class FinanceController {
                 .collect(Collectors.toList());
         model.addAttribute("productRevenueTop3", productRevenueTop3);
 
-        // ✅ 연간 매출/영업이익 (억 단위)
+        // 연간 매출/영업이익 (억 단위)
         List<Sales> yearlySalesList = salesService.getQuarterlySales(year);
 
         double[] totalSalesArr = new double[4];

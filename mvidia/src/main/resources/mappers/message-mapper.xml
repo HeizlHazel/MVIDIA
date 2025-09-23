@@ -20,9 +20,9 @@
               from tb_message_box mb
               join tb_message_rcpt mr on mb.msg_id = mr.msg_Id
               left join tb_employee e on mb.sender_no = e.emp_no
-             where mr.receiver_no = #{receiverNo}
+             where mr.receiver_no = #{receiverNo, jdbcType=VARCHAR}
             <if test="filter == 'unread'">
-                and mr.read_yn = 'N'
+                and mr.read_yn = 'G'
             </if>
             <if test="filter == 'important'">
                 and mr.import_yn = 'Z'
@@ -41,7 +41,7 @@
           join tb_message_rcpt mr on mb.msg_id = mr.msg_id
          where mr.receiver_no = #{receiverNo}
         <if test="filter == 'unread'">
-            and mr.read_yn = 'N'
+            and mr.read_yn = 'G'
         </if>
         <if test="filter == 'important'">
             and mr.import_yn = 'Z'
@@ -92,7 +92,8 @@
     <update id="deleteMessage">
         update tb_message_rcpt
            set del_yn = 'Y'
-         where msg_id = #{msgId} and receiver_no = #{receiverNo}
+         where msg_id = #{msgId}
+           and receiver_no = #{receiverNo}
     </update>
 
     <!-- 메시지박스 삽입 -->

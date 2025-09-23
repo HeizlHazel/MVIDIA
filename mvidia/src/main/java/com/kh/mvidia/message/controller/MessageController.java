@@ -1,5 +1,6 @@
 package com.kh.mvidia.message.controller;
 
+import com.kh.mvidia.employee.model.vo.Employee;
 import com.kh.mvidia.message.model.dao.MessageDao;
 import com.kh.mvidia.message.model.service.MessageService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,16 +26,24 @@ public class MessageController {
     @Autowired
     private SqlSession sqlSession;
 
-    /**
-     * 수신함 페이지
-     */
+    // 수신함 페이지
     @GetMapping("/inbox")
     public String inboxPage(@RequestParam(value = "page", defaultValue = "1") int page,
                             @RequestParam(value = "filter", defaultValue = "all") String filter,
                             HttpSession session, Model model) {
 
-        // ★ 임시로 설정된 부분 - 실제로는 세션에서 가져와야 함
-        String receiverNo = "22010001"; // (String) session.getAttribute("empNo");
+        // 로그인한 직원 사번
+        Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+
+        if (loginEmp == null) {
+            log.warn("로그인 정보가 세션에 없습니다. 수신함 접근 불가");
+            return "redirect:/"; // 로그인 페이지로 리다이렉트
+        }
+
+        String receiverNo = loginEmp.getEmpNo();
+        log.info("세션에서 가져온 empNo = {}", receiverNo);
+        log.info("receiverNo 원본='{}', 길이={}", receiverNo, receiverNo.length());
+        log.info("receiverNo='{}' (length={})", receiverNo, receiverNo.length());
 
         // 페이징 설정
         int pageSize = 10;
@@ -100,8 +109,17 @@ public class MessageController {
     public Map<String, Object> sendMessage(@RequestBody Map<String, Object> messageData,
                                            HttpSession session) {
 
-        // ★ 임시로 설정된 부분 - 실제로는 세션에서 가져와야 함
-        String senderNo = "22010001"; // (String) session.getAttribute("empNo");
+        Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+
+        if (loginEmp == null) {
+            log.warn("로그인 정보가 없습니다. 발송 불가");
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "로그인이 필요합니다.");
+            return error;
+        }
+
+        String senderNo = loginEmp.getEmpNo();
         messageData.put("senderNo", senderNo);
 
         log.info("쪽지 발송 요청 - 발신자: {}, 제목: {}", senderNo, messageData.get("title"));
@@ -124,16 +142,22 @@ public class MessageController {
         return messageService.toggleImportant(msgId, empNo);
     }
 
-    /**
-     * 메시지 삭제
-     */
     @PostMapping("/delete")
     @ResponseBody
     public Map<String, Object> deleteMessage(@RequestParam("msgId") String msgId,
-                                             @RequestParam("empNo") String empNo) {
+                                             @RequestParam("receiverNo") String receiverNo,
+                                             HttpSession session) {
 
-        log.info("메시지 삭제 요청 - msgId: {}, empNo: {}", msgId, empNo);
-        return messageService.deleteMessage(msgId, empNo);
+        // 세션에서 로그인한 사용자 정보 가져오기
+        Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+        String actualReceiverNo = (loginEmp != null) ? loginEmp.getEmpNo() : receiverNo;
+
+        log.info("🗑️ [Controller] 삭제 요청 수신");
+        log.info("   msgId = {}", msgId);
+        log.info("   receiverNo(파라미터) = {}", receiverNo);
+        log.info("   receiverNo(세션 적용 후) = {}", actualReceiverNo);
+
+        return messageService.deleteMessage(msgId, actualReceiverNo);
     }
 
     /**
@@ -143,8 +167,9 @@ public class MessageController {
     public String outboxPage(@RequestParam(value = "page", defaultValue = "1") int page,
                              HttpSession session, Model model) {
 
-        // ★ 임시로 설정된 부분 - 실제로는 세션에서 가져와야 함
-        String senderNo = "22010001"; // (String) session.getAttribute("empNo");
+        Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+
+        String senderNo = loginEmp.getEmpNo();
 
         // 페이징 설정
         int pageSize = 10;
@@ -224,67 +249,78 @@ public class MessageController {
 
         log.info("=== 쪽지 상세보기 AJAX 요청 시작 - msgId: {} ===", msgId);
 
-        // 파라미터 검증
         if (msgId == null || msgId.trim().isEmpty()) {
-            log.warn("유효하지 않은 msgId: {}", msgId);
             return createErrorResponse("유효하지 않은 메시지 ID입니다.");
         }
 
         try {
-            String empNo = (String) session.getAttribute("empNo");
-            if (empNo == null) {
-                empNo = "22010001"; // 임시 설정
-                log.info("임시 empNo 사용: {}", empNo);
+            // 세션에서 loginEmp 가져오기
+            Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+            if (loginEmp == null) {
+                log.warn("세션에 로그인 정보 없음!");
+                return createErrorResponse("로그인이 필요합니다.");
             }
 
-            log.info("서비스 호출 전 - msgId: {}, empNo: {}", msgId, empNo);
+            String empNo = loginEmp.getEmpNo();
+            log.info("세션에서 가져온 empNo = {}", empNo);
 
-            // 메시지 상세 조회 + 읽음 처리
-            Map<String, Object> message = null;
-
-            // 우선 messageService가 null인지 체크
-            if (messageService == null) {
-                log.error("MessageService가 null입니다!");
-                return createErrorResponse("서비스 초기화 오류입니다.");
-            }
-
-            message = messageService.getMessageDetail(msgId, empNo);
-            log.info("서비스 호출 후 결과: {}", message);
+            Map<String, Object> message = messageService.getMessageDetail(msgId, empNo);
 
             if (message == null || message.isEmpty()) {
                 log.warn("메시지를 찾을 수 없음 - msgId: {}, empNo: {}", msgId, empNo);
-
-                // MyBatis 직접 호출 시도
-                try {
-                    log.info("MyBatis 직접 호출 시도...");
-                    Map<String, Object> directResult = sqlSession.selectOne("messageMapper.selectMessageDetail", Map.of("msgId", msgId));
-                    log.info("직접 호출 결과: {}", directResult);
-
-                    if (directResult != null && !directResult.isEmpty()) {
-                        message = sanitizeMessageData(directResult);
-                        // 읽음 처리도 직접 수행
-                        sqlSession.update("messageMapper.updateReadStatus", Map.of("msgId", msgId, "receiverNo", empNo));
-                        sqlSession.commit();
-                        return message;
-                    }
-                } catch (Exception dbEx) {
-                    log.error("직접 DB 호출 실패", dbEx);
-                }
-
                 return createDefaultMessage(msgId);
             }
 
-            // null 값들을 안전한 기본값으로 처리
-            message = sanitizeMessageData(message);
-
-            log.info("=== 쪽지 조회 성공 - msgId: {}, title: {} ===", msgId, message.get("title"));
-            return message;
+            return sanitizeMessageData(message);
 
         } catch (Exception e) {
-            log.error("=== 쪽지 상세보기 중 오류 발생 - msgId: {} ===", msgId, e);
-            return createErrorResponse("쪽지를 불러오는 중 오류가 발생했습니다: " + e.getMessage());
+            log.error("쪽지 상세보기 중 오류 발생", e);
+            return createErrorResponse("쪽지를 불러오는 중 오류가 발생했습니다.");
         }
     }
+
+    @PostMapping("/update-importance")
+    @ResponseBody
+    public Map<String, Object> updateMessageImportance(
+            @RequestParam String msgId,
+            @RequestParam String receiverNo,
+            @RequestParam String importYn,
+            HttpSession session) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 세션에서 실제 사용자 확인 (보안)
+            Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+            if (loginEmp == null) {
+                response.put("success", false);
+                response.put("message", "로그인이 필요합니다.");
+                return response;
+            }
+
+            String actualReceiverNo = loginEmp.getEmpNo();
+
+            // 기존 서비스 메소드 활용하거나 새로 만들기
+            Map<String, Object> param = Map.of("msgId", msgId, "receiverNo", actualReceiverNo, "importYn", importYn);
+            int result = messageDao.updateImportantStatus(sqlSession, param);
+
+            if (result > 0) {
+                response.put("success", true);
+                response.put("message", "중요도가 변경되었습니다.");
+            } else {
+                response.put("success", false);
+                response.put("message", "중요도 변경에 실패했습니다.");
+            }
+
+        } catch (Exception e) {
+            log.error("중요도 업데이트 오류", e);
+            response.put("success", false);
+            response.put("message", "시스템 오류가 발생했습니다.");
+        }
+
+        return response;
+    }
+
 
     /**
      * 오류 응답 생성

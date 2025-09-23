@@ -1,9 +1,9 @@
 package com.kh.mvidia.finance.model.dao;
 
-import com.kh.mvidia.finance.model.vo.Attendance;
 import com.kh.mvidia.finance.model.vo.Comp;
 import com.kh.mvidia.finance.model.vo.Salary;
 import com.kh.mvidia.finance.model.vo.Tax;
+import com.kh.mvidia.integratedAtt.model.vo.Attendance;
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
 import java.util.List;

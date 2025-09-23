@@ -25,13 +25,12 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public List<Map<String, Object>> getInboxMessages(String receiverNo, String filter, int offset, int pageSize) {
-        Map<String, Object> param = Map.of(
-                "receiverNo", receiverNo,
-                "filter", filter,
-                "offset", offset,
-                "pageSize", pageSize
-        );
-        return messageDao.selectInboxMessages(sqlSession, param);
+        Map<String, Object> params = new HashMap<>();
+        params.put("receiverNo", receiverNo);
+        params.put("filter", filter);
+        params.put("offset", offset);
+        params.put("pageSize", pageSize);
+        return messageDao.selectInboxMessages(sqlSession, params);
     }
 
     @Override
@@ -72,7 +71,7 @@ public class MessageServiceImpl implements MessageService {
             Map<String, Object> param = Map.of("msgId", msgId, "receiverNo", receiverNo);
             String currentStatus = messageDao.selectImportantStatus(sqlSession, param);
 
-            String newStatus = "Z".equals(currentStatus) ? "N" : "Z";
+            String newStatus = "Z".equals(currentStatus) ? "J" : "Z";
             param = Map.of("msgId", msgId, "receiverNo", receiverNo, "importYn", newStatus);
 
             int result = messageDao.updateImportantStatus(sqlSession, param);
@@ -96,6 +95,10 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Map<String, Object> deleteMessage(String msgId, String receiverNo) {
+        log.info("🗑️ [Service] deleteMessage 호출됨");
+        log.info("   전달된 msgId = {}", msgId);
+        log.info("   전달된 receiverNo = {}", receiverNo);
+
         Map<String, Object> response = new HashMap<>();
 
         try {

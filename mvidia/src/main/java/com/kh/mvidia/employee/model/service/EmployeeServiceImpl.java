@@ -103,4 +103,9 @@ public class EmployeeServiceImpl implements EmployeeService{
 	public Employee checkEmpNo(String empNo) {
 		return empDao.checkEmpNo(sqlSession, empNo);
 	}
+	
+	@Override
+	public Employee checkEmpNoCer(String empNo) {
+		return empDao.checkEmpNoCer(sqlSession, empNo);
+	}
 }

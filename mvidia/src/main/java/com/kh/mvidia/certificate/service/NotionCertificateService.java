@@ -6,6 +6,4 @@ public interface NotionCertificateService {
 	
 	Map<String, Object> createCertificatePage(String databaseId, String empNo, String approverEmpNo);
 	
-	Map<String, Object> getPayslipData(String databaseId, String empNo);
-	
 }

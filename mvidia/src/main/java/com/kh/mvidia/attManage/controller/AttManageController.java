@@ -78,7 +78,7 @@ public class AttManageController {
 		Employee emp =  (Employee) session.getAttribute("loginEmp");
 		searchMap.put("empNo", emp.getEmpNo());
 		
-		int listCount = attService.selectAttListCount(searchMap);
+		int listCount = vaService.selectVaListCount(searchMap);
 		int pageLimit = 10;
 		int boardLimit = 15;
 		PageInfo pi = Pagination.getPageInfo(listCount, currentPage, pageLimit, boardLimit);

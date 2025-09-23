@@ -78,7 +78,9 @@ public class EmployeeDao {
 	}
 	
 	
-
+	public Employee checkEmpNoCer(SqlSessionTemplate sqlSession, String empNo) {
+		return sqlSession.selectOne("employeeMapper.checkEmpNoCer", empNo);
+	}
 }
 
 

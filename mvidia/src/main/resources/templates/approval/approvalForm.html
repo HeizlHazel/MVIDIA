@@ -133,6 +133,25 @@
             margin-top: 4px;
             display: block;
         }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 0 5px;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -149,7 +168,7 @@
                 <button class="tab" data-value="etc">기타 결재</button>
             </div>
 
-            <form id="notionAddForm" class="form" method="post" action="" enctype="">
+            <form id="notionAddForm" class="form">
                 <div class="row">
                     <div class="col-4">
                         <label for="applyWriter">작성자 <span class="required">*</span></label>
@@ -256,12 +275,11 @@
                     contentType:"application/json",
                     data:JSON.stringify(formData),
                     success:function(app){
-
                         if(app === "success"){
-                            alert("전자결재 신청이 등록되었습니다.");
+                                      alert("전자결재 신청이 등록되었습니다.");
                             location.href="approvalbox";
                         }else{
-                            alert("전자결재 신청이 실패하였습니다.");
+                              alert("전자결재 신청이 실패하였습니다.");
                         }
                     },
                     error:function(){

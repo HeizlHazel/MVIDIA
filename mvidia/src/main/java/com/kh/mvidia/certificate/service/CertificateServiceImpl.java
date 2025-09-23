@@ -1,151 +1,170 @@
 package com.kh.mvidia.certificate.service;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import kong.unirest.HttpRequestWithBody;
+import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
+import kong.unirest.Unirest;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class CertificateServiceImpl implements CertificateService{
+public class CertificateServiceImpl implements NotionCertificateService {
 	
 	@Value("${notion.api.token}")
-	private String notionApiToken;
+	private String notionToken;
 	
-	private final RestTemplate restTemplate = new RestTemplate();
-	private final Gson gson = new Gson();
+	private static final SecureRandom RND = new SecureRandom();
+	
+	// --- 공통 POST 요청 헬퍼 (헤더 자동 세팅) ---
+	private HttpRequestWithBody notionPost(String url) {
+		return Unirest.post(url)
+				.header("Authorization", "Bearer " + notionToken)
+				.header("Notion-Version", "2022-06-28")
+				.header("Content-Type", "application/json");
+	}
+	
+	private static String normalizeDbId(String raw){
+		String s = raw.replace("-", "");
+		if (s.length() == 32){
+			return String.format("%s-%s-%s-%s-%s",
+					s.substring(0,8), s.substring(8,12),
+					s.substring(12,16), s.substring(16,20), s.substring(20));
+		}
+		return raw;
+	}
+	
+	private static String rnd4(){ return String.format("%04d", RND.nextInt(10_000)); }
+	private static String today(){ return LocalDate.now().toString(); } // yyyy-MM-dd
 	
 	@Override
-	public void createCertificatePage(String databaseId, String title, String empNo) {
-		String url = "https://api.notion.com/v1/pages";
+	public Map<String, Object> createCertificatePage(String databaseId, String empNo, String approverEmpNo) {
+		String dbId = normalizeDbId(databaseId);
 		
-		JsonObject payload = new JsonObject();
-		JsonObject parent = new JsonObject();
-		parent.addProperty("database_id", databaseId);
-		payload.add("parent", parent);
+		String issueNo = "ISS-" + today().replace("-", "") + "-" + empNo + "-" + rnd4();
+		String certNo  = "CRT-" + today().replace("-", "") + "-" + rnd4();
 		
-		JsonObject properties = new JsonObject();
-		properties.add("Type", createTitleProperty(title));
-		properties.add("EmpNo", createRichTextProperty(empNo));
-		properties.add("IssueDate", createDateProperty(LocalDate.now()));
-		payload.add("properties", properties);
+		// ===== Notion properties =====
+		JSONObject props = new JSONObject();
 		
-		HttpHeaders headers = createHeaders();
-		HttpEntity<String> request = new HttpEntity<>(gson.toJson(payload), headers);
+		// 증명서 발급 번호 (Title)
+		JSONArray titleArr = new JSONArray()
+				.put(new JSONObject().put("text", new JSONObject().put("content", issueNo)));
+		props.put("증명서 발급 번호", new JSONObject().put("title", titleArr));
 		
-		restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+		// 신청자 사번 (Rich text)
+		JSONArray rtEmp = new JSONArray()
+				.put(new JSONObject().put("text", new JSONObject().put("content", empNo)));
+		props.put("신청자 사번", new JSONObject().put("rich_text", rtEmp));
+		
+		// 결재자 사번 (Rich text)
+		String approver = approverEmpNo == null ? "" : approverEmpNo;
+		JSONArray rtApp = new JSONArray()
+				.put(new JSONObject().put("text", new JSONObject().put("content", approver)));
+		props.put("결재자 사번", new JSONObject().put("rich_text", rtApp));
+		
+		// 증명서 번호 (Rich text)
+		JSONArray rtCert = new JSONArray()
+				.put(new JSONObject().put("text", new JSONObject().put("content", certNo)));
+		props.put("증명서 번호", new JSONObject().put("rich_text", rtCert));
+		
+		// 발급 날짜 (Date)
+		props.put("발급 날짜", new JSONObject().put("date", new JSONObject().put("start", today())));
+		
+		// 상태 (Select) – 노션 DB에 "발급" 옵션이 있어야 함
+		props.put("상태", new JSONObject().put("select", new JSONObject().put("name", "발급")));
+		
+		JSONObject body = new JSONObject()
+				.put("parent", new JSONObject().put("database_id", dbId))
+				.put("properties", props);
+		
+		HttpResponse<JsonNode> res = notionPost("https://api.notion.com/v1/pages")
+				.body(body)
+				.asJson();
+		
+		if (res.getStatus() / 100 != 2){
+			String err = res.getBody() != null ? res.getBody().toString() : ("HTTP " + res.getStatus());
+			throw new RuntimeException("Notion create page failed: " + err);
+		}
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("pageId", res.getBody().getObject().optString("id"));
+		result.put("issueNo", issueNo);
+		result.put("certNo",  certNo);
+		return result;
 	}
 	
 	@Override
 	public Map<String, Object> getPayslipData(String databaseId, String empNo) {
-		String url = "https://api.notion.com/v1/databases/" + databaseId + "/query";
+		String dbId = normalizeDbId(databaseId);
 		
-		JsonObject payload = new JsonObject();
-		JsonObject filter = new JsonObject();
-		JsonObject propertyFilter = new JsonObject();
-		propertyFilter.addProperty("property", "사번"); // Ensure this matches the Notion DB field name
-		JsonObject textFilter = new JsonObject();
-		textFilter.addProperty("equals", empNo);
-		propertyFilter.add("rich_text", textFilter);
-		filter.add("filter", propertyFilter);
-		payload.add("filter", filter);
+		JSONObject payload = new JSONObject()
+				.put("filter", new JSONObject()
+						.put("property", "사번")
+						.put("rich_text", new JSONObject().put("equals", empNo)));
 		
-		HttpHeaders headers = createHeaders();
-		HttpEntity<String> request = new HttpEntity<>(gson.toJson(payload), headers);
+		HttpResponse<JsonNode> res = notionPost("https://api.notion.com/v1/databases/" + dbId + "/query")
+				.body(payload)
+				.asJson();
 		
-		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
-		
-		JsonObject responseJson = gson.fromJson(response.getBody(), JsonObject.class);
-		JsonArray results = responseJson.getAsJsonArray("results");
-		
-		if (results.size() > 0) {
-			JsonObject page = results.get(0).getAsJsonObject();
-			JsonObject props = page.getAsJsonObject("properties");
-			
-			Map<String, Object> payslipData = new HashMap<>();
-			payslipData.put("name", getTextFromNotionProperty(props, "이름"));
-			payslipData.put("empNo", getTextFromNotionProperty(props, "사번"));
-			payslipData.put("payDate", getTextFromNotionProperty(props, "지급일"));
-			payslipData.put("position", getTextFromNotionProperty(props, "직급"));
-			payslipData.put("baseSalary", getNumberFromNotionProperty(props, "기본급"));
-			payslipData.put("mealAllowance", getNumberFromNotionProperty(props, "식대"));
-			payslipData.put("bonus", getNumberFromNotionProperty(props, "성과급"));
-			payslipData.put("totalPay", getNumberFromNotionProperty(props, "총 지급액"));
-			payslipData.put("nationalPension", getNumberFromNotionProperty(props, "국민연금"));
-			payslipData.put("healthInsurance", getNumberFromNotionProperty(props, "건강보험"));
-			payslipData.put("employmentInsurance", getNumberFromNotionProperty(props, "고용보험"));
-			payslipData.put("incomeTax", getNumberFromNotionProperty(props, "소득세"));
-			payslipData.put("totalDeduction", getNumberFromNotionProperty(props, "총 공제액"));
-			payslipData.put("netPay", getNumberFromNotionProperty(props, "실수령액"));
-			
-			return payslipData;
+		if (res.getStatus() / 100 != 2){
+			String err = res.getBody() != null ? res.getBody().toString() : ("HTTP " + res.getStatus());
+			throw new RuntimeException("Notion query failed: " + err);
 		}
 		
-		return null;
+		JSONArray results = res.getBody().getObject().optJSONArray("results");
+		if (results == null || results.length() == 0) return null;
+		
+		JSONObject props = results.getJSONObject(0).getJSONObject("properties");
+		
+		Map<String, Object> map = new HashMap<>();
+		map.put("name", getRichOrTitle(props, "이름"));
+		map.put("empNo", getRichOrTitle(props, "사번"));
+		map.put("payDate", getRichOrTitle(props, "지급일"));
+		map.put("position", getRichOrTitle(props, "직급"));
+		map.put("baseSalary", getNumber(props, "기본급"));
+		map.put("mealAllowance", getNumber(props, "식대"));
+		map.put("bonus", getNumber(props, "성과급"));
+		map.put("totalPay", getNumber(props, "총 지급액"));
+		map.put("nationalPension", getNumber(props, "국민연금"));
+		map.put("healthInsurance", getNumber(props, "건강보험"));
+		map.put("employmentInsurance", getNumber(props, "고용보험"));
+		map.put("incomeTax", getNumber(props, "소득세"));
+		map.put("totalDeduction", getNumber(props, "총 공제액"));
+		map.put("netPay", getNumber(props, "실수령액"));
+		return map;
 	}
 	
-	private HttpHeaders createHeaders() {
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(notionApiToken);
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.set("Notion-Version", "2022-06-28");
-		return headers;
-	}
-	
-	private JsonObject createTitleProperty(String content) {
-		JsonObject property = new JsonObject();
-		JsonArray titleArray = new JsonArray();
-		JsonObject textObject = new JsonObject();
-		JsonObject textContent = new JsonObject();
-		textContent.addProperty("content", content);
-		textObject.add("text", textContent);
-		titleArray.add(textObject);
-		property.add("title", titleArray);
-		return property;
-	}
-	
-	private JsonObject createRichTextProperty(String content) {
-		JsonObject property = new JsonObject();
-		JsonArray richTextArray = new JsonArray();
-		JsonObject textObject = new JsonObject();
-		JsonObject textContent = new JsonObject();
-		textContent.addProperty("content", content);
-		textObject.add("text", textContent);
-		richTextArray.add(textObject);
-		property.add("rich_text", richTextArray);
-		return property;
-	}
-	
-	private JsonObject createDateProperty(LocalDate date) {
-		JsonObject property = new JsonObject();
-		JsonObject dateObject = new JsonObject();
-		dateObject.addProperty("start", date.format(DateTimeFormatter.ISO_LOCAL_DATE));
-		property.add("date", dateObject);
-		return property;
-	}
-	
-	private String getTextFromNotionProperty(JsonObject props, String propName) {
-		if (props.has(propName) && props.get(propName).getAsJsonObject().has("rich_text")) {
-			JsonArray richText = props.get(propName).getAsJsonObject().getAsJsonArray("rich_text");
-			if (richText.size() > 0 && richText.get(0).getAsJsonObject().has("plain_text")) {
-				return richText.get(0).getAsJsonObject().get("plain_text").getAsString();
-			}
+	// ===== Notion 값 파서 =====
+	private static String getRichOrTitle(JSONObject props, String key){
+		if(!props.has(key)) return null;
+		JSONObject p = props.getJSONObject(key);
+		if(p.has("title")){
+			JSONArray arr = p.getJSONArray("title");
+			if(arr.length() > 0) return arr.getJSONObject(0).optString("plain_text", null);
+		}
+		if(p.has("rich_text")){
+			JSONArray arr = p.getJSONArray("rich_text");
+			if(arr.length() > 0) return arr.getJSONObject(0).optString("plain_text", null);
+		}
+		if(p.has("select")){
+			return p.getJSONObject("select").optString("name", null);
+		}
+		if(p.has("date")){
+			return p.getJSONObject("date").optString("start", null);
 		}
 		return null;
 	}
 	
-	private double getNumberFromNotionProperty(JsonObject props, String propName) {
-		if (props.has(propName) && props.get(propName).getAsJsonObject().has("number")) {
-			return props.get(propName).getAsJsonObject().get("number").getAsDouble();
-		}
-		return 0.0;
+	private static double getNumber(JSONObject props, String key){
+		if(!props.has(key)) return 0.0;
+		JSONObject p = props.getJSONObject(key);
+		return p.has("number") ? p.optDouble("number", 0.0) : 0.0;
 	}
 }

@@ -5,6 +5,7 @@ import com.kh.mvidia.approval.model.dto.ApprovalItem;
 import com.kh.mvidia.approval.model.dto.NotionPageResult;
 import com.kh.mvidia.employee.model.vo.Employee;
 import com.kh.mvidia.permission.model.dao.PermissionDao;
+import jakarta.annotation.PostConstruct;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
@@ -15,21 +16,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
 public class ApprovalServiceImpl implements ApprovalService {
 
-    @Value("${notion.api.token}")
+    @Value("${notion.approval.token}")
     private String token;
 
-    @Value("${notion.database.id}")
+    @Value("${notion.approval.database.id}")
     private String database_id;
 
     @Autowired
@@ -92,6 +92,7 @@ public class ApprovalServiceImpl implements ApprovalService {
         properties.put("상태", Map.of("select", Map.of("name", "대기")));
 
         JSONObject body = new JSONObject();
+
         body.put("parent", parent);
         body.put("properties", properties);
 
@@ -239,6 +240,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     /**
      * 내가 작성한 문서 조회
      */
+    @Override
     public List<ApprovalItem> getMyDocuments(Employee loginEmp, String filter) {
         if (loginEmp == null) {
             return Collections.emptyList();
@@ -263,6 +265,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     /**
      * 내가 결재해야 할 문서 조회
      */
+    @Override
     public List<ApprovalItem> getMyApprovalDocuments(Employee loginEmp, String filter) {
         if (loginEmp == null) {
             return Collections.emptyList();
@@ -296,6 +299,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     /**
      * 결재 대기 문서 수 조회
      */
+    @Override
     public int getPendingApprovalCount(Employee loginEmp) {
         if (loginEmp == null) {
             return 0;
@@ -390,6 +394,8 @@ public class ApprovalServiceImpl implements ApprovalService {
             e.printStackTrace();
         }
     }
+
+    private final Map<String, AtomicInteger> yearlyCounters = new ConcurrentHashMap<>();
 
     // ===================== 유틸리티 메서드들 =====================
 
@@ -512,7 +518,6 @@ public class ApprovalServiceImpl implements ApprovalService {
                     } catch (Exception e) {
                         item.setApprovers("");
                     }
-
                     items.add(item);
 
                 } catch (Exception e) {

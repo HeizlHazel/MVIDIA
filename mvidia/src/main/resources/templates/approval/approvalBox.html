@@ -428,7 +428,7 @@
 <body>
 <div class="content">
     <div class="innerOuter">
-        <h3>📃 전자결재 문서함</h3>
+        <h3>📃 내 문서함</h3>
         <div class="top-actions">
             <a href="approvalform" class="btn-new">+ 새 결재 신청</a>
         </div>
@@ -451,11 +451,11 @@
                 <thead>
                 <tr>
                     <th width="10%">번호</th>
-                    <th width="12%">구분</th>
+                    <th width="15%">구분</th>
                     <th width="25%">제목</th>
                     <th width="18%">결재자</th>
                     <th width="12%">결재상태</th>
-                    <th width="23%">작성일</th>
+                    <th width="20%">작성일</th>
                 </tr>
                 </thead>
                 <!-- 작성자만 보이게 -->
@@ -480,29 +480,6 @@
     </div>
 </div>
 
-<!-- 상세 모달 -->
-<!--<div class="modal fade" id="approvalModal" tabindex="-1" aria-hidden="true">-->
-<!--    <div class="modal-dialog modal-lg">-->
-<!--        <div class="modal-content">-->
-<!--            <div class="modal-header">-->
-<!--                <h5 class="modal-title">결재 문서 상세</h5>-->
-<!--            </div>-->
-<!--            <div class="modal-body">-->
-<!--                <h4 id="modalTitle"></h4>-->
-<!--                <p><b>구분:</b> <span id="modalCategory"></span></p>-->
-<!--                <p><b>결재자:</b>-->
-<!--                <div class="modal-approvers" id="modalApprovers"></div>-->
-<!--                </p>-->
-<!--                <div id="modalContent" style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;"></div>-->
-<!--                <p><b>작성일:</b> <span id="modalDate"></span></p>-->
-<!--                <p><b>상태:</b> <span id="modalStatus"></span></p>-->
-<!--            </div>-->
-<!--            <div class="modal-footer">-->
-<!--                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
 <!-- 상세 모달 -->
 <div class="modal fade" id="approvalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -601,7 +578,7 @@
         tbody.innerHTML = '';
 
         if (pageData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7">데이터가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6">데이터가 없습니다.</td></tr>';
             return;
         }
 

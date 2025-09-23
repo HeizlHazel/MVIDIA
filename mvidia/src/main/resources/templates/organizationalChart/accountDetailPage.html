@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/layout}"
+      layout:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <title>👤 사원 정보 조회</title>
+    <style>
+        .accountDatail>.widget{background:#fff;border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+        .accountDatail .page-title{margin-bottom:15px;}
+        .controls-row{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+        .mark{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px}
+        .mark-gray{background:#eef0f3;color:#556}
+        .profile-pic{width:72px;height:72px;background:#e6ebff; border-radius:50%; background-size:cover; background-position:center;}
+        .form{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px}
+        .form .field{display:flex;flex-direction:column;gap:8px}
+        .form label{font-size:12px;color:var(--muted)}
+        .form input,.form select,.form textarea{padding:10px 12px;border-radius:12px;border:1px solid #dde6ec;background:#fff;outline:none}
+        .form input[readonly]{background:#f1f5f8;color:#6f7c83}
+        .form .full{grid-column:1/-1}
+        .form .actions{grid-column:1/-1;display:flex;gap:8px;margin-top:6px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background-color:#0c197f ;color:#fff}
+        .btn:hover{background:#0050be; color:#fff;}
+    </style>
+</head>
+<body>
+
+<!-- 메인 컨텐츠 -->
+<div class="accountDatail">
+    <h2 class="page-title">👤 사원 정보 조회</h2>
+    <div class="widget" id="home">
+        <div class="controls-row">
+            <th:block th:unless="${atch.originName != null  && atch.fileStatus == 'U'}">
+                <img class="profile-pic" th:src="@{/images/default_profile.png}" alt="기본 프로필">
+            </th:block>
+            <th:block th:if="${atch.originName != null && atch.fileStatus == 'U'}">
+                <img th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="profile-pic">
+            </th:block>
+
+            <div class="mark mark-gray" style="margin-bottom:10px">조회 전용</div>
+        </div>
+        <div class="form">
+            <div class="field full"><label>사번*</label><input name="empNo" th:value="${emp.empNo}" readonly /></div>
+            <div class="field full"><label>이메일*</label><input name="email" type="email" th:value="${emp.email}" readonly /></div>
+            <div class="field full">
+                <label>프로필 사진</label>
+                <input type="text"
+                       th:value="${atch.originName != null} ? ${atch.originName} : ''"
+                       readonly
+                       th:placeholder="${atch.originName != null} ? '' : '선택된 파일 없음'"/>
+            </div>
+            <div class="field"><label>이름*</label><input  th:value="${emp.empLName} + ${emp.empName}"  readonly/></div>
+            <div class="field"><label>영문 이름*</label><input  th:value="${emp.empEngLName} + ${emp.empEngName}"  readonly/></div>
+            <div class="field full"><label>부서*</label><input name="deptName" th:value="${emp.deptName}" readonly /></div>
+            <div class="field full"><label>직급*</label><input name="jobName" th:value="${#strings.substring(emp.jobName, #strings.length(emp.jobName) - 2)}" readonly /></div>
+            <div class="field"><label>전화번호*</label><input name="phone" placeholder="010-0000-0000" th:value="${emp.phone}"  readonly/></div>
+            <div class="field"><label>내선번호</label><input name="extNo" placeholder="1234" th:value="${emp.extNo}" readonly /></div>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

@@ -104,6 +104,7 @@ public class ApprovalController {
         System.out.println("문서 작성자: " + writer);
 
         HttpResponse<JsonNode> response = aService.addPage(writer, dept, date, title, approval, details, category, empNo);
+
         System.out.println("노션 API 응답: " + response.getStatus() + ", " + response.getBody());
 
         return response.getStatus() == 200 ? "success" : "fail";

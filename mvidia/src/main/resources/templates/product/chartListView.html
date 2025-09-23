@@ -1,204 +1,281 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}"
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>ChartListView</title>
+    <title>작업진행현황</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f7fa;
+        .content {
             padding: 20px;
         }
 
-        .container {
-            max-width: 1400px;
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin: 0 auto 20px auto;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #dee0ea;
+            width: 1200px;
+            text-align: center;
+        }
+
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 14px;
+            text-align: center;
+            margin: -15px auto 20px auto;
+            width: 1200px;
+        }
+
+        /* 메인 컨테이너 */
+        .innerOuter {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 1200px;
             margin: 0 auto;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+        /* 섹션 스타일 */
+        .dashboard-section {
+            background: #f8f9fa;
+            border: 1px solid #dee0ea;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
         }
 
-        .header h1 {
-            color: #2c3e50;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        .dashboard-section:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        .header p {
-            color: #7f8c8d;
-            font-size: 1.1rem;
+        .section-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 18px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #dee0ea;
+            display: flex;
+            justify-content: between;
+            align-items: center;
         }
 
-        .section {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            padding: 30px;
+        .section-header-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .section h2 {
-            color: #34495e;
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #3498db;
-            padding-bottom: 10px;
+        /* 더보기 버튼 */
+        .more-btn {
+            padding: 6px 12px;
+            background: #186AEA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
         }
 
-        /* 상단 세로 막대바 영역 */
+        .more-btn:hover {
+            background: #0056d3;
+            color: white;
+            text-decoration: none;
+        }
+
+        /* 상단 차트 컨테이너 */
         .top-chart-container {
+            background: white;
+            border-radius: 6px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             height: 400px;
             position: relative;
         }
 
-        /* 하단 카드 그리드 */
+        /* 카드 그리드 - 2개씩 배치 */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 15px;
         }
 
         .progress-card {
             background: white;
-            border-radius: 15px;
-            padding: 25px;
-            color: #2f4f4f;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            color: #333;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             transition: transform 0.3s ease;
             overflow: hidden;
         }
 
         .progress-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
 
         .card-header {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .card-title {
-            font-size: 1.4rem;
-            font-weight: bold;
-            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
             text-align: center;
+            color: #333;
         }
 
         .progress-info {
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 15px;
         }
 
         .progress-bar-container {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .progress-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #555;
         }
 
         .progress-bar {
             width: 100%;
-            height: 20px;
-            background-color: rgba(255,255,255,0.2);
-            border-radius: 10px;
+            height: 16px;
+            background-color: #e9ecef;
+            border-radius: 8px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00b894, #00cec9);
-            border-radius: 10px;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 8px;
             transition: width 0.8s ease;
         }
 
         .date-range {
             text-align: center;
-            font-size: 0.85rem;
-            opacity: 0.9;
-            margin-top: 8px;
+            font-size: 11px;
+            color: #6c757d;
+            margin-top: 6px;
         }
 
         .charts-row {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             align-items: center;
-            height: 250px;
+            height: 200px;
         }
 
         .bar-chart-container {
             flex: 2;
             position: relative;
+            height: 100%;
         }
 
         .donut-chart-container {
             flex: 1;
-            height: 75.5%;
+            height: 100%;
             position: relative;
-
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .donut-title {
-            color: #2f4f4f;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
+            color: #555;
+            font-size: 12px;
+            margin-bottom: 8px;
             text-align: center;
+            font-weight: 500;
         }
 
         .loading {
             text-align: center;
-            color: #7f8c8d;
+            color: #6c757d;
             font-style: italic;
-            padding: 50px;
+            padding: 40px;
+            font-size: 14px;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 1200px) {
+            .innerOuter, .page-title, .page-subtitle {
+                width: 95%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-row {
+                flex-direction: column;
+                height: auto;
+                gap: 10px;
+            }
+
+            .bar-chart-container, .donut-chart-container {
+                width: 100%;
+                height: 200px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>작업진행현황</h1>
-        <p>종료임박순 Top5 일정별 진행현황을 확인하세요</p>
-        <a href="/schrList.bo">더보기</a>
-    </div>
+<div class="content">
+    <h3 class="page-title">작업진행현황</h3>
+    <p class="page-subtitle">종료임박순 Top5 일정별 진행현황을 확인하세요</p>
 
-    <!-- 상단: 현재 진행 중인 일정 전체 진행도 (세로 막대바) -->
-    <div class="section">
-        <h2>현재 진행 중인 일정 전체 진행도 (종료임박순 Top5)</h2>
-        <div class="top-chart-container">
-            <canvas id="topProgressChart"></canvas>
+    <div class="innerOuter">
+        <!-- 상단: 현재 진행 중인 일정 전체 진행도 (세로 막대바) -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                현재 진행 중인 일정 전체 진행도 (종료임박순 Top5)
+            </div>
+            <div class="top-chart-container">
+                <canvas id="topProgressChart"></canvas>
+            </div>
         </div>
-    </div>
 
-    <!-- 하단: 일정별 상세 진행 현황 (카드 형식) -->
-    <div class="section">
-        <h2>일정별 상세 진행 현황 (종료임박순 Top5)</h2>
-        <div id="cardsContainer" class="cards-grid">
-            <div class="loading">데이터를 불러오는 중...</div>
+        <!-- 하단: 일정별 상세 진행 현황 (카드 형식) -->
+        <div class="dashboard-section">
+            <div class="section-header-with-button">
+                <span>일정별 상세 진행 현황 (종료임박순 Top5)</span>
+                <a href="/schrList.bo" class="more-btn">더보기</a>
+            </div>
+            <div id="cardsContainer" class="cards-grid">
+                <div class="loading">데이터를 불러오는 중...</div>
+            </div>
         </div>
     </div>
 </div>
 
 <script th:inline="javascript">
-    // Controller에서 전달받은 실제 데이터 사용 (변경됨: 샘플데이터 대신 서버 데이터 사용)
+    // Controller에서 전달받은 실제 데이터 사용
     const progTop5 = /*[[${progTop5}]]*/ [];
     const schrTop5 = /*[[${schrTop5}]]*/ [];
 
@@ -253,10 +330,8 @@
                         grid: { color: 'rgba(0,0,0,0.1)' }
                     },
                     x: { grid: { display: false }}
-                },
-                plugins: [ChartDataLabels]
+                }
             }
-
         });
     }
 
@@ -266,11 +341,10 @@
         container.innerHTML = '';
 
         if (!schrTop5 || schrTop5.length === 0) {
-        container.innerHTML = '<div class="loading">데이터가 없습니다.</div>';
-        return;
+            container.innerHTML = '<div class="loading">데이터가 없습니다.</div>';
+            return;
         }
 
-        // 변경됨: 실제 schrTop5 데이터 사용
         schrTop5.forEach((schedule, index) => {
             // 전체 진행률 계산
             const progressRate = schedule.totalCount > 0
@@ -316,7 +390,6 @@
 
         // 차트들을 DOM이 생성된 후에 렌더링
         setTimeout(() => {
-            // 변경됨: 실제 schrTop5 데이터 사용
             schrTop5.forEach((d, index) => {
                 createStatusBarChart(d, index);
                 createQualityDonutChart(d, index);
@@ -336,7 +409,7 @@
                     {
                         label: '완료',
                         data: [d.doneCount],
-                        barThickness: 50,
+                        barThickness: 30,
                         backgroundColor: 'rgba(46, 204, 113, 0.8)',
                         borderColor: 'rgba(46, 204, 113, 1)',
                         borderWidth: 1
@@ -344,7 +417,7 @@
                     {
                         label: '진행중',
                         data: [d.ingCount],
-                        barThickness: 50,
+                        barThickness: 30,
                         backgroundColor: 'rgba(52, 152, 219, 0.8)',
                         borderColor: 'rgba(52, 152, 219, 1)',
                         borderWidth: 1
@@ -352,7 +425,7 @@
                     {
                         label: '지연',
                         data: [d.delayCount],
-                        barThickness: 50,
+                        barThickness: 30,
                         backgroundColor: 'rgba(241, 196, 15, 0.8)',
                         borderColor: 'rgba(241, 196, 15, 1)',
                         borderWidth: 1
@@ -360,7 +433,7 @@
                     {
                         label: '대기',
                         data: [d.waitCount],
-                        barThickness: 50,
+                        barThickness: 30,
                         backgroundColor: 'rgba(149, 165, 166, 0.8)',
                         borderColor: 'rgba(149, 165, 166, 1)',
                         borderWidth: 1
@@ -374,46 +447,25 @@
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels:{
-                            usePointStyle:true,
-                            pointStyle:'circle',
-                            boxWidth:8,
-                            boxHeight:8,
-                            padding:10,
-                            font:{size:11}
-                        }
-                    },
-                    datalabels:{
-                        color:'black',
-                        anchor:'center',
-                        align:'center',
-                        offset:2,
-                        formatter:(value, context)=>{
-                            const idx = context.dataIndex;
-                            const total = schrTop5[idx].totalCount;
-                            const done = schrTop5[idx].doneCount;
-                            const progRate = total>0?Math.round(done*100/total):0;
-                            return progRate+'%';
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            boxWidth: 6,
+                            boxHeight: 6,
+                            padding: 8,
+                            font: { size: 10 }
                         }
                     }
                 },
                 scales: {
                     x: {
                         stacked: true,
-                        ticks: {
-                            color: 'rgba(255,255,255,0.8)',
-                            font: { size: 10 },
-                            display: false
-                        },
-                        grid: { color: 'rgba(255,255,255,0.2)' }
+                        ticks: { display: false },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
                     },
                     y: {
                         stacked: true,
-                        ticks: {
-                            color: 'rgba(255,255,255,0.8)',
-                            font: { size: 10 },
-                            display: false
-                        },
+                        ticks: { display: false },
                         grid: { display: false }
                     }
                 }
@@ -450,13 +502,13 @@
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels:{
-                            usePointStyle:true,
-                            pointStyle:'circle',
-                            boxWidth:8,
-                            boxHeight:8,
-                            padding:10,
-                            font:{size:11}
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            boxWidth: 6,
+                            boxHeight: 6,
+                            padding: 8,
+                            font: { size: 10 }
                         }
                     },
                     tooltip: {
@@ -476,28 +528,9 @@
 
     // 페이지 로드 시 차트들 초기화
     document.addEventListener('DOMContentLoaded', function() {
-        // 상단 세로 막대바 차트 생성
         createTopProgressChart();
-
-        // 하단 카드들 생성
         createProgressCards();
     });
-
-    // 실제 프로젝트에서는 이 함수로 서버 데이터 가져오기
-    function loadDataFromServer() {
-        // Ajax 호출 예시
-        /*
-        fetch('/cplist.bo')
-            .then(response => response.json())
-            .then(data => {
-                // 받은 데이터로 차트 업데이트
-                updateChartsWithServerData(data);
-            })
-            .catch(error => {
-                console.error('Error loading data:', error);
-            });
-        */
-    }
 </script>
 </body>
 </html>

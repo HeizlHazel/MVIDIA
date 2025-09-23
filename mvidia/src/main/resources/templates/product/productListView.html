@@ -11,7 +11,7 @@
 <body>
 
 <div class="content">
-    <h2>생산 제품 조회 </h2>
+    <h2>제품 현황 조회 </h2>
 </div>
 
 <form id="searchForm" autocomplete="off">
@@ -30,8 +30,12 @@
 <script>
     document.querySelector("#searchForm").addEventListener("submit", function(e) {
         e.preventDefault();
-        const form = e.target;
-        const keyword = form.keyword.value;
+        let form = e.target;
+        let keyword = form.keyword.value;
+
+        if(keyword.includes("|")){
+            keyword = keyword.split("|")[0].trim();
+        }
 
         fetch(`/plist.bo?keyword=${encodeURIComponent(keyword)}&ajax=true`, {
             headers: { "X-Requested-With": "XMLHttpRequest" }

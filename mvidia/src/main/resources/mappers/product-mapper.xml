@@ -21,8 +21,10 @@
           from tb_production_Quality q
         <where>
             <if test="keyword != null and keyword.trim() != ''">
-                (q.prod_code like '%' || #{keyword} || '%'
-                or q.prod_name like '%' || #{keyword} || '%')
+                (
+                    upper(q.prod_code) like '%' || upper(#{keyword}) || '%'
+                 or upper(q.prod_name) like '%' || upper(#{keyword}) || '%'
+                )
             </if>
         </where>
     </select>
@@ -40,8 +42,10 @@
           left join tb_status s on s.status_code = q.prod_status
         <where>
             <if test="keyword != null and keyword.trim() != ''">
-                (q.prod_code like '%' || #{keyword} || '%'
-                or q.prod_name like '%' || #{keyword} || '%')
+                (
+                    upper(q.prod_code) like '%' || upper(#{keyword}) || '%'
+                 or upper(q.prod_name) like '%' || upper(#{keyword}) || '%'
+                )
             </if>
         </where>
          order

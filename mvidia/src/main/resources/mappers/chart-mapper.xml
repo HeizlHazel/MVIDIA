@@ -90,39 +90,42 @@
 
     <!-- 개별 일정 top5 누적상태별 막대바 그래프 -->
     <select id="selectTop5Schr" resultMap="ChartResultSet">
-            SELECT *
-            FROM (
-            SELECT *
-            FROM (
-            SELECT s.schr_id,
-            s.sch_no,
-            sc.sch_name AS schName,
-            s.cat_code,
-            s.bp_partner,
-            s.emp_no,
-            s.start_date,
-            s.end_date,
-            s.color_id,
-            s.details,
-            s.total_count,
-            s.def_count,
-            SUM(CASE WHEN q.check_status='C' THEN nvl(q.status_count, 0) ELSE 0 END) AS done_count,
-            SUM(CASE WHEN q.check_status='P' THEN nvl(q.status_count, 0) ELSE 0 END) AS ing_count,
-            SUM(CASE WHEN q.check_status='S' THEN nvl(q.status_count, 0) ELSE 0 END) AS delay_count,
-            SUM(CASE WHEN q.check_status='W' THEN nvl(q.status_count, 0) ELSE 0 END) AS wait_count,
-            SUM(CASE WHEN q.def_count > 0 THEN NVL(q.def_count, 0) ELSE 0 END) AS total_def_count,
-            ROW_NUMBER() OVER (PARTITION BY s.bp_partner, s.sch_no ORDER BY s.end_date) AS rn
-            FROM tb_schedule_registration s
-            LEFT JOIN tb_schedule sc ON s.sch_no = sc.sch_no
-            LEFT JOIN tb_quality_check q ON s.schr_id = q.schr_id
-            GROUP BY s.schr_id, s.sch_no, s.cat_code, s.bp_partner, s.emp_no,
-            s.start_date, s.end_date, s.color_id, s.details, s.total_count,
-            s.def_count, sc.sch_name
-            )
-            WHERE rn = 1
-            ORDER BY end_date
-            )
-            WHERE ROWNUM &lt;= 5
+            select *
+              from (
+                   select *
+                     from (
+                          select
+                                 s.schr_id
+                               , s.sch_no
+                               , sc.sch_name AS schName
+                               , s.cat_code
+                               , s.bp_partner
+                               , s.emp_no
+                               , s.start_date
+                               , s.end_date
+                               , s.color_id
+                               , s.details
+                               , s.total_count
+                               , s.def_count
+                               , SUM(CASE WHEN q.check_status='C' THEN nvl(q.status_count, 0) ELSE 0 END) AS done_count,
+                            SUM(CASE WHEN q.check_status='P' THEN nvl(q.status_count, 0) ELSE 0 END) AS ing_count,
+                            SUM(CASE WHEN q.check_status='S' THEN nvl(q.status_count, 0) ELSE 0 END) AS delay_count,
+                            SUM(CASE WHEN q.check_status='W' THEN nvl(q.status_count, 0) ELSE 0 END) AS wait_count,
+                            SUM(CASE WHEN q.def_count > 0 THEN NVL(q.def_count, 0) ELSE 0 END) AS total_def_count,
+                            ROW_NUMBER() OVER (PARTITION BY s.bp_partner, s.sch_no ORDER BY s.end_date) AS rn
+                            FROM tb_schedule_registration s
+                            LEFT JOIN tb_schedule sc ON s.sch_no = sc.sch_no
+                            LEFT JOIN tb_quality_check q ON s.schr_id = q.schr_id
+                            group
+                               by s.schr_id, s.sch_no, s.cat_code, s.bp_partner, s.emp_no,
+                                  s.start_date, s.end_date, s.color_id, s.details, s.total_count,
+                                  s.def_count, sc.sch_name
+                     )
+                    where rn = 1
+                    order
+                       by end_date
+              )
+             where ROWNUM &lt;= 5
     </select>
 
     <!-- 개별 일정 top5 누적상태별 불량 도넛 그래프 -->

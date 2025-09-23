@@ -422,37 +422,84 @@
             transform: translateY(-1px);
         }
 
-    /* 사유 입력 모달 스타일 */
-    #reasonModal .modal-content {
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    }
+        /* 사유 입력 모달 스타일 */
+        #reasonModal .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
 
-    #reasonModal .modal-header {
-        background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-        border-bottom: 1px solid #dee0ea;
-        border-radius: 10px 10px 0 0;
-    }
+        #reasonModal .modal-header {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+            border-bottom: 1px solid #dee0ea;
+            border-radius: 10px 10px 0 0;
+        }
 
-    #reasonModal .modal-body {
-        padding: 25px;
-    }
+        #reasonModal .modal-body {
+            padding: 25px;
+        }
 
-    #reasonModal .form-control {
-        border-radius: 6px;
-        border: 1px solid #dee2e6;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    }
+        #reasonModal .form-control {
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
 
-    #reasonModal .form-control:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    }
+        #reasonModal .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
 
-    #reasonModal .modal-footer {
-        border-top: 1px solid #dee0ea;
-        border-radius: 0 0 10px 10px;
-    }
+        #reasonModal .modal-footer {
+            border-top: 1px solid #dee0ea;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* 로딩 오버레이 스타일 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            backdrop-filter: blur(2px);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* 테이블 컨테이너에 relative 포지션 추가 */
+        .table-container {
+            position: relative;
+            background: #fff;
+            border: 1px solid #dee0ea;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
@@ -479,6 +526,12 @@
 
         <!-- 테이블 컨테이너 -->
         <div class="table-container">
+            <!-- 로딩 오버레이 추가 -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">문서를 불러오는 중입니다...</div>
+            </div>
+
             <table class="board-table">
                 <thead>
                 <tr>
@@ -530,7 +583,7 @@
                     </div>
                     <div class="modal-info-item">
                         <span class="modal-info-label">작성자:</span>
-                        <span class="modal-info-value">홍길동</span>
+                        <span class="modal-info-value" id="modalWriter">-</span>
                     </div>
                     <div class="modal-info-item modal-approvers-section">
                         <span class="modal-info-label">결재자:</span>
@@ -581,90 +634,104 @@
 </div>
 
 <script>
-    // 전역 변수
-    let currentTab = 'pending';
+   // 로딩 표시/숨김 함수들 추가
+   function showLoading() {
+       document.getElementById('loadingOverlay').style.display = 'flex';
+   }
 
-    let currentAction = '';
-    let currentPageId = '';
+   function hideLoading() {
+       document.getElementById('loadingOverlay').style.display = 'none';
+   }
 
-    // 날짜 포맷팅 함수
-    function formatDate(dateString) {
-        if (!dateString || dateString === "날짜 없음") {
-            return "날짜 없음";
-        }
+   // 전역 변수
+   let currentTab = 'pending';
+   let currentAction = '';
+   let currentPageId = '';
 
-        try {
-            if (dateString.includes('T') || dateString.includes('Z')) {
-                const date = new Date(dateString);
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const hours = String(date.getHours()).padStart(2, '0');
-                const minutes = String(date.getMinutes()).padStart(2, '0');
-                return `${year}-${month}-${day} ${hours}:${minutes}`;
-            } else {
-                return dateString;
-            }
-        } catch (error) {
-            console.error('날짜 포맷팅 오류:', error);
-            return dateString;
-        }
-    }
+   // 날짜 포맷팅 함수
+   function formatDate(dateString) {
+       if (!dateString || dateString === "날짜 없음") {
+           return "날짜 없음";
+       }
 
-    // 테이블 업데이트 함수
-    function updateTable(data) {
-        const tbody = document.getElementById('approvalTableBody');
-        tbody.innerHTML = '';
+       try {
+           if (dateString.includes('T') || dateString.includes('Z')) {
+               const date = new Date(dateString);
+               const year = date.getFullYear();
+               const month = String(date.getMonth() + 1).padStart(2, '0');
+               const day = String(date.getDate()).padStart(2, '0');
+               const hours = String(date.getHours()).padStart(2, '0');
+               const minutes = String(date.getMinutes()).padStart(2, '0');
+               return `${year}-${month}-${day} ${hours}:${minutes}`;
+           } else {
+               return dateString;
+           }
+       } catch (error) {
+           console.error('날짜 포맷팅 오류:', error);
+           return dateString;
+       }
+   }
 
-        if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7">데이터가 없습니다.</td></tr>';
-            return;
-        }
+   // 테이블 업데이트 함수
+   function updateTable(data) {
+       const tbody = document.getElementById('approvalTableBody');
+       tbody.innerHTML = '';
 
-        data.forEach((item, index) => {
-            // 상태 배지 클래스 결정
-            let statusClass = 'status-pending';
-            if (item.status === '승인') statusClass = 'status-approved';
-            else if (item.status === '반려') statusClass = 'status-rejected';
+       if (!data || data.length === 0) {
+           tbody.innerHTML = '<tr><td colspan="7">데이터가 없습니다.</td></tr>';
+           return;
+       }
 
-            // 액션 버튼 생성
-            let actionButtons = '';
-            if (currentTab === 'pending') {
-                // 대기 중인 경우: 승인/반려/상세 버튼
-                actionButtons = `
-                    <div class="action-buttons">
-                        <button class="btn-action btn-approve" onclick="approveDocument('${item.id}')">승인</button>
-                        <button class="btn-action btn-reject" onclick="rejectDocument('${item.id}')">반려</button>
-                        <button class="btn-action btn-view" onclick="viewDocument('${item.id}')">상세</button>
-                    </div>
-                `;
-            } else {
-                // 완료된 경우: 상세 버튼만
-                actionButtons = `
-                    <div class="action-buttons">
-                        <button class="btn-action btn-view" onclick="viewDocument('${item.id}')">상세</button>
-                    </div>
-                `;
-            }
+       data.forEach((item, index) => {
+           // 상태 배지 클래스 결정
+           let statusClass = 'status-pending';
+           if (item.status === '승인') statusClass = 'status-approved';
+           else if (item.status === '반려') statusClass = 'status-rejected';
+
+           // 액션 버튼 생성
+           let actionButtons = '';
+           if (currentTab === 'pending') {
+               // 대기 중인 경우: 승인/반려/상세 버튼
+               actionButtons = `
+                   <div class="action-buttons">
+                       <button class="btn-action btn-approve" onclick="approveDocument('${item.id}')">승인</button>
+                       <button class="btn-action btn-reject" onclick="rejectDocument('${item.id}')">반려</button>
+                       <button class="btn-action btn-view" onclick="viewDocument('${item.id}')">상세</button>
+                   </div>
+               `;
+           } else {
+               // 완료된 경우: 상세 버튼만
+               actionButtons = `
+                   <div class="action-buttons">
+                       <button class="btn-action btn-view" onclick="viewDocument('${item.id}')">상세</button>
+                   </div>
+               `;
+           }
 
 
-            tbody.innerHTML += `
-                <tr>
-                    <td>${data.length - index}</td>
-                    <td>${item.category || ''}</td>
-                    <td class="title-col">
-                        <a href="#" class="title-link" onclick="viewDocument('${item.id}')">${item.title || ''}</a>
-                    </td>
-                    <td>${item.writer || ''}</td>
-                    <td><span class="status-badge ${statusClass}">${item.status || ''}</span></td>
-                    <td>${formatDate(item.createdDate)}</td>
-                    <td>${actionButtons}</td>
-                </tr>`;
-        });
-    }
+           tbody.innerHTML += `
+               <tr>
+                   <td>${data.length - index}</td>
+                   <td>${item.category || ''}</td>
+                   <td class="title-col">
+                       <a href="#" class="title-link" onclick="viewDocument('${item.id}')">${item.title || ''}</a>
+                   </td>
+                   <td>${item.writer || ''}</td>
+                   <td><span class="status-badge ${statusClass}">${item.status || ''}</span></td>
+                   <td>${formatDate(item.createdDate)}</td>
+                   <td>${actionButtons}</td>
+               </tr>`;
+       });
+   }
 
-    // 상세 모달 이벤트
+   // 상세 모달 이벤트
     function viewDocument(pageId) {
+        // 모달 로딩 표시
+        document.getElementById('modalTitle').innerText = '문서를 불러오는 중...';
+
+        const modal = new bootstrap.Modal(document.getElementById('approvalModal'));
+        modal.show();
+
         fetch(`/approval/detail/${pageId}`)
             .then(res => res.json())
             .then(data => {
@@ -675,6 +742,10 @@
                 document.getElementById('modalCategory').innerText = data.category;
                 document.getElementById('modalDate').innerText = formatDate(data.createdDate);
                 document.getElementById('modalContent').innerText = data.content;
+
+                // 작성자 정보 설정
+                const writerInfo = data.writer || '작성자 정보 없음';
+                document.getElementById('modalWriter').innerText = writerInfo;
 
                 // 상태 배지 스타일 적용
                 const statusElement = document.getElementById('modalStatus');
@@ -710,158 +781,159 @@
                 } else {
                     approversContainer.innerHTML = '<span class="approver-badge approver-default">결재자 없음</span>';
                 }
-
-                // Bootstrap 5 방식으로 모달 표시
-                const modal = new bootstrap.Modal(document.getElementById('approvalModal'));
-                modal.show();
             })
             .catch(error => {
                 console.error('데이터 로딩 오류:', error);
+                document.getElementById('modalTitle').innerText = '데이터 로딩 실패';
                 alert('데이터를 불러오는 중 오류가 발생했습니다.');
             });
     }
 
-    // 승인 처리 함수
-    function approveDocument(pageId) {
-        currentAction = 'APPROVE';
-        currentPageId = pageId;
+   // 승인 처리 함수
+   function approveDocument(pageId) {
+       currentAction = 'APPROVE';
+       currentPageId = pageId;
 
-        // 모달 제목과 스타일 설정
-        document.getElementById('reasonModalTitle').textContent = '승인 사유 입력';
-        document.getElementById('reasonText').placeholder = '승인 사유를 입력해주세요.';
-        document.getElementById('reasonRequiredNote').textContent = '* 승인 시 사유는 필수입니다.';
+       // 모달 제목과 스타일 설정
+       document.getElementById('reasonModalTitle').textContent = '승인 사유 입력';
+       document.getElementById('reasonText').placeholder = '승인 사유를 입력해주세요.';
+       document.getElementById('reasonRequiredNote').textContent = '* 승인 시 사유는 필수입니다.';
 
-        const submitBtn = document.getElementById('reasonSubmitBtn');
-        submitBtn.className = 'btn btn-success';
-        submitBtn.textContent = '승인';
+       const submitBtn = document.getElementById('reasonSubmitBtn');
+       submitBtn.className = 'btn btn-success';
+       submitBtn.textContent = '승인';
 
-        // 텍스트 초기화
-        document.getElementById('reasonText').value = '';
+       // 텍스트 초기화
+       document.getElementById('reasonText').value = '';
 
-        // 모달 표시
-        const modal = new bootstrap.Modal(document.getElementById('reasonModal'));
-        modal.show();
-    }
+       // 모달 표시
+       const modal = new bootstrap.Modal(document.getElementById('reasonModal'));
+       modal.show();
+   }
 
-    // 반려 처리 함수
-    function rejectDocument(pageId) {
-        currentAction = 'REJECT';
-        currentPageId = pageId;
+   // 반려 처리 함수
+   function rejectDocument(pageId) {
+       currentAction = 'REJECT';
+       currentPageId = pageId;
 
-        // 모달 제목과 스타일 설정
-        document.getElementById('reasonModalTitle').textContent = '반려 사유 입력';
-        document.getElementById('reasonText').placeholder = '반려 사유를 입력해주세요.';
-        document.getElementById('reasonRequiredNote').textContent = '* 반려 시 사유 입력은 필수입니다.';
+       // 모달 제목과 스타일 설정
+       document.getElementById('reasonModalTitle').textContent = '반려 사유 입력';
+       document.getElementById('reasonText').placeholder = '반려 사유를 입력해주세요.';
+       document.getElementById('reasonRequiredNote').textContent = '* 반려 시 사유 입력은 필수입니다.';
 
-        const submitBtn = document.getElementById('reasonSubmitBtn');
-        submitBtn.className = 'btn btn-danger';
-        submitBtn.textContent = '반려';
+       const submitBtn = document.getElementById('reasonSubmitBtn');
+       submitBtn.className = 'btn btn-danger';
+       submitBtn.textContent = '반려';
 
-        // 텍스트 초기화
-        document.getElementById('reasonText').value = '';
+       // 텍스트 초기화
+       document.getElementById('reasonText').value = '';
 
-        // 모달 표시
-        const modal = new bootstrap.Modal(document.getElementById('reasonModal'));
-        modal.show();
-    }
+       // 모달 표시
+       const modal = new bootstrap.Modal(document.getElementById('reasonModal'));
+       modal.show();
+   }
 
-    // 사유 제출 처리
-    document.getElementById('reasonSubmitBtn').addEventListener('click', function() {
-        const reason = document.getElementById('reasonText').value.trim();
+   // 사유 제출 처리
+   document.getElementById('reasonSubmitBtn').addEventListener('click', function() {
+       const reason = document.getElementById('reasonText').value.trim();
 
-        // 반려 시 사유 필수 체크
-        if (currentAction === 'REJECT' && reason === '') {
-            alert('반려 사유를 입력해주세요.');
-            document.getElementById('reasonText').focus();
-            return;
-        }
+       // 반려 시 사유 필수 체크
+       if (currentAction === 'REJECT' && reason === '') {
+           alert('반려 사유를 입력해주세요.');
+           document.getElementById('reasonText').focus();
+           return;
+       }
 
-        // API 엔드포인트 결정
-        const endpoint = currentAction === 'APPROVE' ?
-            `/approval/approve/${currentPageId}` :
-            `/approval/reject/${currentPageId}`;
+       // API 엔드포인트 결정
+       const endpoint = currentAction === 'APPROVE' ?
+           `/approval/approve/${currentPageId}` :
+           `/approval/reject/${currentPageId}`;
 
-        // 확인 메시지
-        const actionText = currentAction === 'APPROVE' ? '승인' : '반려';
-        if (!confirm(`정말 ${actionText}하시겠습니까?`)) return;
+       // 확인 메시지
+       const actionText = currentAction === 'APPROVE' ? '승인' : '반려';
+       if (!confirm(`정말 ${actionText}하시겠습니까?`)) return;
 
-        // API 호출
-        fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                reason: reason
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            alert(data.message);
+       // API 호출
+       fetch(endpoint, {
+           method: 'POST',
+           headers: {
+               'Content-Type': 'application/json'
+           },
+           body: JSON.stringify({
+               reason: reason
+           })
+       })
+       .then(res => res.json())
+       .then(data => {
+           alert(data.message);
 
-            // 모달 닫기 - 순수 JavaScript 방식
-            const modalElement = document.getElementById('reasonModal');
-            const backdrop = document.querySelector('.modal-backdrop');
+           // 모달 닫기 - 순수 JavaScript 방식
+           const modalElement = document.getElementById('reasonModal');
+           const backdrop = document.querySelector('.modal-backdrop');
 
-            modalElement.style.display = 'none';
-            modalElement.classList.remove('show');
-            document.body.classList.remove('modal-open');
+           modalElement.style.display = 'none';
+           modalElement.classList.remove('show');
+           document.body.classList.remove('modal-open');
 
-            if (backdrop) {
-                backdrop.remove();
-            }
+           if (backdrop) {
+               backdrop.remove();
+           }
 
-            // 테이블 새로고침
-            loadTabData(currentTab);
-            updatePendingCount();
-        })
-        .catch(error => {
-            console.error('처리 중 오류:', error);
-            alert('처리 중 오류가 발생했습니다.');
-        });
-    });
+           // 테이블 새로고침
+           loadTabData(currentTab);
+           updatePendingCount();
+       })
+       .catch(error => {
+           console.error('처리 중 오류:', error);
+           alert('처리 중 오류가 발생했습니다.');
+       });
+   });
 
-    // Bootstrap 모달 이벤트 리스너 (모달 닫힐 때 초기화)
-    document.getElementById('reasonModal').addEventListener('hidden.bs.modal', function () {
-        document.getElementById('reasonText').value = '';
-        currentAction = '';
-        currentPageId = '';
-    });
+   // Bootstrap 모달 이벤트 리스너 (모달 닫힐 때 초기화)
+   document.getElementById('reasonModal').addEventListener('hidden.bs.modal', function () {
+       document.getElementById('reasonText').value = '';
+       currentAction = '';
+       currentPageId = '';
+   });
 
-    // 대기건수 업데이트 함수
-    function updatePendingCount() {
-        fetch('/api/approval/pending-count')
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    const pendingCount = data.count;
-                    document.getElementById('pendingCount').textContent = pendingCount;
-                    document.getElementById('totalPending').textContent = pendingCount;
+   // 대기건수 업데이트 함수
+   function updatePendingCount() {
+       fetch('/api/approval/pending-count')
+           .then(res => res.json())
+           .then(data => {
+               if (data.success) {
+                   const pendingCount = data.count;
+                   document.getElementById('pendingCount').textContent = pendingCount;
+                   document.getElementById('totalPending').textContent = pendingCount;
 
-                    // 뱃지 표시/숨기기
-                    const badge = document.getElementById('pendingCount');
-                    badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
-                }
-            })
-            .catch(error => {
-                console.error('대기건수 업데이트 오류:', error);
-            });
-    }
+                   // 뱃지 표시/숨기기
+                   const badge = document.getElementById('pendingCount');
+                   badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+               }
+           })
+           .catch(error => {
+               console.error('대기건수 업데이트 오류:', error);
+           });
+   }
 
     // 탭 데이터 로드 함수
     function loadTabData(tab) {
+        showLoading(); // 로딩 시작
+
         fetch(`/approval-manage/data?tab=${tab}`)
             .then(res => res.json())
             .then(data => {
                 updateTable(data);
+                hideLoading(); // 로딩 완료
             })
             .catch(error => {
                 console.error('데이터 로딩 오류:', error);
+                hideLoading(); // 에러시에도 로딩 숨김
                 alert('데이터를 불러오는 중 오류가 발생했습니다.');
             });
     }
 
-    // 페이지 로드 시 초기화
+   // 페이지 로드 시 초기화
     document.addEventListener('DOMContentLoaded', function() {
         const filterTabs = document.querySelectorAll('.filter-tab');
 
@@ -880,7 +952,7 @@
 
         // 초기 데이터 로드
         updatePendingCount();
-        loadTabData('pending');
+        loadTabData('pending'); // 이미 showLoading/hideLoading이 포함됨
 
         // 30초마다 대기 건수 업데이트
         setInterval(updatePendingCount, 30000);

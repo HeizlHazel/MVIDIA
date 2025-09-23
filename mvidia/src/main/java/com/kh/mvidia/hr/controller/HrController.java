@@ -376,6 +376,16 @@ public class HrController {
 		return "/certificate/certificatePage";
 	}
 	
+	@GetMapping("/accountDetail.hr")
+	public String accountDetailPage(@RequestParam("empNo") String empNo, Model model){
+		Employee emp = empService.selectEmpNo(empNo);
+		Attachment atch = empService.selectProfile(empNo);
+		if (atch == null) atch = new Attachment();
+		model.addAttribute("emp", emp);
+		model.addAttribute("atch", atch);
+		return "/organizationalChart/accountDetailPage";
+	}
+	
 	
 	@ResponseBody
 	@GetMapping("/checkEmpNo.hr")

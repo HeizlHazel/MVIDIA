@@ -153,7 +153,7 @@
                     <div class="field full">
                         <label>주소*</label>
                         <input name="address" required
-                               th:value="${addressReq != null and !adrressReq.isEmpty() ? addressReq[0].newValue : (emp != null ? emp.address : '')}"
+                               th:value="${addressReq != null and !addressReq.isEmpty() ? addressReq[0].newValue : (emp != null ? emp.address : '')}"
                                th:data-req-id="${addressReq != null} ? 'address' : null"
                                th:data-original-value="${emp != null ? emp.address : ''}"/>
                         <span th:if="${addressReq != null}" class="badge updated-badge">⭐ 변경됨</span>
@@ -185,7 +185,7 @@
                     </div>
                 </th:block>
 
-                <div class="field"><label>입사일*</label><input name="hireDate" type="date" th:value="${emp != null and ? emp.hireDate : ''}" readonly/></div>
+                <div class="field"><label>입사일*</label><input name="hireDate" type="date" th:value="${emp != null ? emp.hireDate : ''}" readonly/></div>
 
                 <input type="hidden" name="originAtchId" th:value="${(atch != null && atch.atchId != null) ? atch.atchId : ''}"/>
                 <input type="hidden" name="originName" th:value="${(atch != null && atch.originName != null) ? atch.originName : ''}"/>
@@ -382,14 +382,15 @@
                 updateJobCode();
             });
 
+            // 페이지 로드 시에도 초기값 설정
             updateJobCode();
 
             function updateJobCode() {
                 const deptCode = $('select[name="deptCode"]').val();
                 const jobNo = $('select[name="jobNo"]').val();
-
                 let deptInitial = "";
 
+                // 부서 코드에 따라 초기값을 설정
                 switch(deptCode) {
                     case 'D1': deptInitial = 'J1'; break;
                     case 'D2': deptInitial = 'J2'; break;
@@ -397,8 +398,16 @@
                     case 'D4': deptInitial = 'J4'; break;
                 }
 
+                // 부서 코드와 직급 번호가 모두 있을 때만 jobCode 설정
                 if (deptInitial && jobNo) {
                     const combinedCode = deptInitial + jobNo;
+                    $('#jobCode').val(combinedCode);
+                } else {
+                    // 둘 중 하나라도 없으면 jobCode를 빈 값으로 설정 (서버 로직에서 이 값을 처리해야 함)
+                    // 혹은 기존의 jobCode 값을 유지하도록 설정
+                    // 여기서는 기존 값을 유지하는 것이 더 안전한 방법입니다.
+                    const originalJobCode = "[[${emp.jobCode}]]" || "";
+                    $('#jobCode').val(originalJobCode);
                 }
             }
         });

@@ -15,7 +15,7 @@
             <tr>
                 <th>제품코드</th>
                 <th>제품명</th>
-                <th>단가</th>
+                <th>단가(원)</th>
                 <th>재고수량</th>
                 <th>재고상태</th>
             </tr>
@@ -25,7 +25,7 @@
             <tr th:each="p : ${list}">
                 <td th:text="${p.prodCode}"></td>
                 <td th:text="${p.prodName}"></td>
-                <td th:text="${p.price}"></td>
+                <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA')}"></td>
                 <td th:text="${p.stock}"></td>
                 <td th:text="${p.statusName}"></td>
             </tr>

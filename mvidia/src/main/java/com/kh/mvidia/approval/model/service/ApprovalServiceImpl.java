@@ -213,7 +213,52 @@ public class ApprovalServiceImpl implements ApprovalService {
             approvers = "";
         }
 
-        return new ApprovalDetail(pageId, title, content, category, status, createdDate, approvers, writer);
+        // 반려 사유 가져오기 (노션 댓글에서)
+        String rejectReason = null;
+        if ("반려".equals(status)) {
+            rejectReason = getRejectReasonFromComments(pageId);
+        }
+
+        ApprovalDetail detail = new ApprovalDetail(pageId, title, content, category, status, createdDate, approvers, writer);
+        detail.setRejectReason(rejectReason);  // 반려 사유 설정
+
+        return detail;
+    }
+
+    // 댓글에서 반려 사유 가져오는 메서드 추가
+    private String getRejectReasonFromComments(String pageId) {
+        String url = "https://api.notion.com/v1/comments?block_id=" + pageId;
+
+        try {
+            HttpResponse<JsonNode> response = Unirest.get(url)
+                    .header("Authorization", "Bearer " + token)
+                    .header("Notion-Version", "2022-06-28")
+                    .asJson();
+
+            if (response.getStatus() == 200) {
+                JSONObject responseObj = response.getBody().getObject();
+                JSONArray comments = responseObj.getJSONArray("results");
+
+                for (int i = 0; i < comments.length(); i++) {
+                    JSONObject comment = comments.getJSONObject(i);
+                    JSONArray richTextArray = comment.getJSONArray("rich_text");
+
+                    if (richTextArray.length() > 0) {
+                        String commentText = richTextArray.getJSONObject(0)
+                                .getJSONObject("text").getString("content");
+
+                        // "[반려]"로 시작하는 댓글 찾기
+                        if (commentText.startsWith("[반려]")) {
+                            return commentText;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("댓글 조회 중 오류: " + e.getMessage());
+        }
+
+        return null;
     }
 
     // 전자결재 상태 업데이트
@@ -393,6 +438,14 @@ public class ApprovalServiceImpl implements ApprovalService {
             System.err.println("saveApprovalLog에서 오류 발생: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 부장급 직원 목록 조회 (본인 제외)
+     */
+    @Override
+    public List<Employee> getManagerEmployees() {
+        return pDao.selectManagerEmployees(sqlSession);
     }
 
     private final Map<String, AtomicInteger> yearlyCounters = new ConcurrentHashMap<>();

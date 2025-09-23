@@ -23,6 +23,7 @@
              , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
              , d.prod_code
              , p.prod_name as "prod_name"
+             , t.def_code as "def_code"
              , t.def_type as "def_type"
              , d.def_qty
              , d.def_status
@@ -61,7 +62,7 @@
                 )
             </if>
             <if test="defType != null and defType != ''">
-                and d.def_type = #{defType}
+                and t.def_code = #{defType}
             </if>
             <if test="defStatus != null and defStatus != ''">
                 and d.def_status = #{defStatus}
@@ -85,6 +86,7 @@
              , to_char(d.occur_date, 'YYYY-MM-DD') as "occur_date"
              , d.prod_code
              , p.prod_name as "prod_name"
+             , t.def_code as "def_code"
              , t.def_type as "def_type"
              , d.def_qty
              , d.def_status
@@ -107,7 +109,7 @@
                 )
             </if>
             <if test="defType != null and defType != ''">
-                and d.def_type = #{defType}
+                and t.def_code = #{defType}
             </if>
             <if test="defStatus != null and defStatus != ''">
                 and d.def_status = #{defStatus}
@@ -143,7 +145,7 @@
                 )
             </if>
             <if test="defType != null and defType != ''">
-                and d.def_code = #{defType}
+                and t.def_code = #{defType}
             </if>
             <if test="defStatus != null and defStatus != ''">
                 and d.def_status = #{defStatus}

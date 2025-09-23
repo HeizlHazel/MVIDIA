@@ -137,6 +137,9 @@
              , emp_lname || emp_name as "emp_name"
              , dept_name
              , substr(job_name, -2) as "job_name"
+             , to_char(hire_date, 'YYYY-MM-DD') as "hire_date"
+             , address
+             , phone
           from tb_employee
           join tb_department using (dept_code)
           join tb_job using(job_code)

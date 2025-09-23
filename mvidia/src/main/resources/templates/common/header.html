@@ -220,10 +220,10 @@
         <div class="profile" onclick="location.href='/myPage/profile'">
             <div class="avatar">
                 <th:block th:unless="${session.loginEmp.changeName != null}">
-                    <img id="profile-preview" class="pf" th:src="@{/images/default_profile.png}" alt="기본 프로필">
+                    <img id="header-profile" class="pf" th:src="@{/images/default_profile.png}" alt="기본 프로필">
                 </th:block>
                 <th:block th:if="${session.loginEmp.changeName != null}">
-                    <img id="profile-preview" th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="pf">
+                    <img id="header-profile" th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="pf">
                 </th:block>
             </div>
             <div class="meta">

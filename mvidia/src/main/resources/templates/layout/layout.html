@@ -35,6 +35,28 @@
         /* 탑바 높이 고려 */
         header { position: sticky; top: 0; z-index: 1000; }
         body { background:#f6f8fb; }
+
+        /* 인쇄 시 main만 보이기 */
+        @media print {
+          /* 1) 기본적으로 모든 요소 숨김 */
+          body * { visibility: hidden; }
+
+          /* 2) main과 그 자손만 보이게 */
+          main, main * { visibility: visible; }
+
+          /* 3) 레이아웃 보정: 사이드바/탑바 여백 제거 */
+          header, aside { display: none !important; }
+          main {
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          /* (선택) 인쇄 여백/용지 */
+          @page { size: A4; margin: 20mm; }
+        }
     </style>
 </head>
 <body>

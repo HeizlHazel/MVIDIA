@@ -372,7 +372,9 @@ public class HrController {
 	}
 	
 	@GetMapping("/certificate")
-	public String certificatePage(){
+	public String certificatePage(HttpSession session, Model model){
+		Employee confirmer = (Employee)session.getAttribute("loginEmp");
+		model.addAttribute("confirmer", confirmer);
 		return "/certificate/certificatePage";
 	}
 	

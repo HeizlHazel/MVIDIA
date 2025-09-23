@@ -16,7 +16,7 @@ public class CertificateController {
 	
 	@Value("${notion.certificate.hire.id}")   private String hireDbId;    // 재직
 	@Value("${notion.certificate.career.id}") private String careerDbId;  // 경력
-	@Value("${notion.certificate.pay.id}")    private String payDbId;     // 급여
+	@Value("${notion.finance.database.id}")    private String payDbId;     // 급여
 	
 	// 증명서 발급 (노션에 페이지 생성)
 	@PostMapping("/issue")

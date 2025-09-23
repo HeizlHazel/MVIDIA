@@ -198,45 +198,39 @@
         s.details,
         s.total_count,
         s.def_count,
-        SUM(CASE WHEN q.check_status='C' THEN NVL(q.status_count,0) ELSE 0 END) AS doneCount,
-        SUM(CASE WHEN q.check_status='P' THEN NVL(q.status_count,0) ELSE 0 END) AS ingCount,
-        SUM(CASE WHEN q.check_status='S' THEN NVL(q.status_count,0) ELSE 0 END) AS delayCount,
-        SUM(CASE WHEN q.check_status='W' THEN NVL(q.status_count,0) ELSE 0 END) AS waitCount,
-        NVL(s.def_count,0) AS totalDefCount
+        SUM(CASE WHEN q.check_status='C' THEN NVL(q.status_count,0) ELSE 0 END) AS done_count,  -- ✅ snake_case
+        SUM(CASE WHEN q.check_status='P' THEN NVL(q.status_count,0) ELSE 0 END) AS ing_count,   -- ✅ snake_case
+        SUM(CASE WHEN q.check_status='S' THEN NVL(q.status_count,0) ELSE 0 END) AS delay_count, -- ✅ snake_case
+        SUM(CASE WHEN q.check_status='W' THEN NVL(q.status_count,0) ELSE 0 END) AS wait_count,  -- ✅ snake_case
+        NVL(s.def_count,0) AS total_def_count  -- ✅ snake_case
         FROM tb_schedule_registration s
         LEFT JOIN tb_schedule sc ON s.sch_no = sc.sch_no
         LEFT JOIN tb_quality_check q ON s.schr_id = q.schr_id
-        GROUP BY s.schr_id,
-        s.sch_no,
-        s.cat_code,
-        s.bp_partner,
-        s.emp_no,
-        s.start_date,
-        s.end_date,
-        s.color_id,
-        s.details,
-        s.total_count,
-        s.def_count,
-        sc.sch_name
+        GROUP BY s.schr_id, s.sch_no, s.cat_code, s.bp_partner, s.emp_no,
+        s.start_date, s.end_date, s.color_id, s.details, s.total_count,
+        s.def_count, sc.sch_name
         ORDER BY s.end_date
-
     </select>
 
     <!-- 개별 일정 전체 누적상태별 불량 도넛 (더보기 클릭-> 페이지 이동) -->
     <select id="selectAllSchrDonut" resultType="ScheduleRegistration" parameterType="String">
         SELECT
-        s.bp_partner as bpPartner,
+        s.bp_partner as bpPartner,  -- ✅ 올바른 별칭
         CASE
         WHEN NVL(s.def_count, 0) > 0 THEN '불량'
         ELSE '양호'
-        END as defType,
+        END as defType,  -- ✅ 올바른 별칭
         SUM(
         CASE
         WHEN NVL(s.def_count, 0) > 0 THEN NVL(s.def_count, 0)
         ELSE NVL(s.total_count, 0) - NVL(s.def_count, 0)
         END
-        ) as defCountType
+        ) as defCountType  -- ✅ 올바른 별칭
         FROM tb_schedule_registration s
+        -- WHERE 조건 추가 필요 (파라미터 사용)
+        <if test="bpPartner != null and bpPartner != ''">
+            WHERE s.bp_partner = #{bpPartner}
+        </if>
         GROUP BY s.bp_partner,
         CASE
         WHEN NVL(s.def_count, 0) > 0 THEN '불량'
@@ -302,7 +296,4 @@
          ORDER
             BY bp.bpPartner;
     </select>
-
-
-
  </mapper>

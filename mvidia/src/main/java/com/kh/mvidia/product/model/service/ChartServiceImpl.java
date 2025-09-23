@@ -14,7 +14,8 @@ public class ChartServiceImpl implements ChartService{
 
     private final ChartDao cDao;
 
-    public ChartServiceImpl(ChartDao chartDao) {
+    @Autowired
+    public ChartServiceImpl(ChartDao cDao) {
         this.cDao = cDao;
     }
 

@@ -8,11 +8,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MVIDIA · 근태/휴가 관리</title>
+    <title>MVIDIA · ERP - 인사관리 · 근태/휴가 관리</title>
     <style>
-        .hr-integratedAtt { grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+        .hr-integratedAtt { grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);  width: 1200px; margin: 0 auto; }
         .hr-integratedAtt > .widget { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, .1); }
-        .page-title { font-size: 20px; margin: 0 0 12px 0; }
         .hr-integratedAtt .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
         .hr-integratedAtt .grid2{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:16px}
         .hr-integratedAtt .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;background-color:#0c197f ;color:#fff}
@@ -34,12 +33,13 @@
 </head>
 <body>
 <div class="hr-integratedAtt">
-    <h2 class="page-title">⏰ 근태/휴가 통합 관리</h2>
     <div class="widget" id="home">
+        <h3>⏰ 근태/휴가 통합 관리</h3>
+        <br>
         <div class="grid2 mt8">
             <div class="card" style="position:relative">
                 <div class="card-header-action">
-                    <h3 style="margin:0 0 8px">휴가 신청 (최근 5건)</h3>
+                    <h4 style="margin:0 0 8px">휴가 신청 (최근 5건)</h4>
                     <a class="btn card-footer-action" href="/hr/vacationList.hr?cpage=1">정보 더보기</a>
                 </div>
                 <div id="vacationPreview">
@@ -61,7 +61,7 @@
             </div>
             <div class="card" style="position:relative">
                 <div class="card-header-action">
-                    <h3 style="margin:0 0 8px">근태 정보 (최근 5건)</h3>
+                    <h4 style="margin:0 0 8px">근태 정보 (최근 5건)</h4>
                     <a class="btn card-footer-action" href="/hr/attendanceList.hr?cpage=1">정보 더보기</a>
                 </div>
                 <div id="attendPreview">

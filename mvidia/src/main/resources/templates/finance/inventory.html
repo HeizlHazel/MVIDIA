@@ -6,7 +6,7 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>재고 현황 조회</title>
+    <title>MVIDIA · ERP - 경영관리 · 재고 현황 조회</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -22,6 +22,8 @@
         padding: 15px;
         background-color: #fff;
         margin-top: 20px;
+        width: 1200px;
+        margin: 0 auto;
     }
 
     #searchForm {
@@ -42,15 +44,13 @@
     }
 </style>
 <body>
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>부품 재고 현황</h2>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#printModal">
-        <i class="bi bi-printer"></i> 입출고 입력
-    </button>
-</div>
-
 <div class="custom-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>부품 재고 현황</h2>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#printModal">
+            <i class="bi bi-printer"></i> 입출고 입력
+        </button>
+    </div>
     <!-- 검색창 + 상태 필터 -->
     <form id="searchForm" onsubmit="return false;">
         <input type="text" id="keyword" name="keyword" class="form-control"

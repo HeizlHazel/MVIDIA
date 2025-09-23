@@ -7,11 +7,10 @@
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>👨‍👩‍👧‍👦 조직도</title>
+    <title>MVIDIA · ERP - 조직도</title>
     <style>
-        .organizationalChart{ grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+        .organizationalChart{ grid-column: 2; grid-row: 2; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);  width: 1200px; margin: 0 auto; }
         .organizationalChart > .widget { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
-        .page-title { font-size: 20px; margin: 0 0 12px 0; }
         #deptSelect { padding:10px 12px; border-radius:12px; border:1px solid #dde6ec; }
         .stack { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
         .mt8 { margin-top:8px; }
@@ -38,13 +37,22 @@
         .card-action .dot { width:6px; height:6px; border-radius:50%; background:#9ac2d3; margin-right:8px; }
         .chief-badge {position:absolute; top:8px; right:8px; background:#002B39; color:#fff; font-size:11px; padding:4px 8px; border-radius:999px; box-shadow: 0 2px 6px rgba(0,0,0,.12);}
         @media (hover:none) {.emp-card { cursor: default; } }
+        .hr-integrated {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 1250px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
 
 <div class="hr-integrated">
-    <h2 class="page-title">👨‍👩‍👧‍👦 조직도</h2>
     <div class="widget" id="home">
+        <h3>👨‍👩‍👧‍👦 조직도</h3>
+        <br>
         <div class="stack mt8">
             <select id="deptSelect" aria-label="부서 선택">
                 <option value="ALL">전체 부서</option>

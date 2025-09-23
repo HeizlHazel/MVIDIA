@@ -182,6 +182,17 @@ public class FinanceController {
         model.addAttribute("statusMap", statusMap);
     }
 
+    // 창고 코드 -> 이름 매칭 메소드
+    private Map<String, String> getLocalCodeMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put("100", "서울 창고");
+        map.put("110", "부산 창고");
+        map.put("300", "대만 창고");
+        map.put("400", "캘리포니아 창고");
+        map.put("410", "텍사스 창고");
+        return map;
+    }
+
     /** 재고 현황 페이지 */
     @GetMapping("/inventory")
     public String inventory(Model model) {
@@ -190,17 +201,11 @@ public class FinanceController {
         model.addAttribute("compList", compList);
 
         // 창고 코드 → 이름 매핑
-        Map<String, String> localCodeMap = new HashMap<>();
-        localCodeMap.put("100", "서울창고");
-        localCodeMap.put("110", "부산창고");
-        localCodeMap.put("300", "대전창고");
-        localCodeMap.put("400", "광주창고");
-        model.addAttribute("localCodeMap", localCodeMap);
+        model.addAttribute("localCodeMap", getLocalCodeMap());
 
         return "finance/inventory";
     }
 
-    /** 재고 검색 (Ajax) */
     @GetMapping("/inventory/search")
     public String searchInventory(
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
@@ -212,8 +217,11 @@ public class FinanceController {
         applyMinQtyAndStatus(compList, model);
         model.addAttribute("compList", compList);
 
+        model.addAttribute("localCodeMap", getLocalCodeMap());
+
         return "finance/inventory :: componentTableFrag";
     }
+
 
     /** 급여 Ajax 검색 */
     @GetMapping("/payroll/search")

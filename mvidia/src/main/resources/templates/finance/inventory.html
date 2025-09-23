@@ -16,6 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 </head>
 <style>
+
     .custom-card {
         border: 1px solid #ddd;
         border-radius: 6px;
@@ -86,7 +87,7 @@
                 <td th:text="${c.cpCode}"></td>
                 <td th:text="${c.cpName}"></td>
                 <td th:text="${#numbers.formatInteger(c.price, 3, 'COMMA') + ' 원'}"></td>
-                <td th:text="${localCodeMap[c.localCode]}"></td>
+                <td th:text="${localCodeMap[c.localCode] ?: '미지정'}"></td>
                 <td th:text="${c.qty + ' 개'}"></td>
                 <td>
                     <span th:if="${statusMap[c.cpCode]} eq '부족'" style="color:red;">부족</span>

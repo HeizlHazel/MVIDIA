@@ -2,6 +2,7 @@ package com.kh.mvidia.notion.config;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +13,11 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 @ConfigurationProperties(prefix = "notion")
 public class NotionConfig {
+
+    @Value("${notion.api.token}")
     private String apiToken;
+
+    @Value("${notion.chart.database.id}")
     private String databaseId;
 
     @Bean(name = "notionWebClient")

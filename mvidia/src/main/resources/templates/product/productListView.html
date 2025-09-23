@@ -1,31 +1,193 @@
 <!DOCTYPE html>
-<html lang="en"
+<html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}"
       layout:fragment="content">
 <head>
     <meta charset="UTF-8">
-    <title>productListView</title>
+    <title>제품 현황 조회</title>
+    <style>
+        /* 전체 컨테이너 */
+        .innerOuter {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 1200px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 검색 폼 */
+        #searchForm {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        #searchForm input[type="text"] {
+            padding: 8px 12px;
+            border: 1px solid #dee0ea;
+            border-radius: 6px;
+            font-size: 14px;
+            flex: 1;
+            box-sizing: border-box;
+        }
+
+        #searchForm button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background-color: #186AEA;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #searchForm button:hover {
+            background-color: #0056d3;
+        }
+
+        /* 테이블 스타일 */
+        .table-container {
+            background: #fff;
+            border: 1px solid #dee0ea;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            padding: 15px 12px;
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-bottom: 2px solid #dee0ea;
+            text-align: center;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: center;
+            color: #555;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+            transition: background-color 0.2s ease;
+        }
+
+        .title-col {
+            text-align: left !important;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .title-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .title-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
+
+        /* 페이징 */
+        #pagingArea {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        #pagingArea ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            gap: 5px;
+        }
+
+        #pagingArea li {
+            display: inline-block;
+        }
+
+        #pagingArea li a {
+            display: block;
+            padding: 8px 12px;
+            text-decoration: none;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        #pagingArea li a:hover {
+            background-color: #e9ecef;
+            color: #007bff;
+        }
+
+        #pagingArea li.active a {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        #pagingArea li.disabled a {
+            color: #adb5bd;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
+<div class="innerOuter">
+    <h2>제품 현황 조회</h2>
 
-<div class="content">
-    <h2>제품 현황 조회 </h2>
+    <!-- 검색 폼 -->
+    <form id="searchForm" autocomplete="off">
+        <input type="text" name="keyword" id="searchBox"
+               placeholder="제품코드 또는 제품명을 검색하시오."
+               th:value="${keyword}" list="productList">
+        <datalist id="productList">
+            <option th:each="p : ${list}" th:value="${p.prodCode} + ' | ' + ${p.prodName}"></option>
+        </datalist>
+        <button type="submit">검색</button>
+    </form>
+
+    <!-- 테이블 영역 -->
+    <div class="table-container" id="tableArea" th:include="~{fragments/productTable :: prodTable}"></div>
+
+    <!-- 페이징 -->
+    <div id="pagingArea">
+        <ul class="pagination">
+            <li th:classappend="${pi.currentPage == 1} ? 'disabled'">
+                <a th:href="@{|plist.bo?cpage=${pi.currentPage > 1 ? pi.currentPage-1 : 1}&keyword=${keyword}|}">이전</a>
+            </li>
+            <li th:each="pageNum : ${#numbers.sequence(pi.startPage, pi.endPage)}"
+                th:classappend="${pageNum == pi.currentPage} ? 'active'">
+                <a th:href="@{|plist.bo?cpage=${pageNum}&keyword=${keyword}|}" th:text="${pageNum}"></a>
+            </li>
+            <li th:classappend="${pi.currentPage == pi.maxPage} ? 'disabled'">
+                <a th:href="@{|plist.bo?cpage=${pi.currentPage < pi.maxPage ? pi.currentPage+1 : pi.maxPage}&keyword=${keyword}|}">다음</a>
+            </li>
+        </ul>
+    </div>
 </div>
-
-<form id="searchForm" autocomplete="off">
-    <input type="text" name="keyword" id="searchBox"
-           placeholder="제품코드 또는 제품명을 검색하시오."
-           th:value="${keyword}" list="productList">
-    <datalist id="productList">
-        <option th:each="p : ${list}" th:value="${p.prodCode} + ' | ' + ${p.prodName}"></option>
-    </datalist>
-    <button type="submit">검색</button>
-</form>
-
-<!-- 별도 파일의 프래그먼트 사용 - 중복 없음! -->
-<div id="tableArea" th:include="~{fragments/productTable :: prodTable}"></div>
 
 <script>
     document.querySelector("#searchForm").addEventListener("submit", function(e) {
@@ -46,21 +208,5 @@
         });
     });
 </script>
-
-<!-- 페이징 -->
-<div id="pagingArea">
-    <ul class="pagination">
-        <li th:classappend="${pi.currentPage == 1} ? 'disabled'">
-            <a th:href="@{|plist.bo?cpage=${pi.currentPage > 1 ? pi.currentPage-1 : 1}&keyword=${keyword}|}">이전</a>
-        </li>
-        <li th:each="pageNum : ${#numbers.sequence(pi.startPage, pi.endPage)}"
-            th:classappend="${pageNum == pi.currentPage} ? 'active'">
-            <a th:href="@{|plist.bo?cpage=${pageNum}&keyword=${keyword}|}" th:text="${pageNum}"></a>
-        </li>
-        <li th:classappend="${pi.currentPage == pi.maxPage} ? 'disabled'">
-            <a th:href="@{|plist.bo?cpage=${pi.currentPage < pi.maxPage ? pi.currentPage+1 : pi.maxPage}&keyword=${keyword}|}">다음</a>
-        </li>
-    </ul>
-</div>
 </body>
 </html>

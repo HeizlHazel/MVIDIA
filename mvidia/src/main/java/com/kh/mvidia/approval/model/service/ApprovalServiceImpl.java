@@ -240,6 +240,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     /**
      * 내가 작성한 문서 조회
      */
+    @Override
     public List<ApprovalItem> getMyDocuments(Employee loginEmp, String filter) {
         if (loginEmp == null) {
             return Collections.emptyList();
@@ -264,6 +265,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     /**
      * 내가 결재해야 할 문서 조회
      */
+    @Override
     public List<ApprovalItem> getMyApprovalDocuments(Employee loginEmp, String filter) {
         if (loginEmp == null) {
             return Collections.emptyList();
@@ -297,6 +299,7 @@ public class ApprovalServiceImpl implements ApprovalService {
     /**
      * 결재 대기 문서 수 조회
      */
+    @Override
     public int getPendingApprovalCount(Employee loginEmp) {
         if (loginEmp == null) {
             return 0;

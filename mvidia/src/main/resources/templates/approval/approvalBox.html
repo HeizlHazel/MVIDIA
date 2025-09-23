@@ -214,7 +214,7 @@
             text-decoration: none;
         }
 
-        /* 결재자 배지 스타일 */
+        /* 결재자 배지 스타일 - 동적 색상으로 통일 */
         .approver-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -223,206 +223,233 @@
             font-weight: 500;
             margin: 0 2px;
             border: 1px solid;
-        }
-
-        .approver-kim {
+            /* 기본값 - JavaScript에서 동적으로 변경됨 */
             background-color: #e3f2fd;
             color: #1565c0;
             border-color: #bbdefb;
         }
 
-        .approver-park {
-            background-color: #f3e5f5;
-            color: #7b1fa2;
-            border-color: #ce93d8;
+        /* 모달 스타일 */
+        .modal-dialog {
+            max-width: 800px;
         }
 
-        .approver-jung {
-            background-color: #fce4cc;
-            color: #7d592e;
-            border-color: #d6c2a5;
+        .modal-content {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
 
-        .approver-default {
-            background-color: #f5f5f5;
+        .modal-header {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+            color: #333;
+            border-bottom: 1px solid #dee0ea;
+            border-radius: 12px 12px 0 0;
+            padding: 20px 25px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-header .btn-close {
+            filter: none;
+            opacity: 0.6;
+        }
+
+        .modal-header .btn-close:hover {
+            opacity: 1;
+        }
+
+        /* 모달 바디 스타일 개선 */
+        .modal-body {
+            padding: 25px;
+            background: #f8f9fa;
+        }
+
+        /* 문서 제목 스타일 */
+        .modal-document-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee0ea;
+        }
+
+        /* 정보 그리드 레이아웃 */
+        .modal-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .modal-info-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .modal-info-label {
+            font-weight: 600;
+            color: #555;
+            min-width: 80px;
+            margin-right: 12px;
+            font-size: 14px;
+        }
+
+        .modal-info-value {
+            color: #333;
+            flex: 1;
+            font-size: 14px;
+        }
+
+        /* 결재자 섹션을 전체 폭으로 */
+        .modal-approvers-section {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+        }
+
+        .modal-approvers-section .modal-info-label {
+            margin-bottom: 0;
+            margin-right: 12px;
+        }
+
+        /* 결재자 배지 컨테이너 */
+        .modal-approvers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* 내용 섹션 스타일 */
+        .modal-content-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .modal-content-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .modal-content-text {
+            line-height: 1.6;
+            color: #555;
+            min-height: 120px;
+            white-space: pre-wrap;
+        }
+
+        /* 모달 푸터 스타일 개선 */
+        .modal-footer {
+            background: white;
+            border-top: 1px solid #dee0ea;
+            border-radius: 0 0 12px 12px;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-footer .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .modal-footer .btn-primary {
+            background: #186AEA;
+            color: white;
+        }
+
+        .modal-footer .btn-primary:hover {
+            background: #0056d3;
+            transform: translateY(-1px);
+        }
+
+        .modal-footer .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .modal-footer .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .modal-footer .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .modal-footer .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        /* 로딩 오버레이 스타일 */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            backdrop-filter: blur(2px);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
             color: #666;
-            border-color: #ddd;
+            font-weight: 500;
         }
 
-    /* 모달 스타일 */
-    .modal-dialog {
-        max-width: 800px;
-    }
-
-    .modal-content {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    }
-
-    .modal-header {
-        background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-        color: #333;
-        border-bottom: 1px solid #dee0ea;
-        border-radius: 12px 12px 0 0;
-        padding: 20px 25px;
-    }
-
-    .modal-title {
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .modal-header .btn-close {
-        filter: none;
-        opacity: 0.6;
-    }
-
-    .modal-header .btn-close:hover {
-        opacity: 1;
-    }
-
-    /* 모달 바디 스타일 개선 */
-    .modal-body {
-        padding: 25px;
-        background: #f8f9fa;
-    }
-
-    /* 문서 제목 스타일 */
-    .modal-document-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 2px solid #dee0ea;
-    }
-
-    /* 정보 그리드 레이아웃 */
-    .modal-info-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 20px;
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .modal-info-item {
-        display: flex;
-        align-items: center;
-    }
-
-    .modal-info-label {
-        font-weight: 600;
-        color: #555;
-        min-width: 80px;
-        margin-right: 12px;
-        font-size: 14px;
-    }
-
-    .modal-info-value {
-        color: #333;
-        flex: 1;
-        font-size: 14px;
-    }
-
-    /* 결재자 섹션을 전체 폭으로 */
-    .modal-approvers-section {
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        flex-direction: row;
-    }
-
-    .modal-approvers-section .modal-info-label {
-        margin-bottom: 0;
-        margin-right: 12px;
-    }
-
-    /* 결재자 배지 컨테이너 */
-    .modal-approvers {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    /* 내용 섹션 스타일 */
-    .modal-content-section {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-
-    .modal-content-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 15px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 8px;
-    }
-
-    .modal-content-text {
-        line-height: 1.6;
-        color: #555;
-        min-height: 120px;
-        white-space: pre-wrap;
-    }
-
-    /* 모달 푸터 스타일 개선 */
-    .modal-footer {
-        background: white;
-        border-top: 1px solid #dee0ea;
-        border-radius: 0 0 12px 12px;
-        padding: 15px 25px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .modal-footer .btn {
-        padding: 8px 16px;
-        font-size: 14px;
-        font-weight: 500;
-        border-radius: 6px;
-        border: none;
-        transition: all 0.3s ease;
-    }
-
-    .modal-footer .btn-primary {
-        background: #186AEA;
-        color: white;
-    }
-
-    .modal-footer .btn-primary:hover {
-        background: #0056d3;
-        transform: translateY(-1px);
-    }
-
-    .modal-footer .btn-danger {
-        background: #dc3545;
-        color: white;
-    }
-
-    .modal-footer .btn-danger:hover {
-        background: #c82333;
-        transform: translateY(-1px);
-    }
-
-    .modal-footer .btn-secondary {
-        background: #6c757d;
-        color: white;
-    }
-
-    .modal-footer .btn-secondary:hover {
-        background: #5a6268;
-        transform: translateY(-1px);
-    }
+        /* 테이블 컨테이너에 relative 포지션 추가 */
+        .table-container {
+            position: relative;
+            background: #fff;
+            border: 1px solid #dee0ea;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
@@ -444,9 +471,14 @@
                     th:classappend="${filter == 'rejected'} ? ' active'">반려</button>
         </div>
 
-
         <!-- 테이블 컨테이너 -->
         <div class="table-container">
+            <!-- 로딩 오버레이 추가 -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">문서를 불러오는 중입니다...</div>
+            </div>
+
             <table class="board-table">
                 <thead>
                 <tr>
@@ -458,8 +490,6 @@
                     <th width="20%">작성일</th>
                 </tr>
                 </thead>
-                <!-- 작성자만 보이게 -->
-
                 <tbody id="tableBody">
                 <!-- JavaScript로 데이터가 표시됩니다 -->
                 </tbody>
@@ -507,7 +537,7 @@
                     </div>
                     <div class="modal-info-item">
                         <span class="modal-info-label">작성자:</span>
-                        <span class="modal-info-value">홍길동</span>
+                        <span class="modal-info-value" id="modalWriter">-</span>
                     </div>
                     <div class="modal-info-item modal-approvers-section">
                         <span class="modal-info-label">결재자:</span>
@@ -524,6 +554,15 @@
                         결재 내용이 여기에 표시됩니다.
                     </div>
                 </div>
+
+                <!-- 반려 사유 섹션 추가 -->
+                <div class="modal-content-section" id="modalRejectReason" style="display: none;">
+                    <h6 class="modal-content-title" style="color: #dc3545;">반려 사유</h6>
+                    <div class="modal-content-text" id="rejectReasonText" style="color: #721c24; background-color: #f8d7da; padding: 15px; border-radius: 5px; border-left: 4px solid #dc3545;">
+                        반려 사유가 여기에 표시됩니다.
+                    </div>
+                </div>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
@@ -533,11 +572,49 @@
 </div>
 
 <script>
+    // 로딩 표시/숨김 함수들 추가
+    function showLoading() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
     // 페이징 변수
     let currentPage = 1;
     let pageSize = 10;
     let allData = [];
     let currentFilter = 'all';
+
+    // 이름 기반 해시 색상 생성 함수
+    function getApproverBadgeColor(name) {
+        // 이름을 해시값으로 변환
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            const char = name.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // 32bit 정수로 변환
+        }
+
+        // 미리 정의된 색상 팔레트
+        const colorPalettes = [
+            { bg: '#e3f2fd', color: '#1565c0', border: '#bbdefb' }, // 파란색
+            { bg: '#f3e5f5', color: '#7b1fa2', border: '#ce93d8' }, // 보라색
+            { bg: '#fce4cc', color: '#7d592e', border: '#d6c2a5' }, // 주황색
+            { bg: '#e8f5e8', color: '#2e7d32', border: '#a5d6a7' }, // 초록색
+            { bg: '#fff3e0', color: '#ef6c00', border: '#ffcc02' }, // 노란색
+            { bg: '#fce4ec', color: '#c2185b', border: '#f8bbd9' }, // 핑크색
+            { bg: '#f1f8e9', color: '#558b2f', border: '#aed581' }, // 연두색
+            { bg: '#fff8e1', color: '#f57f17', border: '#ffcc02' }, // 황금색
+            { bg: '#fafafa', color: '#424242', border: '#bdbdbd' }, // 회색
+            { bg: '#e0f2f1', color: '#00695c', border: '#80cbc4' }  // 청록색
+        ];
+
+        // 해시값을 이용해 색상 선택 (같은 이름은 항상 같은 색상)
+        const index = Math.abs(hash) % colorPalettes.length;
+        return colorPalettes[index];
+    }
 
     // 날짜 포맷팅 함수
     function formatDate(dateString) {
@@ -546,20 +623,15 @@
         }
 
         try {
-            // ISO 8601 형식인지 확인 (Z나 T가 포함된 경우)
             if (dateString.includes('T') || dateString.includes('Z')) {
                 const date = new Date(dateString);
-
-                // 한국 시간으로 변환하여 YYYY-MM-DD HH:mm 형식으로 반환
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
-
                 return `${year}-${month}-${day} ${hours}:${minutes}`;
             } else {
-                // 이미 포맷팅된 날짜인 경우 그대로 반환
                 return dateString;
             }
         } catch (error) {
@@ -583,22 +655,20 @@
         }
 
         pageData.forEach((item, index) => {
-            // 결재자 배지 생성
+            // 결재자 배지 생성 - 동적 색상 적용
             let approverBadges = '';
-            if (item.approvers && item.approvers.trim() !== '') {
-                const approvers = item.approvers.split(',');
-                approvers.forEach(approver => {
-                    const name = approver.trim();
-                    let badgeClass = 'approver-default';
-                    if (name === '김하늘') badgeClass = 'approver-kim';
-                    else if (name === '박지우') badgeClass = 'approver-park';
-                    else if (name === '정가온') badgeClass = 'approver-jung';
+                if (item.approvers && item.approvers.trim() !== '') {
+                    const approvers = item.approvers.split(',');
+                    approvers.forEach((approver) => {
+                        const name = approver.trim();
+                        const colorInfo = getApproverBadgeColor(name);
 
-                    approverBadges += `<span class="approver-badge ${badgeClass}">${name}</span>`;
-                });
-            } else {
-                approverBadges = '<span class="approver-badge approver-default">결재자 없음</span>';
-            }
+                        approverBadges += `<span class="approver-badge"
+                            style="background-color: ${colorInfo.bg}; color: ${colorInfo.color}; border-color: ${colorInfo.border};">${name}</span>`;
+                    });
+                } else {
+                    approverBadges = '<span class="approver-badge">결재자 없음</span>';
+                }
 
             // 상태 배지 클래스 결정
             let statusClass = 'status-pending';
@@ -618,7 +688,6 @@
                     <td>${approverBadges}</td>
                     <td><span class="status-badge ${statusClass}">${item.status}</span></td>
                     <td>${item.createdDate}</td>
-                    <td></td>
                 </tr>`;
         });
 
@@ -633,30 +702,30 @@
         const prevPage = document.getElementById('prevPage');
         const nextPage = document.getElementById('nextPage');
 
-        if (currentPage <= 1) {
-            prevPage.classList.add('disabled');
-        } else {
-            prevPage.classList.remove('disabled');
-        }
+            if (currentPage <= 1) {
+                prevPage.classList.add('disabled');
+            } else {
+                prevPage.classList.remove('disabled');
+            }
 
-        if (currentPage >= totalPages) {
-            nextPage.classList.add('disabled');
-        } else {
-            nextPage.classList.remove('disabled');
-        }
+            if (currentPage >= totalPages) {
+                nextPage.classList.add('disabled');
+            } else {
+                nextPage.classList.remove('disabled');
+            }
     }
 
     // 페이지 변경
     function changePage(direction) {
         const totalPages = Math.ceil(allData.length / pageSize);
 
-        if (direction === 'prev' && currentPage > 1) {
-            currentPage--;
-            renderTable();
-        } else if (direction === 'next' && currentPage < totalPages) {
-            currentPage++;
-            renderTable();
-        }
+            if (direction === 'prev' && currentPage > 1) {
+                currentPage--;
+                renderTable();
+            } else if (direction === 'next' && currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
     }
 
     // 상세 모달 이벤트를 별도 함수로 분리
@@ -666,7 +735,13 @@
                 e.preventDefault();
                 const pageId = this.getAttribute('data-id');
 
-                fetch(`/approval/detail/${pageId}`)
+                // 모달 로딩 표시
+                document.getElementById('modalTitle').innerText = '문서를 불러오는 중...';
+
+                const modal = new bootstrap.Modal(document.getElementById('approvalModal'));
+                modal.show();
+
+                fetch(`/approval/detail/${pageId}`)  // API 엔드포인트 확인
                     .then(res => res.json())
                     .then(data => {
                         // 제목 설정
@@ -677,6 +752,10 @@
                         document.getElementById('modalDate').innerText = formatDate(data.createdDate);
                         document.getElementById('modalContent').innerText = data.content;
 
+                        // 작성자 정보 설정
+                        const writerInfo = data.writer || '작성자 정보 없음';
+                        document.getElementById('modalWriter').innerText = writerInfo;
+
                         // 상태 배지 스타일 적용
                         const statusElement = document.getElementById('modalStatus');
                         let statusClass = 'status-pending';
@@ -684,39 +763,41 @@
                         else if (data.status === '반려') statusClass = 'status-rejected';
 
                         statusElement.innerHTML = `<span class="status-badge ${statusClass}">${data.status}</span>`;
+                        // 반려 사유 표시 로직 추가
+                        const rejectReasonSection = document.getElementById('modalRejectReason');
+                        if (data.status === '반려' && data.rejectReason) {
+                            rejectReasonSection.style.display = 'block';
+                            document.getElementById('rejectReasonText').innerText = data.rejectReason;
+                        } else {
+                            rejectReasonSection.style.display = 'none';
+                        }
 
-                        // 결재자 배지 스타일 적용 (기존 코드와 동일)
+                        // 결재자 배지 스타일 적용 - 동적 색상 사용
                         const approversContainer = document.getElementById('modalApprovers');
                         if (data.approvers && data.approvers.trim() !== '') {
                             const approvers = data.approvers.split(',');
                             approversContainer.innerHTML = '';
-                            approvers.forEach(approver => {
+
+                            approvers.forEach((approver) => {
                                 const badge = document.createElement('span');
                                 badge.className = 'approver-badge';
                                 badge.textContent = approver.trim();
 
-                                // 이름에 따른 스타일 적용
-                                if (approver.trim() === '인사/김하늘' || approver.trim() === '김하늘') {
-                                    badge.classList.add('approver-kim');
-                                } else if (approver.trim() === '생산/박지우' || approver.trim() === '박지우') {
-                                    badge.classList.add('approver-park');
-                                } else if (approver.trim() === '기술/정가온' || approver.trim() === '정가온') {
-                                    badge.classList.add('approver-jung');
-                                } else {
-                                    badge.classList.add('approver-default');
-                                }
+                                // 동적 색상 적용
+                                const colorInfo = getApproverBadgeColor(approver.trim());
+                                badge.style.backgroundColor = colorInfo.bg;
+                                badge.style.color = colorInfo.color;
+                                badge.style.borderColor = colorInfo.border;
 
                                 approversContainer.appendChild(badge);
                             });
                         } else {
-                            approversContainer.innerHTML = '<span class="approver-badge approver-default">결재자 없음</span>';
+                            approversContainer.innerHTML = '<span class="approver-badge">결재자 없음</span>';
                         }
-
-                        const modal = new bootstrap.Modal(document.getElementById('approvalModal'));
-                        modal.show();
                     })
                     .catch(error => {
                         console.error('데이터 로딩 오류:', error);
+                        document.getElementById('modalTitle').innerText = '데이터 로딩 실패';
                         alert('데이터를 불러오는 중 오류가 발생했습니다.');
                     });
             });
@@ -739,29 +820,38 @@
                 currentFilter = filter;
                 currentPage = 1; // 필터 변경시 첫 페이지로
 
+                // 로딩 표시
+                showLoading();
+
                 // Ajax로 데이터 가져오고 테이블 업데이트
                 fetch(`/approvalbox/data?filter=${filter}`)
                     .then(res => res.json())
                     .then(data => {
                         allData = data;
                         renderTable();
+                        hideLoading(); // 로딩 완료
                     })
                     .catch(error => {
                         console.error('필터링 오류:', error);
+                        hideLoading(); // 에러시에도 로딩 숨김
                     });
             });
         });
 
-    // 초기 페이지 로드시 데이터 로드
-    fetch(`/approvalbox/data?filter=${currentFilter}`)
-        .then(res => res.json())
-        .then(data => {
-            allData = data;
-            renderTable();
-        })
-        .catch(error => {
-            console.error('초기 데이터 로딩 오류:', error);
-        });
+        // 초기 페이지 로드시 데이터 로드
+        showLoading(); // 초기 로딩 표시
+
+        fetch(`/approvalbox/data?filter=${currentFilter}`)
+            .then(res => res.json())
+            .then(data => {
+                allData = data;
+                renderTable();
+                hideLoading(); // 로딩 완료
+            })
+            .catch(error => {
+                console.error('초기 데이터 로딩 오류:', error);
+                hideLoading(); // 에러시에도 로딩 숨김
+            });
     });
 </script>
 </body>

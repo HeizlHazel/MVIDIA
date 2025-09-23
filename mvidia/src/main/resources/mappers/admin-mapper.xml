@@ -7,6 +7,8 @@
         <result column="emp_lname" property="empLName" />
         <result column="emp_name" property="empName" />
         <result column="dept_name" property="deptName" />
+        <result column="dept_code" property="deptCode"/>
+        <result column="job_name" property="jobName"/>
     </resultMap>
 
     <resultMap id="permissionResultSet" type="Permission">
@@ -191,5 +193,18 @@
         where l.LOG_TYPE = 'APPROVAL'
         )
         where rn between #{startRow} and #{endRow}
+    </select>
+
+    <select id="selectManagerEmployees" resultMap="employeeResultSet">
+        SELECT
+            e.emp_no,
+            e.emp_lname || e.emp_name emp_name,
+            e.dept_code,
+            j.job_name
+        from tb_employee e
+        join tb_job j on e.job_code = j.job_code
+        where e.emp_status = 'H'
+        and e.job_code like '%1'
+        order by e.emp_name
     </select>
 </mapper>

@@ -78,7 +78,8 @@
         }
 
         .form input,
-        .form textarea {
+        .form textarea,
+        .form select {
             width: 100%;
             padding: 10px 12px;
             border-radius: 6px;
@@ -91,7 +92,8 @@
         }
 
         .form input:focus,
-        .form textarea:focus {
+        .form textarea:focus,
+        .form select:focus {
             border-color: #007bff;
             box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
         }
@@ -106,14 +108,61 @@
             font-family: inherit;
         }
 
+        /* 결재자 선택 관련 스타일 - 제거 */size: 14px;
+            margin: 6px;
+        }
+
+        .approval-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dde6ec;
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .approval-options.show {
+            display: block;
+        }
+
+        .approval-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .approval-option:hover {
+            background-color: #f8f9fa;
+        }
+
+        .approval-option.selected {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .approval-search {
+            padding: 10px 12px;
+            border: none;
+            border-bottom: 1px solid #dee0ea;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+        }
+
         /* 행과 컬럼 레이아웃 */
         .row {
             display: flex;
-            /*gap: 40px;*/
+            gap: 20px;
         }
 
         .col-4 {
-            width: calc(50% - 20px);
+            width: calc(50% - 10px);
             margin-bottom: 15px;
         }
 
@@ -124,14 +173,6 @@
         /* 필수 표시 */
         .required {
             color: #dc3545;
-        }
-
-        /* 도움말 텍스트 */
-        .text-muted {
-            color: #6c757d;
-            font-size: 12px;
-            margin-top: 4px;
-            display: block;
         }
 
         .btn {
@@ -155,139 +196,175 @@
     </style>
 </head>
 <body>
-    <div class="content">
-        <div class="innerOuter">
-            <h3>📝 결재 신청</h3>
-            <br>
+<div class="content">
+    <div class="innerOuter">
+        <h3>📝 결재 신청</h3>
+        <br>
 
-            <div class="swtch" name="swtch">
-                <button class="tab active" data-value="expense">지출 결의서</button>
-                <button class="tab" data-value="purchase">구매 요청서</button>
-                <button class="tab" data-value="overtime">초과 근무 신청서</button>
-                <button class="tab" data-value="access">ERP 권한 신청</button>
-                <button class="tab" data-value="etc">기타 결재</button>
+        <div class="swtch" name="swtch">
+            <button class="tab active" data-value="expense">지출 결의서</button>
+            <button class="tab" data-value="purchase">구매 요청서</button>
+            <button class="tab" data-value="overtime">초과 근무 신청서</button>
+            <button class="tab" data-value="access">ERP 권한 신청</button>
+            <button class="tab" data-value="etc">기타 결재</button>
+        </div>
+
+        <form id="notionAddForm" class="form">
+            <div class="row">
+                <div class="col-4">
+                    <label for="applyWriter">작성자 <span class="required">*</span></label>
+                    <input type="text" name="applyWriter" id="applyWriter" th:value="|${session.loginEmp.empLName}${session.loginEmp.empName}|" readonly>
+                </div>
+
+                <div class="col-4">
+                    <label for="applyDept">부서 정보 <span class="required">*</span></label>
+                    <input type="text" name="applyDept" id="applyDept" th:value="${session.loginEmp.jobName}" readonly>
+                </div>
             </div>
 
-            <form id="notionAddForm" class="form">
-                <div class="row">
-                    <div class="col-4">
-                        <label for="applyWriter">작성자 <span class="required">*</span></label>
-                        <input type="text" name="applyWriter" id="applyWriter" th:value="|${session.loginEmp.empLName}${session.loginEmp.empName}|" readonly>
-                    </div>
+            <div class="form-group">
+                <label for="applyDate">작성일 <span class="required">*</span></label>
+                <input type="date" name="applyDate" id="applyDate" value="" readonly th:value="${#dates.format(#dates.createNow(),'yyyy-MM-dd')}">
+            </div>
 
-                    <div class="col-4">
-                        <label for="applyDept">부서 정보 <span class="required">*</span></label>
-                        <input type="text" name="applyDept" id="applyDept" th:value="${session.loginEmp.jobName}" readonly>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="applyTitle">제목 <span class="required">*</span></label>
+                <input type="text" name="applyTitle" id="applyTitle" placeholder="예: 사무용품 구매 신청" required>
+            </div>
 
-                <div class="form-group">
-                    <label for="applyDate">작성일 <span class="required">*</span></label>
-                    <input type="date" name="applyDate" id="applyDate" value="" readonly th:value="${#dates.format(#dates.createNow(),'yyyy-MM-dd')}">
-                </div>
+            <div class="form-group">
+                <label for="approval">결재자 <span class="required">*</span></label>
+                <select name="approval" id="approval" required>
+                    <option value="">결재자를 선택하세요</option>
+                </select>
+            </div>
 
-                <div class="form-group">
-                    <label for="applyTitle">제목 <span class="required">*</span></label>
-                    <input type="text" name="applyTitle" id="applyTitle" placeholder="예: 사무용품 구매 신청" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="approval">결재 라인 <span class="required">*</span></label>
-                    <input type="text" name="approval" id="approval" placeholder="예: 김하늘,박지우,정가온" required>
-                    <small class="text-muted">※ 여러명 지정 시 콤마(,)로 구분</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="details">상세 내용 <span class="required">*</span></label>
-                    <textarea name="details" id="details" rows="6" required>
+            <div class="form-group">
+                <label for="details">상세 내용 <span class="required">*</span></label>
+                <textarea name="details" id="details" rows="6" required>
 - 지출 항목:교통비/출장비/사무용품/회의비/기타
 - 금액:
 - 사용처/업체명:</textarea>
-                </div>
-                <br>
+            </div>
+            <br>
 
-                <div style="text-align: center; margin-top: 30px;">
-                    <button type="submit" class="btn btn-primary">등록</button>
-                    <button type="reset" class="btn btn-secondary">취소</button>
-                </div>
-            </form>
-        </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button type="submit" class="btn btn-primary">등록</button>
+                <button type="reset" class="btn btn-secondary">취소</button>
+            </div>
+        </form>
     </div>
-    <script>
-        const tabs = document.querySelectorAll(".tab");
-        const details = document.getElementById("details");
+</div>
 
-        tabs.forEach(tab => {
-            tab.addEventListener("click", () => {
-                // active 스타일 초기화
-                tabs.forEach(t => t.classList.remove("active"));
-                tab.classList.add("active");
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // 탭 전환 기능
+    const tabs = document.querySelectorAll(".tab");
+    const details = document.getElementById("details");
 
-                // 선택값에 따라 textarea 기본 텍스트 세팅
-                switch (tab.dataset.value) {
-                    case "overtime":
-                        details.value = "- 근무 신청 일자: 00년 00월 00일 00시 ~ 00시(0h)\n- 근무 사유:";
-                        break;
-                    case "purchase":
-                        details.value = "- 구매 품목:ex)노트북\n- 수량:\n- 금액:\n- 구매 신청 사유:";
-                        break;
-                    case "expense":
-                        details.value = "- 지출 항목:교통비/출장비/사무용품/회의비/기타\n- 금액:\n- 사용처/업체명:";
-                        break;
-                    case "access":
-                        details.value = "- 이름/부서/직급:\n- 필요 권한:\n- 신청 사유:";
-                        break;
-                    case "etc":
-                        details.value = "- 이름/부서/직급:\n- 신청 사유:";
-                        break;
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+
+            switch (tab.dataset.value) {
+                case "overtime":
+                    details.value = "- 근무 신청 일자: 00년 00월 00일 00시 ~ 00시(0h)\n- 근무 사유:";
+                    break;
+                case "purchase":
+                    details.value = "- 구매 품목:ex)노트북\n- 수량:\n- 금액:\n- 구매 신청 사유:";
+                    break;
+                case "expense":
+                    details.value = "- 지출 항목:교통비/출장비/사무용품/회의비/기타\n- 금액:\n- 사용처/업체명:";
+                    break;
+                case "access":
+                    details.value = "- 이름/부서/직급:\n- 필요 권한:\n- 신청 사유:";
+                    break;
+                case "etc":
+                    details.value = "- 이름/부서/직급:\n- 신청 사유:";
+                    break;
+            }
+        });
+    });
+
+    // 부장급 직원 목록 로드
+    function loadManagers() {
+        $.ajax({
+            url: "/api/managers",
+            method: "GET",
+            success: function(data) {
+                renderManagerOptions(data);
+            },
+            error: function() {
+                console.error("부장급 직원 목록 로드 실패");
+            }
+        });
+    }
+
+    // 부장급 직원 옵션 렌더링
+    function renderManagerOptions(managers) {
+        const approvalSelect = document.getElementById("approval");
+
+        // 기존 옵션 제거 (첫 번째 기본 옵션 제외)
+        while (approvalSelect.children.length > 1) {
+            approvalSelect.removeChild(approvalSelect.lastChild);
+        }
+
+        managers.forEach(manager => {
+            const option = document.createElement("option");
+            option.value = manager.empNo; // ✅ 사번 같은 고유값으로 지정
+            option.textContent = `${manager.empName}-${manager.jobName}(${manager.empNo})`; // ✅ VO 필드 사용
+            approvalSelect.appendChild(option);
+        });
+    }
+
+
+    // 폼 제출
+    $("#notionAddForm").on("submit", function(e) {
+        e.preventDefault();
+
+        // 결재자가 선택되었는지 확인
+        const approvalValue = $("#approval").val();
+        if (!approvalValue) {
+            alert("결재자를 선택해주세요.");
+            return;
+        }
+
+        let activeTab = $(".tab.active").data("value");
+
+        let formData = {
+            applyWriter: $(this).find("input[name='applyWriter']").val(),
+            applyDept: $(this).find("input[name='applyDept']").val(),
+            applyDate: $(this).find("input[name='applyDate']").val(),
+            applyTitle: $(this).find("input[name='applyTitle']").val(),
+            approval: approvalValue,
+            details: $(this).find("textarea[name='details']").val(),
+            swtch: activeTab
+        };
+
+        $.ajax({
+            url: "add.notion",
+            method: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function(app) {
+                if (app === "success") {
+                    alert("전자결재 신청이 등록되었습니다.");
+                    location.href = "approvalbox";
+                } else {
+                    alert("전자결재 신청이 실패하였습니다.");
                 }
-            });
+            },
+            error: function() {
+                alert("전자결재 ajax 통신 실패");
+            }
         });
+    });
 
-        tabs.forEach(tab => {
-            tab.addEventListener("click", () => {
-                const value = tab.dataset.value;
-            });
-        });
-    </script>
-
-    <script>
-        $(function(){
-            $("#notionAddForm").on("submit", function(e) {
-                e.preventDefault();
-
-                let activeTab = $(".tab.active").data("value");
-
-                let formData = {
-                    applyWriter: $(this).find("input[name='applyWriter']").val(),
-                    applyDept: $(this).find("input[name='applyDept']").val(),
-                    applyDate: $(this).find("input[name='applyDate']").val(),
-                    applyTitle: $(this).find("input[name='applyTitle']").val(),
-                    approval: $(this).find("input[name='approval']").val(),
-                    details: $(this).find("textarea[name='details']").val(),
-                    file: $(this).find("input[name='file']").val(),
-                    swtch: activeTab
-                };
-
-                $.ajax({
-                    url:"add.notion",
-                    method:"POST",
-                    contentType:"application/json",
-                    data:JSON.stringify(formData),
-                    success:function(app){
-                        if(app === "success"){
-                                      alert("전자결재 신청이 등록되었습니다.");
-                            location.href="approvalbox";
-                        }else{
-                              alert("전자결재 신청이 실패하였습니다.");
-                        }
-                    },
-                    error:function(){
-                        alert("전자결재 ajax 통신 실패");
-                    }
-                })
-            })
-        })
-    </script>
+    // 페이지 로드시 부장급 직원 목록 로드
+    $(document).ready(function() {
+        loadManagers();
+    });
+</script>
 </body>
 </html>

@@ -2,9 +2,9 @@ package com.kh.mvidia.approval.controller;
 
 import com.kh.mvidia.approval.model.dto.ApprovalDetail;
 import com.kh.mvidia.approval.model.dto.ApprovalItem;
-import com.kh.mvidia.approval.model.service.ApprovalServiceImpl;
+import com.kh.mvidia.approval.model.service.ApprovalService;
 import com.kh.mvidia.employee.model.vo.Employee;
-import com.kh.mvidia.permission.model.service.PermissionServiceImpl;
+import com.kh.mvidia.permission.model.service.PermissionService;
 import jakarta.servlet.http.HttpSession;
 import kong.unirest.JsonNode;
 import kong.unirest.HttpResponse;
@@ -20,10 +20,10 @@ import java.util.*;
 public class ApprovalController {
 
     @Autowired
-    private ApprovalServiceImpl aService;
+    private ApprovalService aService;
 
     @Autowired
-    private PermissionServiceImpl pService;
+    private PermissionService pService;
 
     // =================== 페이지 렌더링 ===================
 

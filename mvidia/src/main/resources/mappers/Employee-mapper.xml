@@ -147,6 +147,21 @@
            and emp_status = 'H'
     </select>
 
+    <select id="checkEmpNoCer" resultMap="employeeResultSet">
+        select
+        emp_no
+        , emp_lname || emp_name as "emp_name"
+        , dept_name
+        , substr(job_name, -2) as "job_name"
+        , to_char(hire_date, 'YYYY-MM-DD') as "hire_date"
+        , address
+        , phone
+        from tb_employee
+        join tb_department using (dept_code)
+        join tb_job using(job_code)
+        where emp_no = #{empNo}
+    </select>
+
     <update id="updateEmpSelective" parameterType="Employee">
         update tb_employee
             <set>
@@ -208,5 +223,12 @@
           left join tb_attachment on (emp_no = up_emp_no and ref_type = 'F' and file_status = 'U')
          where dept_Name = #{deptName}
            and emp_status = 'H'
+    </select>
+
+    <select id="checkPhone" resultMap="employeeResultSet">
+        select
+        emp_no
+        from tb_employee
+        where phone = #{phone}
     </select>
 </mapper>

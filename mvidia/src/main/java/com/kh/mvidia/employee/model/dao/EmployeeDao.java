@@ -78,7 +78,13 @@ public class EmployeeDao {
 	}
 	
 	
-
+	public Employee checkEmpNoCer(SqlSessionTemplate sqlSession, String empNo) {
+		return sqlSession.selectOne("employeeMapper.checkEmpNoCer", empNo);
+	}
+	
+	public Employee checkPhone(SqlSessionTemplate sqlSession, String phone) {
+		return sqlSession.selectOne("employeeMapper.checkPhone", phone);
+	}
 }
 
 

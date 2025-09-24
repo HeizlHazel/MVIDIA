@@ -39,4 +39,10 @@ public interface ApprovalService {
 
     // 결재권자 부장 직급 조회
     List<Employee> getManagerEmployees();
+
+    // 전자결재 노션 페이지 아카이브(삭제)
+    void archiveNotionPage(String pageId);
+
+    // 전자결재 수정(노션)
+    boolean updateNotionPage(String id, String title, String details, String category, String approval);
 }

@@ -221,6 +221,7 @@
             gap: 4px;
             justify-content: center;
             flex-wrap: wrap;
+            outline: none;
         }
 
         .btn-action {
@@ -235,12 +236,14 @@
             text-decoration: none;
             min-width: auto;
             text-align: center;
+            outline: none;
         }
 
         .btn-approve {
             background-color: #d4edda;
             color: #155724;
             border-color: #c3e6cb;
+            outline: none;
         }
 
         .btn-approve:hover {
@@ -248,12 +251,14 @@
             color: #0b2e13;
             transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(21, 87, 36, 0.15);
+            outline: none;
         }
 
         .btn-reject {
             background-color: #f8d7da;
             color: #721c24;
             border-color: #f5c6cb;
+            outline: none;
         }
 
         .btn-reject:hover {
@@ -261,12 +266,14 @@
             color: #491217;
             transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(114, 28, 36, 0.15);
+            outline: none;
         }
 
         .btn-view {
             background-color: #e2e3e5;
             color: #383d41;
             border-color: #d6d8db;
+            outline: none;
         }
 
         .btn-view:hover {
@@ -274,7 +281,12 @@
             color: #1c1e21;
             transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(56, 61, 65, 0.15);
+            outline: none;
         }
+
+        .btn-approve:focus,
+        .btn-reject:focus,
+        .btn-view:focus { outline: none; }
 
         /* 모달 전체 스타일 */
         .modal-dialog {

@@ -51,4 +51,8 @@ public class AttendanceDao {
     public Attendance selectTodayTimes(SqlSessionTemplate sqlSession, String empNo) {
         return sqlSession.selectOne("attendanceMapper.selectTodayTimes", empNo);
     }
+	
+	public int selectEmpAttListCount(SqlSessionTemplate sqlSession, HashMap<String, String> searchMap) {
+		return sqlSession.selectOne("attendanceMapper.selectEmpAttListCount", searchMap);
+	}
 }

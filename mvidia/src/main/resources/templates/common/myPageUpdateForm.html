@@ -50,25 +50,32 @@
             <div class="form-group">
                 <label>성</label>
                 <input name="empLName" th:value="${session.loginEmp.empLName}" type="text" placeholder="변경할 성" oninput="validateName('korean')">
-                <div class="error-message" id="korean-name-error">한글로 입력해주세요.</div>
+                <div class="error-message" id="empLName-kor-err">한글로 입력해주세요.</div>  <!-- 추가 -->
+                <div class="error-message" id="empLName-eng-err">영어 입력은 불가합니다.</div>
             </div>
             <div class="form-group">
                 <label>이름</label>
                 <input name="empName" th:value="${session.loginEmp.empName}" type="text" placeholder="변경할 이름" oninput="validateName('korean')">
+                <div class="error-message" id="empName-kor-err">한글로 입력해주세요.</div>   <!-- 추가 -->
+                <div class="error-message" id="empName-eng-err">영어 입력은 불가합니다.</div>
             </div>
             <div class="form-group">
                 <label>영문성</label>
                 <input name="empEngLName" th:value="${session.loginEmp.empEngLName}" type="text" placeholder="변경할 영문성" oninput="validateName('english')">
-                <div class="error-message" id="english-name-error">영어로 입력해주세요.</div>
+                <div class="error-message" id="empEngLName-eng-err">영어로 입력해주세요.</div> <!-- 추가 -->
+                <div class="error-message" id="empEngLName-kor-err">한글 입력은 불가합니다.</div>
             </div>
             <div class="form-group">
                 <label>영문이름</label>
                 <input name="empEngName" th:value="${session.loginEmp.empEngName}" type="text" placeholder="변경할 영문이름" oninput="validateName('english')">
+                <div class="error-message" id="empEngName-eng-err">영어로 입력해주세요.</div> <!-- 추가 -->
+                <div class="error-message" id="empEngName-kor-err">한글 입력은 불가합니다.</div>
             </div>
 
             <div class="form-group"><label>생년월일</label><input name="birthday" th:value="${session.loginEmp.birthday}" type="date"></div>
             <div class="form-group"><label>주소</label><input name="address" th:value="${session.loginEmp.address}" type="text" placeholder="변경할 주소"></div>
             <div class="form-group"><label>전화번호</label><input name="phone" th:value="${session.loginEmp.phone}" type="tel" placeholder="변경할 전화번호"></div>
+            <div class="error-message" id="phone-dup-error">중복된 전화번호 입니다.</div>
             <div class="form-group"><label>내선번호</label><input name="extNo" th:value="${session.loginEmp.extNo}" type="tel" placeholder="변경할 내선번호"></div>
 
             <input type="hidden" name="originAtchNo" th:value="${atch?.atchId}" />
@@ -82,125 +89,289 @@
 </div>
 
 <script th:inline="javascript">
-    /* JavaScript로 유효성 검사 및 미리보기 기능 추가 */
-    let initialFormState = {};
+    /* === 설정값 === */
+    const PHONE_CHECK_URL = '/checkPhone';
+    const PHONE_PATTERN = /^01[0-9]-?\d{3,4}-?\d{4}$/; // 010-1234-5678 형식(하이픈 선택)
 
-    // 필드명과 한글 레이블을 연결하는 객체
+    /* 상태 플래그 */
+    let initialFormState = {};
+    let isPhoneUnique = true;    // 중복 아님 = true
+    let isKoreanLNameValid = true;
+    let isKoreanNameValid  = true;
+    let isEnglishLNameValid = true;
+    let isEnglishNameValid  = true;
+
+    /* 필드-레이블 매핑 (기존 코드 유지) */
     const fieldLabels = {
-        'empLName': '성',
-        'empName': '이름',
-        'empEngLName': '영문성',
-        'empEngName': '영문이름',
-        'birthday': '생년월일',
-        'address': '주소',
-        'phone': '전화번호',
-        'extNo': '내선번호'
+      'empLName': '성',
+      'empName': '이름',
+      'empEngLName': '영문성',
+      'empEngName': '영문이름',
+      'birthday': '생년월일',
+      'address': '주소',
+      'phone': '전화번호',
+      'extNo': '내선번호'
     };
 
-    $(document).ready(function() {
-        // 폼의 초기 상태 저장
-        initialFormState = getFormValues();
+    $(document).ready(function () {
+      // 폼 초기 상태 저장
+      initialFormState = getFormValues();
+
+      // 입력 이벤트 바인딩 (필수값 & 유효성 체크)
+      bindValidationHandlers();
+
+      // 최초 상태에서 버튼 활성/비활성 갱신
+      updateSubmitState();
     });
 
     function getFormValues() {
-        const values = {};
-        $('#editReqForm').find('input:not([type="file"])').each(function() {
-            values[$(this).attr('name')] = $(this).val();
+      const values = {};
+      $('#editReqForm').find('input:not([type="file"])').each(function () {
+        values[$(this).attr('name')] = $(this).val();
+      });
+      values['atchFile'] = $('input[name="atchFile"]').val(); // 파일 입력은 별도
+      return values;
+    }
+
+    /* ======= 유효성 & 제출버튼 제어 ======= */
+
+    // 필수값 모두 채워졌는지
+    function areRequiredFilled() {
+      const requiredNames = ['empLName', 'empName', 'empEngLName', 'empEngName', 'birthday', 'address', 'phone'];
+      for (const name of requiredNames) {
+        const v = $(`input[name="${name}"]`).val()?.trim();
+        if (!v) return false;
+      }
+      return true;
+    }
+
+    // 제출 버튼 상태 갱신
+    function updateSubmitState() {
+      const submitBtn = document.getElementById('submitBtn');
+
+      // 형식/패턴 유효성
+      const phoneVal = $('input[name="phone"]').val()?.trim() || '';
+      const isPhonePatternOK = PHONE_PATTERN.test(phoneVal);
+
+      // 모든 조건
+      const canSubmit =
+        areRequiredFilled() &&
+        isKoreanLNameValid &&
+        isKoreanNameValid &&
+        isEnglishLNameValid &&
+        isEnglishNameValid &&
+        isPhonePatternOK &&
+        isPhoneUnique;
+
+      submitBtn.disabled = !canSubmit;
+
+      // 전화번호 에러 메시지 표출 제어(형식오류 vs 중복오류)
+      const dupEl = document.getElementById('phone-dup-error');
+      if (!isPhonePatternOK) {
+        dupEl.textContent = '전화번호 형식이 올바르지 않습니다. 예) 010-1234-5678';
+        dupEl.style.display = 'block';
+      } else if (!isPhoneUnique) {
+        dupEl.textContent = '중복된 전화번호 입니다.';
+        dupEl.style.display = 'block';
+      } else {
+        dupEl.style.display = 'none';
+      }
+    }
+
+    function validateNamesPerField() {
+      const korRegex = /^[가-힣]+$/;
+      const engRegex = /^[a-zA-Z]+$/;
+
+      const empLName     = $('input[name="empLName"]').val()?.trim() || '';
+      const empName      = $('input[name="empName"]').val()?.trim() || '';
+      const empEngLName  = $('input[name="empEngLName"]').val()?.trim() || '';
+      const empEngName   = $('input[name="empEngName"]').val()?.trim() || '';
+
+      // 한글 필드(성/이름): 입력이 있으면 한글만 허용
+      isKoreanLNameValid = !empLName || korRegex.test(empLName);
+      isKoreanNameValid  = !empName  || korRegex.test(empName);
+
+      // 영문 필드(성/이름): 입력이 있으면 영문만 허용
+      isEnglishLNameValid = !empEngLName || engRegex.test(empEngLName);
+      isEnglishNameValid  = !empEngName  || engRegex.test(empEngName);
+
+      // 에러 메시지 표시 (필드 바로 아래)
+      // 성(한글)
+      document.getElementById('empLName-kor-err').style.display =
+        (empLName && !isKoreanLNameValid) ? 'block' : 'none';
+      // 선택: 영어 입력 금지 메시지
+      const lKorBan = document.getElementById('empLName-eng-err');
+      if (lKorBan) lKorBan.style.display =
+        (empLName && engRegex.test(empLName)) ? 'block' : 'none';
+
+      // 이름(한글)
+      document.getElementById('empName-kor-err').style.display =
+        (empName && !isKoreanNameValid) ? 'block' : 'none';
+      const nKorBan = document.getElementById('empName-eng-err');
+      if (nKorBan) nKorBan.style.display =
+        (empName && engRegex.test(empName)) ? 'block' : 'none';
+
+      // 영문성
+      document.getElementById('empEngLName-eng-err').style.display =
+        (empEngLName && !isEnglishLNameValid) ? 'block' : 'none';
+      const elBan = document.getElementById('empEngLName-kor-err');
+      if (elBan) elBan.style.display =
+        (empEngLName && korRegex.test(empEngLName)) ? 'block' : 'none';
+
+      // 영문이름
+      document.getElementById('empEngName-eng-err').style.display =
+        (empEngName && !isEnglishNameValid) ? 'block' : 'none';
+      const enBan = document.getElementById('empEngName-kor-err');
+      if (enBan) enBan.style.display =
+        (empEngName && korRegex.test(empEngName)) ? 'block' : 'none';
+    }
+
+    // 바인딩 (기존 bindValidationHandlers 대체/보강)
+    function bindValidationHandlers() {
+      // 이름 관련 입력 시마다 필드별 검사 → 버튼 상태 갱신
+      $('input[name="empLName"], input[name="empName"], input[name="empEngLName"], input[name="empEngName"]')
+        .on('input', function () {
+          validateNamesPerField();
+          updateSubmitState();
         });
-        // 파일 입력은 별도로 처리
-        values['atchFile'] = $('input[name="atchFile"]').val();
-        return values;
+
+      // 필수값 공란/변경 감지
+      $('input[name="birthday"], input[name="address"]').on('input change', function () {
+        updateSubmitState();
+      });
+
+      // 전화번호: 형식 체크 + 디바운스 중복 검사 (기존 유지)
+      let phoneDebounce = null;
+      $('input[name="phone"]').on('input', function () {
+        updateSubmitState();
+        clearTimeout(phoneDebounce);
+        phoneDebounce = setTimeout(checkPhoneDuplicate, 350);
+      });
     }
 
-    function previewProfilePic(event) {
-        const reader = new FileReader();
-        reader.onload = function(){
-            const output = document.getElementById('profile-preview');
-            output.src = reader.result;
-        };
-        reader.readAsDataURL(event.target.files[0]);
-    }
-
+    /* ======= 기존 validateName 개선 ======= */
     function validateName(type) {
-        const koreanLName = document.querySelector('input[name="empLName"]');
-        const koreanName = document.querySelector('input[name="empName"]');
-        const englishLName = document.querySelector('input[name="empEngLName"]');
-        const englishName = document.querySelector('input[name="empEngName"]');
-        const submitBtn = document.getElementById('submitBtn');
+      const koreanLName = document.querySelector('input[name="empLName"]');
+      const koreanName = document.querySelector('input[name="empName"]');
+      const englishLName = document.querySelector('input[name="empEngLName"]');
+      const englishName = document.querySelector('input[name="empEngName"]');
 
-        const koreanRegex = /^[가-힣]+$/;
-        const englishRegex = /^[a-zA-Z]+$/;
+      const koreanRegex = /^[가-힣]+$/;
+      const englishRegex = /^[a-zA-Z]+$/;
 
-        let isKoreanValid = koreanRegex.test(koreanLName.value) && koreanRegex.test(koreanName.value);
-        let isEnglishValid = englishRegex.test(englishLName.value) && englishRegex.test(englishName.value);
+      // 빈칸이면 일단 통과(필수값 검사는 areRequiredFilled가 담당)
+      isKoreanValid =
+        (!koreanLName.value || koreanRegex.test(koreanLName.value)) &&
+        (!koreanName.value || koreanRegex.test(koreanName.value));
 
-        if (type === 'korean') {
-            const errorElement = document.getElementById('korean-name-error');
-            if (koreanLName.value !== '' && koreanName.value !== '' && !isKoreanValid) {
-                errorElement.style.display = 'block';
-            } else {
-                errorElement.style.display = 'none';
-            }
+      isEnglishValid =
+        (!englishLName.value || englishRegex.test(englishLName.value)) &&
+        (!englishName.value || englishRegex.test(englishName.value));
+
+      // 에러 메시지 표시
+      if (type === 'korean') {
+        const errorElement = document.getElementById('korean-name-error');
+        // 두 칸 모두 채웠는데 둘 중 하나라도 규칙 위배일 때만 보여줌
+        if (koreanLName.value && koreanName.value && !isKoreanValid) {
+          errorElement.style.display = 'block';
+        } else {
+          errorElement.style.display = 'none';
         }
+      }
 
-        if (type === 'english') {
-            const errorElement = document.getElementById('english-name-error');
-            if (englishLName.value !== '' && englishName.value !== '' && !isEnglishValid) {
-                errorElement.style.display = 'block';
-            } else {
-                errorElement.style.display = 'none';
-            }
+      if (type === 'english') {
+        const errorElement = document.getElementById('english-name-error');
+        if (englishLName.value && englishName.value && !isEnglishValid) {
+          errorElement.style.display = 'block';
+        } else {
+          errorElement.style.display = 'none';
         }
-
-        submitBtn.disabled = !isKoreanValid || !isEnglishValid;
+      }
     }
 
+    /* ======= 전화번호 중복 AJAX ======= */
+    function checkPhoneDuplicate() {
+      const phone = $('input[name="phone"]').val()?.trim() || '';
+
+      // 형식이 틀리면 굳이 서버 요청 안 함
+      if (!PHONE_PATTERN.test(phone)) {
+        isPhoneUnique = true; // 형식 오류는 updateSubmitState에서 메시지 처리
+        updateSubmitState();
+        return;
+      }
+
+      // 현재 로그인 사용자의 본인 번호와 같다면 중복 아님 처리(옵션)
+      const myPhone = $('input[name="phone"]').attr('th:value') ? /* SSR값이 있을 수도 있음 */ '' : '';
+      // 실제로는 백엔드에서 empNo를 받아 "나 자신"은 중복에서 제외 처리하는 편이 안전함.
+
+      $.ajax({
+        url: PHONE_CHECK_URL,
+        method: 'GET',
+        data: { phone: phone },
+        success: function (res) {
+          // 백엔드 응답 형태에 맞춰 변경하세요.
+          // 가정: { exists: true/false }
+          isPhoneUnique = !res.exists;
+          updateSubmitState();
+        },
+        error: function () {
+          // 에러 시엔 보수적으로 제출 잠금하지 않도록(네트워크 이슈 때문에 편집을 막지 않게)
+          isPhoneUnique = true;
+          updateSubmitState();
+        }
+      });
+    }
+
+    /* ======= 제출 전 확인(기존 함수에 필수 체크 추가) ======= */
     function submitProfileEditRequest() {
-        const currentFormState = getFormValues();
-        let changedFields = [];
+      // 최종 가드
+      updateSubmitState();
+      if (document.getElementById('submitBtn').disabled) {
+        alertify.alert('알림', '필수 항목을 모두 채우고, 오류를 해결해 주세요.');
+        return;
+      }
 
-        // 파일 변경 여부 확인
-        const fileInput = $('input[name="atchFile"]')[0];
-        const isFileChanged = fileInput.files.length > 0;
+      const currentFormState = getFormValues();
+      let changedFields = [];
 
-        // 다른 필드 변경 여부 확인
-        for (const key in initialFormState) {
-            if (key !== 'atchFile' && initialFormState[key] !== currentFormState[key]) {
-                changedFields.push({
-                    name: key,
-                    from: initialFormState[key],
-                    to: currentFormState[key]
-                });
-            }
+      // 파일 변경 여부
+      const fileInput = $('input[name="atchFile"]')[0];
+      const isFileChanged = fileInput.files.length > 0;
+
+      // 다른 필드 변경 여부
+      for (const key in initialFormState) {
+        if (key !== 'atchFile' && initialFormState[key] !== currentFormState[key]) {
+          changedFields.push({
+            name: key,
+            from: initialFormState[key],
+            to: currentFormState[key]
+          });
+        }
+      }
+
+      if (changedFields.length === 0 && !isFileChanged) {
+        alertify.alert('알림', '변경 사항이 없습니다.', function () {
+          window.location.href = '/myPage/profile';
+        });
+      } else {
+        let confirmMessage = '변경 내용을 전송하시겠습니까?<br><br>';
+        changedFields.forEach(field => {
+          const label = fieldLabels[field.name] || field.name;
+          confirmMessage += `${label}: ${field.from} => ${field.to}<br>`;
+        });
+        if (isFileChanged) {
+          confirmMessage += `프로필 사진: 변경됨<br>`;
         }
 
-        if (changedFields.length === 0 && !isFileChanged) {
-            // 변경 사항이 없을 경우
-            alertify.alert('알림', '변경 사항이 없습니다.', function() {
-                window.location.href = '/myPage/profile';
-            });
-        } else {
-            // 변경 사항이 있을 경우
-            let confirmMessage = '변경 내용을 전송하시겠습니까?<br><br>';
-            changedFields.forEach(field => {
-                const label = fieldLabels[field.name] || field.name; // 한글 레이블 사용
-                confirmMessage += `${label}: ${field.from} => ${field.to}<br>`;
-            });
-            if (isFileChanged) {
-                confirmMessage += `프로필 사진: 변경됨<br>`;
-            }
-
-            alertify.confirm('변경 내용 확인', confirmMessage,
-                function() {
-                    // 사용자가 "확인"을 누른 경우
-                    document.getElementById('editReqForm').submit();
-                },
-                function() {
-                    // 사용자가 "취소"를 누른 경우
-                    alertify.error('요청이 취소되었습니다.');
-                }
-            );
-        }
+        alertify.confirm('변경 내용 확인', confirmMessage,
+          function () {
+            document.getElementById('editReqForm').submit();
+          },
+          function () {
+            alertify.error('요청이 취소되었습니다.');
+          }
+        );
+      }
     }
 </script>
 </body>

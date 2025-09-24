@@ -100,46 +100,6 @@ public class CertificateServiceImpl implements NotionCertificateService {
 		return result;
 	}
 	
-	@Override
-	public Map<String, Object> getPayslipData(String databaseId, String empNo) {
-		String dbId = normalizeDbId(databaseId);
-		
-		JSONObject payload = new JSONObject()
-				.put("filter", new JSONObject()
-						.put("property", "사번")
-						.put("rich_text", new JSONObject().put("equals", empNo)));
-		
-		HttpResponse<JsonNode> res = notionPost("https://api.notion.com/v1/databases/" + dbId + "/query")
-				.body(payload)
-				.asJson();
-		
-		if (res.getStatus() / 100 != 2){
-			String err = res.getBody() != null ? res.getBody().toString() : ("HTTP " + res.getStatus());
-			throw new RuntimeException("Notion query failed: " + err);
-		}
-		
-		JSONArray results = res.getBody().getObject().optJSONArray("results");
-		if (results == null || results.length() == 0) return null;
-		
-		JSONObject props = results.getJSONObject(0).getJSONObject("properties");
-		
-		Map<String, Object> map = new HashMap<>();
-		map.put("name", getRichOrTitle(props, "이름"));
-		map.put("empNo", getRichOrTitle(props, "사번"));
-		map.put("payDate", getRichOrTitle(props, "지급일"));
-		map.put("position", getRichOrTitle(props, "직급"));
-		map.put("baseSalary", getNumber(props, "기본급"));
-		map.put("mealAllowance", getNumber(props, "식대"));
-		map.put("bonus", getNumber(props, "성과급"));
-		map.put("totalPay", getNumber(props, "총 지급액"));
-		map.put("nationalPension", getNumber(props, "국민연금"));
-		map.put("healthInsurance", getNumber(props, "건강보험"));
-		map.put("employmentInsurance", getNumber(props, "고용보험"));
-		map.put("incomeTax", getNumber(props, "소득세"));
-		map.put("totalDeduction", getNumber(props, "총 공제액"));
-		map.put("netPay", getNumber(props, "실수령액"));
-		return map;
-	}
 	
 	// ===== Notion 값 파서 =====
 	private static String getRichOrTitle(JSONObject props, String key){

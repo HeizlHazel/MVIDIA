@@ -19,4 +19,6 @@ public interface VacationService {
 	int insertVacation(Vacation va);
 	
 	ArrayList<Vacation> selectEmpVacationList(PageInfo pi, HashMap<String, String> searchMap);
+	
+	int selectEmpVaListCount(HashMap<String, String> searchMap);
 }

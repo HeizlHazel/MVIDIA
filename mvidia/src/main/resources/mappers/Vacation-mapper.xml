@@ -62,6 +62,26 @@
         </trim>
     </select>
 
+    <select id="selectEmpVaListCount" resultType="_int">
+        select count(*)
+        from tb_vacation
+        join tb_employee using (emp_no)
+        join tb_vacation_type using (va_category)
+        join tb_status on (va_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="keyword != null and keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or va_reason like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="status != null and status != ''">
+                and va_status = #{searchMap.status}
+            </if>
+            <if test="type != null and type != ''">
+                and va_category = #{searchMap.type}
+            </if>
+            and emp_no = #{searchMap.empNo}
+        </trim>
+    </select>
+
     <select id="selectVacationList" resultMap="vacationResultSet">
         select *
           from (

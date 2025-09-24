@@ -252,6 +252,77 @@
             border-color: #bbdefb;
         }
 
+        /* 액션 버튼 스타일 */
+        .action-buttons {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            outline: none;
+        }
+
+        .btn-edit {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            outline: none;
+        }
+
+        .btn-edit:hover {
+            background-color: #b8daff;
+            color: #004085;
+            border-color: #7abaff;
+            outline: none;
+        }
+
+        .btn-delete {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            outline: none;
+        }
+
+        .btn-delete:hover {
+            background-color: #f1b0b7;
+            color: #491217;
+            border-color: #e2a610;
+            outline: none;
+        }
+
+        .btn-edit:focus,
+        .btn-delete:focus { outline: none; }
+
+        .btn-edit:disabled,
+        .btn-delete:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border-color: #dee2e6;
+        }
+
+        .btn-edit:disabled:hover,
+        .btn-delete:disabled:hover {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border-color: #dee2e6;
+        }
+
         /* 모달 스타일 */
         .modal-dialog {
             max-width: 800px;
@@ -509,11 +580,12 @@
                 <thead>
                 <tr>
                     <th width="10%">번호</th>
-                    <th width="15%">구분</th>
+                    <th width="13%">구분</th>
                     <th width="25%">제목</th>
-                    <th width="18%">결재자</th>
+                    <th width="12%">결재자</th>
                     <th width="12%">결재상태</th>
-                    <th width="20%">작성일</th>
+                    <th width="13%">작성일</th>
+                    <th width="15%">액션</th>
                 </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -666,8 +738,43 @@
         }
     }
 
+    // 수정 기능
+    function editDocument(id) {
+        window.location.href = `approvalform?edit=${id}`;
+    }
+
+    // 삭제 기능
+    function deleteDocument(id) {
+        if (confirm('정말로 이 문서를 삭제하시겠습니까?')) {
+            fetch(`/approval/delete/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('문서가 삭제되었습니다.');
+                    // 현재 필터로 데이터 다시 로드
+                    fetch(`/approvalbox/data?filter=${currentFilter}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            allData = data;
+                            renderTable();
+                        });
+                } else {
+                    alert('삭제에 실패했습니다.');
+                }
+            })
+            .catch(error => {
+                console.error('삭제 오류:', error);
+                alert('삭제 중 오류가 발생했습니다.');
+            });
+        }
+    }
+
     // 페이징된 테이블 렌더링
     function renderTable() {
+        console.log('renderTable 실행됨, allData:', allData);
+
         const tbody = document.getElementById('tableBody');
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = startIndex + pageSize;
@@ -676,7 +783,7 @@
         tbody.innerHTML = '';
 
         if (pageData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6">데이터가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7">데이터가 없습니다.</td></tr>';
             return;
         }
 
@@ -714,6 +821,16 @@
                     <td>${approverBadges}</td>
                     <td><span class="status-badge ${statusClass}">${item.status}</span></td>
                     <td>${item.createdDate}</td>
+                    <td>
+                        <div class="action-buttons">
+                           ${item.status === '대기' || item.status === '반려' ?
+                               '<button class="btn-edit" onclick="editDocument(\'' + item.id + '\')" title="수정">수정</button>' +
+                               '<button class="btn-delete" onclick="deleteDocument(\'' + item.id + '\')" title="삭제">삭제</button>' :
+                               '<button class="btn-edit" disabled title="수정 불가">수정</button>' +
+                               '<button class="btn-delete" disabled title="삭제 불가">삭제</button>'
+                           }
+                        </div>
+                    </td>
                 </tr>`;
         });
 

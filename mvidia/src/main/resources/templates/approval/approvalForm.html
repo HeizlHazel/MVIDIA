@@ -293,10 +293,12 @@
             url: "/api/managers",
             method: "GET",
             success: function(data) {
+                console.log("부장급 직원 데이터:", data);
                 renderManagerOptions(data);
             },
             error: function() {
-                console.error("부장급 직원 목록 로드 실패");
+                console.error("부장급 직원 목록 로드 실패", status, error);
+                console.error("응답:", xhr.responseText);
             }
         });
     }
@@ -331,6 +333,8 @@
         }
 
         let activeTab = $(".tab.active").data("value");
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
 
         let formData = {
             applyWriter: $(this).find("input[name='applyWriter']").val(),
@@ -342,17 +346,21 @@
             swtch: activeTab
         };
 
+        // 수정 모드인지 신규 작성인지 구분
+        const url = editId ? `update.notion/${editId}` : "add.notion";
+        const method = editId ? "PUT" : "POST";
+
         $.ajax({
-            url: "add.notion",
-            method: "POST",
+            url: url,
+            method: method,
             contentType: "application/json",
             data: JSON.stringify(formData),
             success: function(app) {
                 if (app === "success") {
-                    alert("전자결재 신청이 등록되었습니다.");
+                    alert(editId ? "전자결재가 수정되었습니다." : "전자결재 신청이 등록되었습니다.");
                     location.href = "approvalbox";
                 } else {
-                    alert("전자결재 신청이 실패하였습니다.");
+                    alert(editId ? "전자결재 수정에 실패하였습니다." : "전자결재 신청이 실패하였습니다.");
                 }
             },
             error: function() {
@@ -364,6 +372,61 @@
     // 페이지 로드시 부장급 직원 목록 로드
     $(document).ready(function() {
         loadManagers();
+
+        // 수정 모드 체크
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+
+            if (editId) {
+                // 수정 모드 - 기존 데이터 로드
+                loadDocumentForEdit(editId);
+                // 제목 변경
+                $('h3').text('📝 결재 수정');
+                // 버튼 텍스트 변경
+                $('.btn-primary').text('수정');
+            }
+
+        // 수정할 문서 데이터 로드 함수 추가
+        function loadDocumentForEdit(id) {
+            $.ajax({
+                url: `/approval/detail/${id}`,
+                method: "GET",
+                success: function(data) {
+                    console.log("서버에서 받은 데이터:", data); // 디버깅용
+
+                    // 폼 필드에 기존 데이터 채우기
+                    $('#applyTitle').val(data.title);
+                    $('#details').val(data.content);
+
+                    // 결재자 설정 - approvers에서 사번 추출 필요
+                    // 일단 임시로 비워두고 확인
+                    console.log("결재자 정보:", data.approvers);
+
+                    // 카테고리 매핑 확인
+                    console.log("카테고리:", data.category);
+
+                    // 카테고리에 따른 탭 활성화
+                    const categoryMap = {
+                        '지출결의': 'expense',
+                        '구매요청': 'purchase',
+                        '초과근무서': 'overtime',
+                        '권한신청': 'access',
+                        '기타결재': 'etc'
+                    };
+
+                    const tabValue = categoryMap[data.category] || 'etc';
+                    console.log("매핑된 탭:", tabValue);
+
+                    $('.tab').removeClass('active');
+                    $(`.tab[data-value="${tabValue}"]`).addClass('active');
+                },
+                error: function(xhr, status, error) {
+                    console.error('문서 로드 실패:', status, error);
+                    console.error('응답:', xhr.responseText);
+                    alert('문서 데이터를 불러오는데 실패했습니다.');
+                }
+            });
+        }
     });
 </script>
 </body>

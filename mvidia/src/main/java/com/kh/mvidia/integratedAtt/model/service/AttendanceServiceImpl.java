@@ -147,6 +147,11 @@ public class AttendanceServiceImpl implements AttendanceService{
         return attDao.selectTodayTimes(sqlSession,empNo);
     }
 	
+	@Override
+	public int selectEmpAttListCount(HashMap<String, String> searchMap) {
+		return attDao.selectEmpAttListCount(sqlSession,searchMap);
+	}
+	
 	
 	/* ========= Helpers ========= */
 	

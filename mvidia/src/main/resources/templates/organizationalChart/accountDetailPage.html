@@ -60,6 +60,8 @@
             <div class="field"><label>전화번호*</label><input name="phone" placeholder="010-0000-0000" th:value="${emp.phone}"  readonly/></div>
             <div class="field"><label>내선번호</label><input name="extNo" placeholder="1234" th:value="${emp.extNo}" readonly /></div>
         </div>
+
+        <a class="btn" style="margin-top:10px;" th:href="@{/organizationalChart}">조직도페이지로</a>
     </div>
 </div>
 

@@ -49,5 +49,8 @@ public interface EmployeeService {
 	// 사번 확인 서비스
 	Employee checkEmpNo(String empNo);
 	
+	Employee checkEmpNoCer(String empNo);
+	
+	boolean checkPhone(String phone);
 	
 }

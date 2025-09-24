@@ -336,7 +336,7 @@
         <div class="search-section">
             <h4>👤 사용자 검색</h4>
             <div class="search-input-group">
-                <input type="text" id="empNo" placeholder="사번을 입력하세요" autocomplete="off" />
+                <input type="text" id="empNo" placeholder="사번을 입력하세요" />
                 <button class="search-btn" onclick="searchEmp()">
                     🔍
                 </button>
@@ -413,7 +413,6 @@
                     url: "searchEmpPerm.pe",
                     data: { empNo: empNo },
                     success: function(data) {
-                        console.log("받은 권한 데이터:", data); // 디버깅용
 
                         if (data && data.length > 0) {
                             let html = "";
@@ -421,8 +420,6 @@
                                 if (perm && perm.permName) {
                                     const description = permissionDescriptions[perm.permCode];
                                     const isChecked = perm.isGranted === 'Y';
-
-                                    console.log(`권한: ${perm.permCode}, 상태: ${perm.isGranted}, 체크됨: ${isChecked}`); // 디버깅용
 
                                     html += `
                                         <div class="permission-card ${isChecked ? 'checked' : ''}" onclick="togglePermission(this)">

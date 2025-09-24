@@ -25,7 +25,22 @@ public class AttendanceController {
 	@PostMapping("/checkin")
 	public HashMap<String, Object> checkin(HttpSession session){
 		Employee emp = (Employee) session.getAttribute("loginEmp");
-		return attService.checkInUpsert(emp.getEmpNo());
+		
+		attService.checkInUpsert(emp.getEmpNo());
+		
+		Attendance todayAtt = attService.selectTodayTimes(emp.getEmpNo());
+		
+		HashMap<String, Object> res = new HashMap<>();
+		res.put("arriving", todayAtt != null ? todayAtt.getArrivingTime() : null);
+		res.put("leaving",  todayAtt != null ? todayAtt.getLeavingTime()  : null);
+		res.put("status",   todayAtt != null ? todayAtt.getAttStatus()    : null);
+		res.put("message", "출근 처리 완료");
+		
+		if (todayAtt != null && "T".equals(todayAtt.getAttStatus())) {
+			res.put("message", "지각 처리");
+		}
+		
+		return res;
 	
 	}
 	
@@ -33,7 +48,21 @@ public class AttendanceController {
 	@PostMapping("/checkout")
 	public HashMap<String, Object> checkout(HttpSession session){
 		Employee emp = (Employee) session.getAttribute("loginEmp");
-		return attService.checkOut(emp.getEmpNo());
+		attService.checkOut(emp.getEmpNo());
+		
+		Attendance todayAtt = attService.selectTodayTimes(emp.getEmpNo());
+		
+		HashMap<String, Object> res = new HashMap<>();
+		res.put("arriving", todayAtt != null ? todayAtt.getArrivingTime() : null);
+		res.put("leaving",  todayAtt != null ? todayAtt.getLeavingTime()  : null);
+		res.put("status",   todayAtt != null ? todayAtt.getAttStatus()    : null);
+		res.put("message", "퇴근 처리 완료");
+		
+		if (todayAtt != null && "E".equals(todayAtt.getAttStatus())) {
+			res.put("message", "조퇴 처리");
+		}
+		
+		return res;
 	}
 	
 	@ResponseBody

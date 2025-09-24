@@ -34,4 +34,8 @@ public class VacationDao {
 	public ArrayList<Vacation> selectEmpVacationList(SqlSessionTemplate sqlSession, HashMap<String, Object> paramMap) {
 		return (ArrayList)sqlSession.selectList("vacationMapper.selectEmpVacationList",paramMap);
 	}
+	
+	public int selectEmpVaListCount(SqlSessionTemplate sqlSession, HashMap<String, String> searchMap) {
+		return sqlSession.selectOne("vacationMapper.selectEmpVaListCount",searchMap);
+	}
 }

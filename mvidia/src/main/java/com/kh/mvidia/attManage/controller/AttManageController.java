@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -44,7 +46,7 @@ public class AttManageController {
 		Employee emp =  (Employee) session.getAttribute("loginEmp");
 		searchMap.put("empNo", emp.getEmpNo());
 		
-		int listCount = attService.selectAttListCount(searchMap);
+		int listCount = attService.selectEmpAttListCount(searchMap);
 		int pageLimit = 10;
 		int boardLimit = 15;
 		PageInfo pi = Pagination.getPageInfo(listCount, currentPage, pageLimit, boardLimit);
@@ -78,7 +80,7 @@ public class AttManageController {
 		Employee emp =  (Employee) session.getAttribute("loginEmp");
 		searchMap.put("empNo", emp.getEmpNo());
 		
-		int listCount = attService.selectAttListCount(searchMap);
+		int listCount = vaService.selectEmpVaListCount(searchMap);
 		int pageLimit = 10;
 		int boardLimit = 15;
 		PageInfo pi = Pagination.getPageInfo(listCount, currentPage, pageLimit, boardLimit);
@@ -98,6 +100,28 @@ public class AttManageController {
 	
 	@PostMapping("/insertVacation.attManage")
 	public String insertVacation(Vacation va, RedirectAttributes redirectAttributes){
+	
+			String vaStart = va.getVaStart();
+			String vaEnd = va.getVaEnd();
+			
+			try {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+				
+				LocalDate startDate = LocalDate.parse(vaStart, formatter);
+				LocalDate endDate = LocalDate.parse(vaEnd, formatter);
+				
+				if (startDate.isAfter(endDate) || startDate.isEqual(endDate)) {
+					if (startDate.isAfter(endDate)) {
+						String temp = va.getVaEnd();
+						va.setVaEnd(va.getVaStart());
+						va.setVaStart(temp);
+					}
+				}
+			}catch (Exception e) {
+					// 날짜 형식이 잘못된 경우 등 예외 처리
+					System.err.println("날짜 파싱 중 오류 발생: " + e.getMessage());
+				}
+		
 		int result = vaService.insertVacation(va);
 		
 		if(result > 0 ){

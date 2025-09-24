@@ -51,7 +51,6 @@
         <div class="stack no-print" >
             <button type="button" class="btn" data-open-cert="employment">재직 증명서</button>
             <button type="button" class="btn" data-open-cert="career">경력 증명서</button>
-            <button type="button" class="btn" data-open-cert="payslip">급여 명세서</button>
             <a class="btn ghost" href="/mainPage">메인으로</a>
         </div>
     </div>
@@ -75,11 +74,6 @@
                     <p><strong>직급:</strong> <span id="empRank"></span></p>
                     <p><strong>부서:</strong> <span id="empDept"></span></p>
                     <button class="btn mt-3" id="btnConfirmIssue" type="button">발급 진행</button>
-                </div>
-
-                <div class="emp-info" id="payslipInfo">
-                    <p><strong>조회년월:</strong> <span id="payslipDate"></span></p>
-                    <button class="btn mt-3" id="btnConfirmPayslip" type="button">조회 진행</button>
                 </div>
 
                 <p class="error-message" id="errorMsg"></p>
@@ -112,29 +106,31 @@
         function openModal(type){
           CURRENT_TYPE = type;
           $('#empNo').val('');
-          $('#empInfo, #payslipInfo').hide();
+          $('#empInfo').hide();
+          $('#empName, #empRank, #empDept').text('');
           $('#errorMsg').hide().text('');
           LAST_EMP_OBJ = null;
 
           if(type==='employment'){
             $('#modalTitle').text('재직 증명서 발급');
             $('#empInfo').show();
-          }else if(type==='career'){
+          }else {
             $('#modalTitle').text('경력 증명서 발급');
             $('#empInfo').show();
-          }else{
-            $('#modalTitle').text('급여 명세서 조회');
-            $('#payslipInfo').show();
-            $('#payslipDate').text(new Date().toISOString().slice(0,7)); // yyyy-MM
           }
           $('#commonModal').css('display','flex').attr('aria-hidden','false');
           setTimeout(()=>$('#empNo').trigger('focus'),0);
         }
         function closeModal(){
           $('#commonModal').css('display','none').attr('aria-hidden','true');
+           $('#empNo').val('');
+          $('#empInfo').hide();
+          $('#empName, #empRank, #empDept').text('');
+          $('#errorMsg').hide().text('');
+          LAST_EMP_OBJ = null;
         }
 
-        // 사번 입력 → 즉시 조회(/hr/checkEmpNo.hr)
+        // 사번 입력 → 즉시 조회(/hr/checkEmpNoCer.hr)
         $('#empNo').on('input', function(){
           const empNo = $(this).val().trim();
           const $err = $('#errorMsg');
@@ -179,23 +175,6 @@
           closeModal();
         });
 
-        // 급여명세서 조회
-        $('#btnConfirmPayslip').on('click', function(){
-          const empNo = $('#empNo').val().trim();
-          if(!empNo || empNo.length!==8){ return $('#errorMsg').text('사번을 정확히 입력하세요.').show(); }
-
-          $.ajax({
-            url:'/api/certificate/payslip',
-            type:'GET',
-            data:{empNo},
-            success:(data)=>{
-              if(!data){ return alertify.alert('급여 명세서 데이터를 찾을 수 없습니다.'); }
-              renderPayslipPage(data);
-              closeModal();
-            },
-            error: (xhr)=> alertify.alert('급여 명세서 조회 실패: ' + (xhr.responseJSON?.message || '오류'))
-          });
-        });
 
         // ===== 템플릿 =====
         function employmentTemplate(d){
@@ -330,41 +309,6 @@
                     <img src="/images/mvidia_seal.png" alt="회사 직인" class="absolute right-8 bottom-8" style="width: 64px; height: 64px;">
                 </div>
               </div>
-            </section>
-          `;
-        }
-
-        function payslipTemplate(d){
-          const cur = (n)=> (Number(n||0)).toLocaleString('ko-KR')+'원';
-          return `
-            <div class="actions flex justify-end gap-2 mb-2">
-              <button class="btn" onclick="goBack()">돌아가기</button>
-              <button class="btn" onclick="window.print()">인쇄</button>
-            </div>
-            <section class="certificate-document p-8">
-              <h1 class="text-center text-3xl font-bold mb-8">급여 명세서</h1>
-              <div class="grid grid-cols-2 gap-4 text-sm mb-6">
-                <div><b>이름:</b> ${d.name||''}</div>
-                <div><b>사번:</b> ${d.empNo||''}</div>
-                <div><b>지급일:</b> ${d.payDate||''}</div>
-                <div><b>직급:</b> ${d.position||''}</div>
-              </div>
-              <h2 class="font-bold text-lg mt-8 mb-2">지급 내역</h2>
-              <table class="w-full border-collapse">
-                <tr><th class="border p-3 bg-gray-50 text-left">기본급</th><td class="border p-3 text-right">${cur(d.baseSalary)}</td></tr>
-                <tr><th class="border p-3 bg-gray-50 text-left">식대</th><td class="border p-3 text-right">${cur(d.mealAllowance)}</td></tr>
-                <tr><th class="border p-3 bg-gray-50 text-left">성과급</th><td class="border p-3 text-right">${cur(d.bonus)}</td></tr>
-                <tr><th class="border p-3 font-bold text-left">총 지급액</th><td class="border p-3 font-bold text-right">${cur(d.totalPay)}</td></tr>
-              </table>
-              <h2 class="font-bold text-lg mt-8 mb-2">공제 내역</h2>
-              <table class="w-full border-collapse">
-                <tr><th class="border p-3 bg-gray-50 text-left">국민연금</th><td class="border p-3 text-right">${cur(d.nationalPension)}</td></tr>
-                <tr><th class="border p-3 bg-gray-50 text-left">건강보험</th><td class="border p-3 text-right">${cur(d.healthInsurance)}</td></tr>
-                <tr><th class="border p-3 bg-gray-50 text-left">고용보험</th><td class="border p-3 text-right">${cur(d.employmentInsurance)}</td></tr>
-                <tr><th class="border p-3 bg-gray-50 text-left">소득세</th><td class="border p-3 text-right">${cur(d.incomeTax)}</td></tr>
-                <tr><th class="border p-3 font-bold text-left">총 공제액</th><td class="border p-3 font-bold text-right">${cur(d.totalDeduction)}</td></tr>
-              </table>
-              <div class="mt-8 text-center text-2xl font-bold">실수령액: ${cur(d.netPay)}</div>
             </section>
           `;
         }

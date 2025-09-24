@@ -395,6 +395,13 @@ public class HrController {
 		return empService.checkEmpNo(empNo);
 	}
 	
+	@ResponseBody
+	@GetMapping("/checkEmpNoCer.hr")
+	public Employee checkEmpNoCer(@RequestParam String empNo){
+		return empService.checkEmpNoCer(empNo);
+	}
+	
+	
 	public String saveFile(MultipartFile atchFile){
 		String originName =atchFile.getOriginalFilename();
 		

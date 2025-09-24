@@ -241,7 +241,7 @@ function sendPayroll() {
                 $("#printModal").modal("hide");
                 $(".modal-backdrop").remove();
 
-                window.open(`/finance/salary-pdf-notion?empNo=${empNo}&yearMonth=${payDate}`, "_blank");
+                window.location.href = `/finance/salary-pdf-notion?empNo=${empNo}&yearMonth=${payDate}`;
             }
         })
         .catch(error => {
@@ -873,7 +873,7 @@ function deleteSentMessage(msgId) {
     });
 }
 
-    function checkParams(btn) {
+function checkParams(btn) {
     const empNo = btn.getAttribute("data-empno");
     const payDate = btn.getAttribute("data-paydate");
     console.log("empNo:", empNo, "payDate:", payDate);
@@ -885,9 +885,6 @@ function deleteSentMessage(msgId) {
     // 실제 이동할 URL
     const url = `/finance/salary-pdf-notion?empNo=${empNo}&yearMonth=${yearMonth}`;
     console.log("Request URL:", url);
-
-    // 확인 후 이동
-    window.location.href = url;
 }
 
 

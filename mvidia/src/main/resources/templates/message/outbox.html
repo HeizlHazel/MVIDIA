@@ -116,8 +116,9 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="msg : ${messages}" class="message-row">
-                <td th:text="${#strings.substring(msg.msgId, 3)}"></td>
+            <tr th:each="msg, stat : ${messages}" class="message-row">
+                <td th:text="${#lists.size(messages) - stat.index}"></td>
+
                 <td class="text-left pl-3">
                     <span th:text="${msg.title}"></span>
                 </td>

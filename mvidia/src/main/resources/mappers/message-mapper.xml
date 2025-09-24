@@ -125,7 +125,8 @@
                      , sub.* from
                      (
                         select
-                               mb.msg_id as "msgId"
+                               ROW_NUMBER() OVER (ORDER BY mb.send_date DESC) as displayNo
+                             , mb.msg_id as "msgId"
                              , mb.title as "title"
                              , mb.send_date as "sendDate"
                              , mb.content as "content"

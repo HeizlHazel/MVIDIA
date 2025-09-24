@@ -78,7 +78,8 @@
                th:href="@{/attManage/userVacation.attManage(
                                                   cpage=${pi.currentPage-1},
                                                   keyword=${param.keyword},
-                                                  status=${param.status})}">&lt;</a>
+                                                  status=${param.status},
+                                                  type=${param.type)}">&lt;</a>
             <span th:each="p : ${#numbers.sequence(pi.startPage, pi.endPage)}">
                 <a  th:href="@{/attManage/userVacation.attManage(
                     cpage=${p},

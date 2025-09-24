@@ -25,4 +25,6 @@ public interface AttendanceService {
     public HashMap<String,Object> checkOut(String empNo);
 
     public Attendance selectTodayTimes(String empNo);
+	
+	int selectEmpAttListCount(HashMap<String, String> searchMap);
 }

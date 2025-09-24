@@ -48,6 +48,22 @@
         </trim>
     </select>
 
+    <select id="selectEmpAttListCount" resultType="_int">
+        select count(*)
+        from tb_attendance
+        join tb_employee using (emp_no)
+        join tb_status on (att_status = status_code)
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="keyword != null and keyword != ''">
+                and (emp_no like '%' || #{searchMap.keyword} || '%' or emp_lname like '%' || #{searchMap.keyword} or emp_name like '%' || #{searchMap.keyword} || '%' or (emp_lname || emp_name) like '%' || #{searchMap.keyword} || '%')
+            </if>
+            <if test="status != null and status != ''">
+                and att_status = #{searchMap.status}
+            </if>
+            and emp_no = #{searchMap.empNo}
+        </trim>
+    </select>
+
     <select id="selectAttendanceList" resultMap="attendanceResultSet">
         select *
           from (

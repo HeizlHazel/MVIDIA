@@ -61,12 +61,10 @@
 
     <update id="updateEmpModifyReqStatus" parameterType="map">
         update tb_emp_modify_req
-        set
-        req_status = #{reqStatus}
+        set req_status    = #{reqStatus}
         , manager_id    = #{managerId}
         , approve_date  = sysdate
-        , reject_reason = #{rejectReason, jdbcType=VARCHAR}
-        where req_id = #{reqId}
+        where req_id       = #{reqId}
     </update>
 
     <select id="findEmpModifyReqById" parameterType="string" resultType="EmpModifyReq">

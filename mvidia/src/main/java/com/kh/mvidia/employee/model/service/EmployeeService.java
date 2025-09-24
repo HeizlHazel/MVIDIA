@@ -53,4 +53,5 @@ public interface EmployeeService {
 	
 	boolean checkPhone(String phone);
 	
+	int demoteAllToLByEmp(String empNo);
 }

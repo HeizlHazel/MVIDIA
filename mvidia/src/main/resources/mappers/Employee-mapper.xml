@@ -164,24 +164,24 @@
 
     <update id="updateEmpSelective" parameterType="Employee">
         update tb_employee
-            <set>
-                <if test="email != null">         email = #{email},</if>
-                <if test="empLName != null">      emp_lname = #{empLName},</if>
-                <if test="empName != null">       emp_name = #{empName},</if>
-                <if test="empEngLName != null">   emp_eng_lname = #{empEngLName},</if>
-                <if test="empEngName != null">    emp_eng_name = #{empEngName},</if>
-                <if test="birthday != null">      birthday = #{birthday},</if>
-                <if test="deptCode != null">      dept_code = #{deptCode},</if>
-                <if test="deptName != null">      dept_name = #{deptName},</if>
-                <if test="jobCode != null">       job_code = #{jobCode},</if>
-                <if test="jobName != null">       job_name = #{jobName},</if>
-                <if test="address != null">       address = #{address},</if>
-                <if test="phone != null">         phone = #{phone},</if>
-                <if test="extNo != null">         ext_no = #{extNo},</if>
-                modify_date = sysdate
-            </set>
-         where emp_no = #{empNo}
-           and emp_status = 'H'
+        <set>
+            <if test="email != null and email != ''">           email = #{email},</if>
+            <if test="empLName != null and empLName != ''">     emp_lname = #{empLName},</if>
+            <if test="empName != null and empName != ''">       emp_name = #{empName},</if>
+            <if test="empEngLName != null and empEngLName != ''"> emp_eng_lname = #{empEngLName},</if>
+            <if test="empEngName != null and empEngName != ''">   emp_eng_name = #{empEngName},</if>
+            <if test="birthday != null and birthday != ''">     birthday = #{birthday},</if>
+            <if test="deptCode != null and deptCode != ''">     dept_code = #{deptCode},</if>
+            <if test="deptName != null and deptName != ''">     dept_name = #{deptName},</if>
+            <if test="jobCode != null and jobCode != ''">       job_code = #{jobCode},</if>
+            <if test="jobName != null and jobName != ''">       job_name = #{jobName},</if>
+            <if test="address != null and address != ''">       address = #{address},</if>
+            <if test="phone != null and phone != ''">           phone = #{phone},</if>
+            <if test="extNo != null and extNo != ''">           ext_no = #{extNo},</if>
+            modify_date = sysdate
+        </set>
+        where emp_no = #{empNo}
+        and emp_status = 'H'
     </update>
 
     <update id="deleteEmp">

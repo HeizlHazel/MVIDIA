@@ -119,4 +119,10 @@ public class EmployeeServiceImpl implements EmployeeService{
 		return exists;
 	}
 	
+	@Override
+	public int demoteAllToLByEmp(String empNo) {
+		return empDao.demoteAllToLByEmp(sqlSession, empNo);
+		
+	}
+	
 }

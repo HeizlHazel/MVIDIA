@@ -53,6 +53,9 @@ public class EmployeeController {
 		if(loginEmp != null && bcryptPasswordEncoder.matches(emp.getEmpPwd(), loginEmp.getEmpPwd())) {
 			
 			session.setAttribute("loginEmp", loginEmp);
+			
+			Attachment atch = empService.selectProfile(loginEmp.getEmpNo());
+			session.setAttribute("atch", atch);
 
             // 권한 정보 조회 및 세션 저장
             List<Permission> permissions = pService.selectPermissionList(loginEmp.getEmpNo());

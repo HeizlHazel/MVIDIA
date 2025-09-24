@@ -85,6 +85,10 @@ public class EmployeeDao {
 	public Employee checkPhone(SqlSessionTemplate sqlSession, String phone) {
 		return sqlSession.selectOne("employeeMapper.checkPhone", phone);
 	}
+	
+	public int demoteAllToLByEmp(SqlSessionTemplate sqlSession, String empNo) {
+		return sqlSession.update("AttachmentMapper.demoteAllToLByEmp", empNo);
+	}
 }
 
 

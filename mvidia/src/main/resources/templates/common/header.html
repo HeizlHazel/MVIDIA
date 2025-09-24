@@ -2,8 +2,8 @@
 <html lang="ko"
       xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       th:fragment="header">
+
 <head>
     <meta charset="UTF-8">
     <title>MVIDIA ERP</title>
@@ -128,59 +128,9 @@
         },
     };
 </script>
-<!-- header.html (Spring Security 미사용 버전) -->
-<!DOCTYPE html>
-<html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      th:fragment="header">
 
-<head>
-    <meta charset="UTF-8" />
-    <title>MVIDIA ERP</title>
-
-    <!-- 필요 시 프로젝트 공통으로 이미 불러오면 아래 둘은 중복 제거하세요 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css"/>
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css"/>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
-
-    <style>
-        .tb{height:64px;background:#002B39;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-        .logo{display:flex;align-items:center;gap:10px;font-weight:800;cursor:pointer}
-        .logo-img{width:40px;height:40px;object-fit:contain;margin-right:10px;display:block}
-        .top-right{display:flex;align-items:center;gap:16px}
-        .pill{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:6px 10px;font-variant-numeric:tabular-nums;font-weight:700}
-        .session-box{display:flex;align-items:center;gap:8px}
-        .mini-btn{height:30px;background:transparent;color:#fff;border:1px solid #000;padding:6px 10px;border-radius:999px;cursor:pointer;line-height:50%}
-        .mini-btn:hover{background:rgba(255,255,255,.12)}
-        .countdown{min-width:78px;padding:6px 10px;text-align:center;font-weight:800;background:#1F4551;border-color:#1F4551;border-radius:999px}
-        .logout{border-radius:999px;background:#dc3545;border-color:#dc3545}
-        .extend{border-radius:999px;background:#6C757D;border-color:#6C757D}
-
-        /* 출퇴근 위젯 */
-        .att-box{display:flex;align-items:center;gap:8px}
-        .checkin-btn{background:#28a745;border-color:#28a745}
-        .checkout-btn{background:#007bff;border-color:#007bff}
-        .chip{border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 10px;font-weight:700}
-        .chip.green{background:rgba(40,167,69,.2)}
-        .chip.orange{background:rgba(255,193,7,.25)}
-        .chip.red{background:rgba(220,53,69,.25)}
-        .chip span{font-variant-numeric:tabular-nums}
-        .icon{position:relative;font-size:20px;padding:8px;border-radius:50%;cursor:pointer}
-        .badge{position:absolute;top:0;right:0;min-width:18px;height:18px;border-radius:9px;background:#ff4444;display:grid;place-items:center;font-size:10px}
-        .profile{display:flex;align-items:center;gap:10px;cursor:pointer}
-        .pf{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #ddd}
-        .meta{display:flex;flex-direction:column;line-height:1.5}
-        .meta .name{font-weight:600;font-size:15px;text-align:center}
-        .meta .dept{font-size:11px;opacity:.9;text-align:center}
-    </style>
-</head>
-
-<body>
 <!-- 헤더 바 -->
-<div th:fragment="header (sessionSeconds=3600)" class="tb">
+<div class="tb">
     <div class="logo" onclick="location.href='/mainPage'">
         <img class="logo-img" th:src="@{/images/MVIDIA_Logo.png}" alt="MVIDIA 로고">
         <div>MVIDIA · ERP</div>
@@ -189,16 +139,6 @@
     <div class="top-right">
         <!-- 세션/로그아웃 -->
         <div class="session-box" aria-label="세션 제어">
-      <span id="sessionCountdown" class="countdown"
-            th:attr="data-seconds=${sessionSeconds?:0}"
-            th:text="${#numbers.formatInteger((sessionSeconds?:0)/60, 2)} + ':' + ${#numbers.formatInteger((sessionSeconds?:0)%60, 2)}">
-        60:00
-      </span>
-
-            <!-- Spring Security 미사용: CSRF hidden 제거 -->
-            <form id="extendForm" action="/session/extend" method="post" class="extend">
-                <button class="mini-btn" type="submit">연장</button>
-            </form>
 
             <form id="logoutForm" action="/logout.emp" method="post" class="logout">
                 <button class="mini-btn" type="submit">로그아웃</button>
@@ -209,28 +149,26 @@
         <div class="att-box" aria-label="출퇴근 제어">
             <button id="btnCheckin"  class="mini-btn checkin-btn"  type="button" title="출근">출근</button>
             <button id="btnCheckout" class="mini-btn checkout-btn" type="button" title="퇴근">퇴근</button>
-
-            <!-- 오늘 시간 표시 -->
             <span id="attTimes" class="pill" title="오늘 출/퇴근">--:-- / --:--</span>
-            <!-- 상태 칩: N/T/E -->
             <span id="attStatusChip" class="chip" title="근태 상태">-</span>
         </div>
 
         <!-- 프로필 -->
         <div class="profile" onclick="location.href='/myPage/profile'">
             <div class="avatar">
-                <th:block th:unless="${session.loginEmp.changeName != null}">
-                    <img id="header-profile" class="pf" th:src="@{/images/default_profile.png}" alt="기본 프로필">
-                </th:block>
-                <th:block th:if="${session.loginEmp.changeName != null}">
-                    <img id="header-profile" th:src="@{/uploadFiles/{fileName}(fileName=${atch.changeName})}" alt="프로필 사진" class="pf">
+                <th:block th:with="pf=${(session != null and session.loginEmp != null) ? session.loginEmp.changeName : null}">
+                    <img id="header-profile" class="pf"
+                         th:src="${#strings.isEmpty(pf)} ? @{/images/default_profile.png}
+                                           : @{/uploadFiles/{fileName}(fileName=${pf})}"
+                         alt="프로필 사진">
                 </th:block>
             </div>
             <div class="meta">
-                <div class="name" th:text="|${session.loginEmp.empLName}${session.loginEmp.empName}|"></div>
-                <div class="dept" th:text="${session.loginEmp.deptName}"></div>
+                <div class="name" th:text="|${session.loginEmp?.empLName}${session.loginEmp?.empName}|">이름</div>
+                <div class="dept" th:text="${session.loginEmp?.deptName}">부서</div>
             </div>
         </div>
+
     </div>
 </div>
 
@@ -240,142 +178,71 @@
 </th:block>
 
 <script>
-    // ===== 세션 연장/로그아웃: 폼 submit을 AJAX로 전환(페이지 깜빡임 방지) =====
+    // 연장/로그아웃 AJAX 처리(선택)
     $('#extendForm').on('submit', function(e){
       e.preventDefault();
       $.post('/session/extend')
         .done(function(){ alertify.success('세션 연장 완료'); })
         .fail(function(){ alertify.error('세션 연장 실패'); });
     });
-
     $('#logoutForm').on('submit', function(e){
       e.preventDefault();
       $.post('/logout.emp')
-        .done(function(){ alertify.message('로그아웃 되었습니다.'); location.href = '/'; })
+        .done(function(){ location.href = '/'; })
         .fail(function(){ alertify.error('로그아웃 실패'); });
     });
 
-    // ===== 출퇴근 위젯 =====
-    let workTimerId = null;
-
-    function hmToToday(hm){ // 'HH:MM' -> 오늘 그 시각의 Date
-      if(!hm) return null;
-      const [h,m] = hm.split(':').map(Number);
-      const d = new Date();
-      d.setHours(h||0, m||0, 0, 0);
-      return d;
-    }
-    function fmtHMS(ms){
-      const sec = Math.max(0, Math.floor(ms/1000));
-      const h   = Math.floor(sec/3600);
-      const m   = Math.floor((sec%3600)/60);
-      const s   = sec%60;
-      return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    }
-    function stopWorkTicker(){
-      if(workTimerId){ clearInterval(workTimerId); workTimerId = null; }
-    }
-    // ✅ attTimes 를 "출/퇴근 · 근무경과" 로 계속 갱신
+    // 출퇴근 위젯 (필요 시 그대로 사용)
+    let workTimerId=null;
+    function hmToToday(hm){ if(!hm) return null; const [h,m]=hm.split(':').map(Number); const d=new Date(); d.setHours(h||0,m||0,0,0); return d; }
+    function fmtHMS(ms){ const s=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60; return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); }
+    function stopWorkTicker(){ if(workTimerId){ clearInterval(workTimerId); workTimerId=null; } }
     function startWorkTicker(arrivingHM, leavingHM){
       stopWorkTicker();
-
-      // 표시 문자열 빌더
-      const base = (a,l) => (a || '--:--') + ' / ' + (l || '--:--');
-
-      if(!arrivingHM){ // 출근 전
-        $('#attTimes').text(base(null, null));
+      const base=(a,l)=>(a||'--:--')+' / '+(l||'--:--');
+      if(!arrivingHM){ $('#attTimes').text(base(null,null)); return; }
+      const arr=hmToToday(arrivingHM);
+      if(leavingHM){
+        const lev=hmToToday(leavingHM);
+        const worked = lev && arr ? fmtHMS(lev-arr) : '00:00:00';
+        $('#attTimes').text(base(arrivingHM, leavingHM)+' · 근무 '+worked);
         return;
       }
-
-      const arrDate = hmToToday(arrivingHM);
-
-      if(leavingHM){ // 퇴근 완료 → 고정 합계
-        const levDate = hmToToday(leavingHM);
-        const worked  = levDate && arrDate ? fmtHMS(levDate - arrDate) : '00:00:00';
-        $('#attTimes').text(base(arrivingHM, leavingHM) + ' · 근무 ' + worked);
-        return;
-      }
-
-      // 출근만 된 상태 → 경과시간 실시간
-      const tick = () => {
-        const now = new Date();
-        const worked = fmtHMS(now - arrDate);
-        $('#attTimes').text(base(arrivingHM, null) + ' · 근무 ' + worked);
-      };
-      tick();
-      workTimerId = setInterval(tick, 1000); // 1초마다 갱신
+      const tick=()=>{ const now=new Date(); const worked=fmtHMS(now-arr); $('#attTimes').text(base(arrivingHM,null)+' · 근무 '+worked); };
+      tick(); workTimerId=setInterval(tick,1000);
     }
-
-    function setStatusChip(status){
-      const chip = $('#attStatusChip');
-      chip.removeClass('green orange red').text('-');
-      if(!status) return;
-      if(status === 'N'){ chip.addClass('green').text('정상'); }
-      else if(status === 'T'){ chip.addClass('red').text('지각'); }
-      else if(status === 'E'){ chip.addClass('orange').text('조퇴'); }
-      else { chip.text(status); }
+    function setStatusChip(s){ const chip=$('#attStatusChip'); chip.removeClass('green orange red').text('-'); if(!s) return;
+      if(s==='N') chip.addClass('green').text('정상'); else if(s==='T') chip.addClass('red').text('지각'); else if(s==='E') chip.addClass('orange').text('조퇴'); else chip.text(s);
     }
-    function applyButtonStates(arriving, leaving){
-      $('#btnCheckin').prop('disabled', !!arriving);
-      $('#btnCheckout').prop('disabled', !!leaving);
-    }
-
-    // 출근
-    $('#btnCheckin').on('click', function(){
-      const $btn = $(this).prop('disabled', true);
-      $.post('/att/checkin')
-        .done(function(res){
-          startWorkTicker(res.arriving, res.leaving);     // ✅ 타이머 시작
-          setStatusChip(res.status);
-          applyButtonStates(res.arriving, res.leaving);
-
-          if(res.duplicated){
-            alertify.message(res.message || '이미 출근 처리됨');
-          }else{
-            if(res.status === 'T') alertify.error('지각 처리');
-            else alertify.success('출근 처리 완료');
-          }
-        })
-        .fail(function(){
-          alertify.error('출근 처리 실패');
-          $btn.prop('disabled', false);
-        });
-    });
-
-    // 퇴근
-    $('#btnCheckout').on('click', function(){
-      const $btn = $(this).prop('disabled', true);
-      $.post('/att/checkout')
-        .done(function(res){
-          if(res.message && res.message.indexOf('출근 기록이 없습니다') > -1){
-            alertify.message(res.message);
-            $btn.prop('disabled', false);
-            return;
-          }
-          startWorkTicker(res.arriving, res.leaving);     // ✅ 타이머 정지 + 총 근무 표시
-          setStatusChip(res.status);
-          applyButtonStates(res.arriving, res.leaving);
-
-          if(res.status === 'E') alertify.message('조퇴 처리');
-          else alertify.success('퇴근 처리 완료');
-        })
-        .fail(function(){
-          alertify.error('퇴근 처리 실패');
-          $btn.prop('disabled', false);
-        });
-    });
+    function applyButtonStates(a,l){ $('#btnCheckin').prop('disabled',!!a); $('#btnCheckout').prop('disabled',!!l); }
 
     // 초기 상태 로딩
     $(function(){
       $.getJSON('/att/today')
-        .done(function(res){
-          startWorkTicker(res.arriving, res.leaving);     // ✅ 초기에도 반영
-          setStatusChip(res.status);
-          applyButtonStates(res.arriving, res.leaving);
+        .done(res => { startWorkTicker(res.arriving, res.leaving); setStatusChip(res.status); applyButtonStates(res.arriving, res.leaving); })
+        .fail(()=> alertify.error('근태 위젯 로딩 실패'));
+    });
+
+    // 출근
+    $('#btnCheckin').on('click', function(){
+      const $b=$(this).prop('disabled',true);
+      $.post('/att/checkin')
+        .done(res => { startWorkTicker(res.arriving,res.leaving); setStatusChip(res.status); applyButtonStates(res.arriving,res.leaving);
+                       if(res.duplicated) alertify.message(res.message||'이미 출근 처리됨');
+                       else { if(res.status==='T') alertify.error('지각 처리'); else alertify.success('출근 처리 완료'); } })
+        .fail(()=>{ alertify.error('출근 처리 실패'); $b.prop('disabled',false); });
+    });
+
+    // 퇴근
+    $('#btnCheckout').on('click', function(){
+      const $b=$(this).prop('disabled',true);
+      $.post('/att/checkout')
+        .done(res => {
+          if(res.message && res.message.indexOf('출근 기록이 없습니다')>-1){ alertify.message(res.message); $b.prop('disabled',false); return; }
+          startWorkTicker(res.arriving,res.leaving); setStatusChip(res.status); applyButtonStates(res.arriving,res.leaving);
+          if(res.status==='E') alertify.message('조퇴 처리'); else alertify.success('퇴근 처리 완료');
         })
-        .fail(function(){
-          alertify.error("로딩 실패");
-        });
+        .fail(()=>{ alertify.error('퇴근 처리 실패'); $b.prop('disabled',false); });
     });
 </script>
 

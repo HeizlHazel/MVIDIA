@@ -35,6 +35,7 @@ public class NotionController {
                                             @RequestParam String payDate) {
 
         try {
+            System.out.println("🚀 [Controller] exportToNotion 진입 - empNo=" + empNo + ", payDate=" + payDate);
 
             Map<String, Object> param = new HashMap<>();
             param.put("empNo", empNo);
@@ -57,10 +58,12 @@ public class NotionController {
                     ", netPay=" + salary.getNetPay());
 
             List<Tax> taxList = financeService.getTaxesByEmpAndMonth(empNo, payDate);
+            System.out.println("📌 [Controller] 세금 데이터 건수: " + (taxList != null ? taxList.size() : 0));
 
-            System.out.println("노션 업로드 시작...");
+            System.out.println("➡️ [Controller] NotionService.insertPayrollToNotion 호출 직전");
             notionService.insertPayrollToNotion(salary, taxList);
-            System.out.println("노션 업로드 완료 ✅");
+            System.out.println("🎉 [Controller] NotionService.insertPayrollToNotion 호출 완료");
+
 
             return ResponseEntity.ok().body(Map.of(
                     "status", "success",

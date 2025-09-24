@@ -18,19 +18,19 @@
     </script>
     <style>
 
-    .innerOuter {
-        background-color: #fff;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        width: 1200px;
-        margin: 0 auto;
-    }
-    .custom {
-        border-radius: 12px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        background: #ffffff;
-    }
+        .innerOuter {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 1200px;
+            margin: 0 auto;
+        }
+        .custom {
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            background: #ffffff;
+        }
     </style>
 </head>
 
@@ -44,90 +44,111 @@
             <i class="bi bi-printer"></i> 급여명세서 출력
         </button>
     </div>
-        <form id="searchForm" class="mb-3">
-            지급월:
-            <input type="month" id="yearMonth" name="yearMonth" th:value="${yearMonth}">
+    <form id="searchForm" class="mb-3">
+        지급월:
+        <input type="month" id="yearMonth" name="yearMonth" th:value="${yearMonth}">
 
-            부서:
-            <select id="deptCode" name="deptCode" onchange="updateJobSelect()">
-                <option value="">전체</option>
-                <option value="D1" th:selected="${deptCode == 'D1'}">인사팀</option>
-                <option value="D2" th:selected="${deptCode == 'D2'}">경영관리팀</option>
-                <option value="D3" th:selected="${deptCode == 'D3'}">생산품질관리팀</option>
-                <option value="D4" th:selected="${deptCode == 'D4'}">기술관리팀</option>
-            </select>
+        부서:
+        <select id="deptCode" name="deptCode" onchange="updateJobSelect()">
+            <option value="">전체</option>
+            <option value="D1" th:selected="${deptCode == 'D1'}">인사팀</option>
+            <option value="D2" th:selected="${deptCode == 'D2'}">경영관리팀</option>
+            <option value="D3" th:selected="${deptCode == 'D3'}">생산품질관리팀</option>
+            <option value="D4" th:selected="${deptCode == 'D4'}">기술관리팀</option>
+        </select>
 
-            직급:
-            <select id="jobCode" name="jobCode">
-                <option value="">전체</option>
-            </select>
+        직급:
+        <select id="jobCode" name="jobCode">
+            <option value="">전체</option>
+        </select>
 
-            사원이름:
-            <input type="text" id="empName" name="empName" th:value="${empName}" placeholder="사원이름을 적어주세요">
+        사원이름:
+        <input type="text" id="empName" name="empName" th:value="${empName}" placeholder="사원이름을 적어주세요">
 
-            <button type="button" class="btn btn-secondary" onclick="searchPayroll()">검색</button>
+        <button type="button" class="btn btn-secondary" onclick="searchPayroll()">검색</button>
 
-        </form>
-        <div class="table-responsive" th:fragment="salaryTableFrag">
-            <table class="table table-bordered text-center table-hover">
-                <thead class="table-primary">
-                <tr>
-                    <th>사번</th>
-                    <th>사원명</th>
-                    <th>부서</th>
-                    <th>직급</th>
-                    <th>기본급</th>
-                    <th>추가수당</th>
-                    <th>보너스</th>
-                    <th>공제</th>
-                    <th>실지급액</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="s : ${salaryList}">
-                    <td th:text="${s.empNo}"></td>
-                    <td th:text="${s.empName}"></td>
-                    <td th:text="${s.deptName}"></td>
-                    <td th:text="${s.jobName}"></td>
-                    <td th:text="${s.salary != null ? s.salary : 0}"></td>
-                    <td th:text="${s.ovPrice != null ? s.ovPrice : 0}"></td>
-                    <td th:text="${s.bonusAmt != null ? s.bonusAmt : 0}"></td>
-                    <td th:text="${s.deductAmt != null ? s.deductAmt : 0}"></td>
-                    <td th:text="${s.netPay != null ? s.netPay : 0}"></td>
-                </tr>
-                </tbody>
-            </table>
-            <div class="modal fade" id="printModal" tabindex="-1" role="dialog" aria-labelledby="printModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="printModalLabel">급여명세서 출력</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="printForm">
-                                <div class="mb-3">
-                                    <label for="empNo" class="form-label">사원번호</label>
-                                    <input type="text" class="form-control" id="empNo" name="empNo" placeholder="예: 22010001">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="payMonth" class="form-label">지급월</label>
-                                    <input type="month" class="form-control" id="payMonth" name="payMonth">
-                                </div>
-                            </form>
-                            <div id="modalAlert" class="mt-2"></div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-                            <button type="button" class="btn btn-primary" onclick="sendPayroll()">출력</button>
-                        </div>
+    </form>
+    <div class="table-responsive" th:fragment="salaryTableFrag">
+        <table class="table table-bordered text-center table-hover">
+            <thead class="table-primary">
+            <tr>
+                <th>사번</th>
+                <th>사원명</th>
+                <th>부서</th>
+                <th>직급</th>
+                <th>기본급</th>
+                <th>추가수당</th>
+                <th>보너스</th>
+                <th>공제</th>
+                <th>실지급액</th>
+                <th>명세서 출력</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="s : ${salaryList}">
+                <td th:text="${s.empNo}"></td>
+                <td th:text="${s.empName}"></td>
+                <td th:text="${s.deptName}"></td>
+                <td th:text="${s.jobName}"></td>
+                <td th:text="${s.salary != null ? s.salary : 0}"></td>
+                <td th:text="${s.ovPrice != null ? s.ovPrice : 0}"></td>
+                <td th:text="${s.bonusAmt != null ? s.bonusAmt : 0}"></td>
+                <td th:text="${s.deductAmt != null ? s.deductAmt : 0}"></td>
+                <td th:text="${s.netPay != null ? s.netPay : 0}"></td>
+                <td>
+                    <button type="button"
+                            class="btn btn-sm btn-primary"
+                            th:attr="data-empno=${s.empNo}, data-paydate=${#strings.substring(s.payDate,0,7)}"
+                            onclick="uploadToNotion(this)">
+                        <span class="material-symbols-outlined" style="font-size:18px;">cloud_upload</span>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="modal fade" id="printModal" tabindex="-1" role="dialog" aria-labelledby="printModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="printModalLabel">급여명세서 출력</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="닫기">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="printForm">
+                            <div class="mb-3">
+                                <label for="empNo" class="form-label">사원번호</label>
+                                <input type="text" class="form-control" id="empNo" name="empNo" placeholder="예: 22010001" autocomplete="off">
+                            </div>
+                            <div class="mb-3">
+                                <label for="payMonth" class="form-label">지급월</label>
+                                <input type="month" class="form-control" id="payMonth" name="payMonth">
+                            </div>
+                        </form>
+                        <div id="modalAlert" class="mt-2"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                        <button type="button" class="btn btn-primary" onclick="sendPayroll()">출력</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+<!-- ✅ 로딩 모달 (여기에 추가) -->
+<div class="modal fade" id="loadingModal" tabindex="-1" role="dialog"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p>급여명세서를 업로드 중입니다...</p>
+        </div>
+    </div>
+</div>
 </body>
 <script src="/js/layout.js"></script>
 </html>

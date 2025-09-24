@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.io.OutputStream;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -128,35 +131,34 @@ public class FinanceController {
         return "finance/payroll";
     }
 
-    /** 급여명세서 PDF 다운로드 */
-    @GetMapping("/salary-pdf")
-    public void exportSalaryPdf(
+    /** 급여명세서 PDF Notion 업로드 */
+    @GetMapping("/salary-pdf-notion")
+    public void exportSalaryPdfAndUploadNotion(
             @RequestParam String empNo,
-            @RequestParam String payDate,
-            HttpServletResponse response) {
-        try {
-            Salary salary = financeService.getSalaryByEmpAndMonth(empNo, payDate);
+            @RequestParam String yearMonth,
+            HttpServletResponse response) throws IOException {
+        Salary salary = financeService.getSalaryByEmpAndMonth(empNo, yearMonth);
 
-            Context context = new Context();
-            context.setVariable("salary", salary);
-
-            String html = templateEngine.process("salary-pdf", context);
-
-            response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition",
-                    "attachment; filename=salary_" + empNo + "_" + payDate + ".pdf");
-
-            try (OutputStream os = response.getOutputStream()) {
-                PdfRendererBuilder builder = new PdfRendererBuilder();
-                builder.useFastMode();
-                builder.withHtmlContent(html, new ClassPathResource("/templates/finance/").getURL().toString());
-                builder.toStream(os);
-                builder.run();
+        if (salary == null) {
+            response.setContentType("text/html; charset=UTF-8");
+            try (PrintWriter writer = response.getWriter()) {
+                writer.write("<script>alert('선택한 월의 급여 데이터가 없습니다.'); location.href='/finance/payroll';</script>");
+                writer.flush();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            return;
+        }
+
+        // ✅ Notion 업로드 처리
+        // notionService.uploadSalaryPdf(salary);
+
+        response.setContentType("text/html; charset=UTF-8");
+        try (PrintWriter writer = response.getWriter()) {
+            writer.write("<script>alert('노션 업로드가 완료되었습니다.'); location.href='/finance/payroll';</script>");
+            writer.flush();
         }
     }
+
+
 
     /** 재고 현황 적용 */
     private void applyMinQtyAndStatus(List<Comp> compList, Model model) {

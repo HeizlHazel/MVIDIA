@@ -223,6 +223,8 @@ function sendPayroll() {
 
     const payDate = payMonth.substring(0, 7); // yyyy-MM 그대로 전달
 
+    $('#loadingModal').modal('show');
+
     fetch(`/payroll/export-notion?empNo=${empNo}&payDate=${payDate}`)
         .then(response => {
             if (!response.ok) {
@@ -232,10 +234,14 @@ function sendPayroll() {
 
         })
         .then(result => {
+            $('#loadingModal').modal('hide');
+
             if (result.status === "success") {
                 alert("노션 업로드가 완료되었습니다.");
                 $("#printModal").modal("hide");
                 $(".modal-backdrop").remove();
+
+                window.open(`/finance/salary-pdf-notion?empNo=${empNo}&yearMonth=${payDate}`, "_blank");
             } else {
                 alert(result.message || "급여데이터가 없습니다.");
             }
@@ -868,3 +874,72 @@ function deleteSentMessage(msgId) {
         }
     });
 }
+
+    function checkParams(btn) {
+    const empNo = btn.getAttribute("data-empno");
+    const payDate = btn.getAttribute("data-paydate");
+    console.log("empNo:", empNo, "payDate:", payDate);
+
+    // yearMonth 잘라서 확인
+    const yearMonth = payDate ? payDate.substring(0,7) : "";
+    console.log("yearMonth:", yearMonth);
+
+    // 실제 이동할 URL
+    const url = `/finance/salary-pdf-notion?empNo=${empNo}&yearMonth=${yearMonth}`;
+    console.log("Request URL:", url);
+
+    // 확인 후 이동
+    window.location.href = url;
+}
+
+
+$(document).on("click", ".upload-btn", function() {
+    const empNo = $(this).data("empno");
+    const payDate = $(this).data("paydate");
+
+    uploadToNotion(empNo, payDate);
+});
+
+function uploadToNotion(button) {
+    const empNo = button.getAttribute("data-empno");
+    const payDate = button.getAttribute("data-paydate");
+
+    // 로딩 모달 표시
+    $('#loadingModal').modal('show');
+
+    $.ajax({
+        url: "/payroll/export-notion",
+        method: "GET",
+        data: { empNo, payDate },
+        success: function (res) {
+            // 로딩 모달 닫기
+            $('#loadingModal').modal('hide');
+
+            if (res.status === "success") {
+                // ✅ 부트스트랩 Alert (알림창)
+                $('<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                    '<strong>✅ 완료!</strong> 급여명세서가 노션에 업로드되었습니다.' +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span></button></div>')
+                    .appendTo(".innerOuter").delay(3000).fadeOut(500, function () { $(this).remove(); });
+            } else {
+                $('<div class="alert alert-warning alert-dismissible fade show" role="alert">' +
+                    '⚠️ ' + (res.message || "업로드 실패") +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span></button></div>')
+                    .appendTo(".innerOuter").delay(3000).fadeOut(500, function () { $(this).remove(); });
+            }
+        },
+        error: function () {
+            $('#loadingModal').modal('hide');
+            $('<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                '❌ 업로드 중 오류가 발생했습니다.' +
+                '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                '<span aria-hidden="true">&times;</span></button></div>')
+                .appendTo(".innerOuter").delay(3000).fadeOut(500, function () { $(this).remove(); });
+        }
+    });
+}
+
+
+

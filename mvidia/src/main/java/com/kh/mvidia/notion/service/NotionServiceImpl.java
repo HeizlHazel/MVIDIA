@@ -52,16 +52,23 @@ public class NotionServiceImpl implements NotionService {
             }
 
             // 1. PDF 생성
+            System.out.println("📄 PDF 생성 시작...");
             byte[] pdfBytes = generateSalaryPdf(salary, taxList);
+            System.out.println("📄 PDF 생성 완료 (size=" + pdfBytes.length + " bytes)");
 
             // 2. 파일 업로드
+            System.out.println("📤 파일 업로드 시작...");
             String fileUploadId = uploadFileToNotion(pdfBytes, salary);
+            System.out.println("📤 파일 업로드 완료 - UploadId=" + fileUploadId);
 
             // 3. 페이지 생성
+            System.out.println("📑 Notion 페이지 생성 시작...");
             String pageId = createNotionPageWithFile(salary, fileUploadId);
-            System.out.println("Notion 페이지 생성 완료 - Page ID: " + pageId);
+            System.out.println("✅ Notion 페이지 생성 완료 - PageId=" + pageId);
 
         } catch (Exception e) {
+            System.err.println("❌ [insertPayrollToNotion 오류] " + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("노션 전송 중 오류 발생: " + e.getMessage(), e);
         }
     }

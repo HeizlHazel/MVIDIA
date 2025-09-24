@@ -55,4 +55,9 @@ public class VacationServiceImpl implements VacationService{
 		return vaDao.selectEmpVacationList(sqlSession, paramMap);
 	}
 	
+	@Override
+	public int selectEmpVaListCount(HashMap<String, String> searchMap) {
+		return vaDao.selectEmpVaListCount(sqlSession,searchMap);
+	}
+	
 }

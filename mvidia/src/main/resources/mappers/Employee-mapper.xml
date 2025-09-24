@@ -224,4 +224,11 @@
          where dept_Name = #{deptName}
            and emp_status = 'H'
     </select>
+
+    <select id="checkPhone" resultMap="employeeResultSet">
+        select
+        emp_no
+        from tb_employee
+        where phone = #{phone}
+    </select>
 </mapper>

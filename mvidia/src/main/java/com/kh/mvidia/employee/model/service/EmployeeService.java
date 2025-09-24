@@ -51,5 +51,6 @@ public interface EmployeeService {
 	
 	Employee checkEmpNoCer(String empNo);
 	
+	boolean checkPhone(String phone);
 	
 }

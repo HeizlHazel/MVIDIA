@@ -59,7 +59,7 @@
             <div class="field"><label>영문 이름*</label><input name="empEngName" th:value="${session.loginEmp.empEngName}"  readonly/></div>
             <div class="field full"><label>생년월일*</label><input name="birthday" type="date" th:value="${session.loginEmp.birthday}"  readonly /></div>
             <div class="field full"><label>부서*</label><input name="deptName" th:value="${session.loginEmp.deptName}" readonly /></div>
-            <div class="field full"><label>직급*</label><input name="jobName" th:value="${session.loginEmp.jobName}" readonly /></div>
+            <div class="field full"><label>직급*</label><input name="jobName"  th:value="${session.loginEmp.jobName != null and #strings.length(session.loginEmp.jobName) >= 2 ? #strings.substring(session.loginEmp.jobName, #strings.length(session.loginEmp.jobName) - 2, #strings.length(session.loginEmp.jobName)): session.loginEmp.jobName}" readonly /></div>
             <div class="field full"><label>주소*</label><input name="address" th:value="${session.loginEmp.address}" readonly/></div>
             <div class="field"><label>전화번호*</label><input name="phone" placeholder="010-0000-0000" th:value="${session.loginEmp.phone}"  readonly/></div>
             <div class="field"><label>내선번호</label><input name="extNo" placeholder="1234" th:value="${session.loginEmp.extNo}" readonly /></div>

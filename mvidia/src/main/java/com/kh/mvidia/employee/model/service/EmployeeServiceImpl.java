@@ -108,4 +108,15 @@ public class EmployeeServiceImpl implements EmployeeService{
 	public Employee checkEmpNoCer(String empNo) {
 		return empDao.checkEmpNoCer(sqlSession, empNo);
 	}
+	
+	@Override
+	public boolean checkPhone(String phone) {
+		Employee emp =  empDao.checkPhone(sqlSession, phone);
+		boolean exists = false;
+		if(emp != null){
+			exists = true;
+		}
+		return exists;
+	}
+	
 }

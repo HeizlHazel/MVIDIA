@@ -7,6 +7,12 @@
 <head>
     <meta charset="UTF-8">
     <title>DefectiveListView</title>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- jQuery UI (autocomplete 기능 제공) -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <style>
         /* 공통 컨테이너 */
         .innerOuter {
@@ -172,41 +178,196 @@
         }
 
         /* 모달 */
-        .modal-background {
-            display: none;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+        /* 모달 배경 - 전체 화면을 덮도록 수정 */
+.modal-background {
+    display: none !important; /* 기본적으로 숨김 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
 
-        .modal-content {
-            width: 800px;
-            max-width: 90%;
-            background-color: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
+/* 모달이 열릴 때만 flex로 표시 */
+.modal-background.modal-show {
+    display: flex !important;
+}
 
-        #closeModalBtn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            border: none;
-            background: none;
-            font-size: 16px;
-            cursor: pointer;
-            color: #333;
-        }
+/* 모달 컨텐츠 */
+.modal-content {
+    width: 600px;
+    max-width: 90vw;
+    max-height: 90vh;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    overflow-y: auto;
+}
 
+/* 모달 폼 행 스타일 */
+.form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+
+.form-row label {
+    width: 100px;
+    text-align: right;
+    font-weight: 600;
+    color: #555;
+    flex-shrink: 0;
+    padding-right: 0;
+}
+
+.form-row .form-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #dee0ea;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+    transition: border-color 0.3s ease;
+}
+
+.form-row .form-input:focus {
+    outline: none;
+    border-color: #186AEA;
+    box-shadow: 0 0 0 2px rgba(24, 106, 234, 0.1);
+}
+
+/* 텍스트에어리어 영역 - 기존 HTML 구조에 맞춤 */
+.textarea-form {
+    margin: 25px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.textarea-form > div:first-child {
+    width: 100px;
+    text-align: right;
+    flex-shrink: 0;
+    padding-top: 12px;
+}
+
+.textarea-form > div:first-child span {
+    font-weight: 600;
+    color: #555;
+}
+
+/* 텍스트에어리어 우측 영역 */
+.textarea-form > div:not(:first-child) {
+    flex: 1;
+    display: flex;
+    flex-direction: column; /* 세로 배치로 변경 */
+}
+
+.text_box {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 1px solid #dee0ea;
+    border-radius: 6px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    transition: border-color 0.3s ease;
+    margin-bottom: 8px; /* 글자수 카운터와 간격 */
+}
+
+.text_box:focus {
+    outline: none;
+    border-color: #186AEA;
+    box-shadow: 0 0 0 2px rgba(24, 106, 234, 0.1);
+}
+
+.text_length {
+    text-align: right;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 0; /* 상단 여백 제거 */
+}
+
+/* 기존 search-row1을 모달 버튼으로 스타일링 */
+.search-row1 {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.search-row1 .btn {
+    min-width: 100px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* 닫기 버튼 */
+#closeModalBtn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    border: none;
+    background: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+#closeModalBtn:hover {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* 반응형 모달 */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95vw;
+        padding: 20px;
+    }
+
+    .form-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .form-row label {
+        width: 100%;
+        text-align: left;
+    }
+
+    .textarea-form {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .textarea-form > div:first-child {
+        width: 100%;
+        text-align: left;
+        padding-top: 0;
+    }
+}
     </style>
-
 </head>
 <body>
 
@@ -296,6 +457,8 @@
                     <input type="number" style="type=text" class="form-input" name="defQty" required>
                 </div>
 
+
+
                 <div class="textarea-form">
                     <div>
                         <span><b>비고</b></span>
@@ -359,8 +522,7 @@
     </div>
 </div>
 
-<!-- JavaScript 스크립트들 (모든 스크립트 정리) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
     // 전역 변수
     let allProducts = []; // 전체 제품 리스트 저장용
@@ -590,21 +752,21 @@ function updateTableAndPagination(list, pi, searchParams) {
         const modalResetBtn = $('#modalResetBtn');
         const modalInputs = $('.form-input, .modal-content select, .text_box');
 
-        // 모달 열기
+        // 모달 열기 - 수정된 부분
         openModalBtn.on('click', function() {
-            modalBg.show();
+            modalBg.addClass('modal-show'); // CSS 클래스로 제어
             loadModalProductList();
         });
 
-        // 모달 닫기
+        // 모달 닫기 - 수정된 부분
         closeModalBtn.on('click', function() {
-            modalBg.hide();
+            modalBg.removeClass('modal-show'); // CSS 클래스 제거
         });
 
-        // 모달 배경 클릭시 닫기
+        // 모달 배경 클릭시 닫기 - 수정된 부분
         modalBg.on('click', function(e) {
             if (e.target === this) {
-                modalBg.hide();
+                modalBg.removeClass('modal-show'); // CSS 클래스 제거
             }
         });
 
@@ -693,24 +855,86 @@ function updateTableAndPagination(list, pi, searchParams) {
         });
     }
 
-    // 리스트 새로고침 함수
+    // refreshDefList 함수 수정
     function refreshDefList() {
-        return new Promise((resolve, reject) => {
+        const currentSearchParams = {
+            keyword: $('#keyword').val(),
+            defType: $('#defType').val(),
+            defStatus: $('#status').val(),
+            startDate: $('#startDate').val(),
+            endDate: $('#endDate').val(),
+            cpage: 1
+        };
+
+        // 검색 조건이 있으면 검색 API, 없으면 기본 리스트 API 호출
+        const hasSearchCondition = Object.values(currentSearchParams)
+            .some(value => value && value.trim() !== '');
+
+        if (hasSearchCondition) {
+            // 검색 조건이 있으면 검색 API 호출
+            $.ajax({
+                url: '/search.bo',
+                type: 'GET',
+                data: currentSearchParams,
+                success: function(response) {
+                    if (response.result === 'success') {
+                        updateTableAndPagination(response.list, response.pi, currentSearchParams);
+                    }
+                }
+            });
+        } else {
+            // 검색 조건이 없으면 기본 리스트 호출
             $.ajax({
                 url: '/dlist.bo',
                 type: 'GET',
-                data: { ajax: true },
+                data: { ajax: true, cpage: 1 },
                 success: function(html) {
-                    $('#defTableArea').html(html);
-                    resolve();
+                    // HTML fragment를 파싱하여 데이터 추출
+                    const $tempDiv = $('<div>').html(html);
+                    const $tbody = $tempDiv.find('tbody');
+
+                    // 테이블 업데이트
+                    $('#defTable tbody').html($tbody.html());
+
+                    // 페이지네이션도 다시 로드
+                    location.reload(); // 임시 방법
+                }
+            });
+        }
+    }
+
+    function bindTableEvents() {
+        // 체크박스, 삭제 버튼 등 필요한 이벤트를 재연결
+        $('#btnDelete').off('click').on('click', function(e) {
+            e.preventDefault();
+            let defNoList = [];
+            $(".chk:checked").each(function() { defNoList.push($(this).val()); });
+            if (defNoList.length === 0) { alert("삭제할 제품을 선택해주세요."); return; }
+            if (!confirm("선택한 제품을 삭제하시겠습니까?")) return;
+
+            $.ajax({
+                url: "/delete.bo",
+                type: "POST",
+                traditional: true,
+                data: { dno: defNoList },
+                success: function(response) {
+                    if (response.result === "success") {
+                        alert(response.message);
+                        refreshDefList(); // 삭제 후 테이블 갱신
+                    } else {
+                        alert(response.message || "삭제가 실패했습니다.");
+                    }
                 },
                 error: function(xhr, status, error) {
-                    console.error("리스트 새로고침 실패:", error);
-                    reject(error);
+                    console.error("Ajax 오류:", error);
+                    alert("서버와 통신 중 오류가 발생했습니다.");
                 }
             });
         });
     }
+
+
+    // 모달 등록 버튼 이벤트
 
     // 글자수 카운터
     $(document).on('keyup input', '.text_box', function() {
@@ -835,6 +1059,21 @@ function updateTableAndPagination(list, pi, searchParams) {
             }
         });
     });
+
+
+    // 불량 등록 완료 후
+    function afterDefectiveRegistration() {
+        // 대시보드 갱신 요청
+        if (window.opener || window.parent !== window) {
+            // 팝업이나 iframe인 경우 부모 창의 대시보드 갱신
+            if (window.opener && window.opener.refreshDashboardData) {
+                window.opener.refreshDashboardData();
+            }
+        }
+
+        // 또는 브로드캐스트를 통한 다른 탭 갱신
+        localStorage.setItem('dashboardRefresh', Date.now());
+    }
 </script>
 </body>
 </html>

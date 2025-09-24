@@ -7,6 +7,12 @@
 <head>
     <meta charset="UTF-8">
     <title>제품 현황 조회</title>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- jQuery UI (autocomplete 기능 제공) -->
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <style>
         /* 전체 컨테이너 */
         .innerOuter {
@@ -207,6 +213,11 @@
             document.querySelector("#tableArea").innerHTML = html;
         });
     });
+
+    // 제품 등록 완료 후 동일한 방식으로 갱신 트리거
+    function afterProductRegistration() {
+        localStorage.setItem('dashboardRefresh', Date.now());
+    }
 </script>
 </body>
 </html>

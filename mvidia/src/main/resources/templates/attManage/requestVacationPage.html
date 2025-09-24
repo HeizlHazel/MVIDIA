@@ -48,7 +48,41 @@
     </div>
 
     </div>
-</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 폼 요소 선택
+        const vaCategory = document.querySelector('select[name="vaCategory"]');
+        const vaStart = document.querySelector('input[name="vaStart"]');
+        const vaEnd = document.querySelector('input[name="vaEnd"]');
 
+        // 날짜 동기화 로직을 별도의 함수로 분리
+        function syncDatesForHalfDay() {
+            // "반차"가 선택된 경우에만 실행
+            if (vaCategory.value === 'HDL') {
+                const startDateValue = vaStart.value;
+                const endDateValue = vaEnd.value;
+
+                if (startDateValue && endDateValue) {
+                    const startDate = new Date(startDateValue);
+                    const endDate = new Date(endDateValue);
+
+                    // 더 이른 날짜를 결정하여 양쪽에 설정
+                    const earlierDate = startDate < endDate ? startDateValue : endDateValue;
+                    vaStart.value = earlierDate;
+                    vaEnd.value = earlierDate;
+                }
+            }
+        }
+
+        // 1. 신청 유형(vaCategory) 변경 시 이벤트 리스너
+        vaCategory.addEventListener('change', syncDatesForHalfDay);
+
+        // 2. 시작일(vaStart) 변경 시 이벤트 리스너
+        vaStart.addEventListener('change', syncDatesForHalfDay);
+
+        // 3. 종료일(vaEnd) 변경 시 이벤트 리스너
+        vaEnd.addEventListener('change', syncDatesForHalfDay);
+    });
+</script>
 </body>
 </html>

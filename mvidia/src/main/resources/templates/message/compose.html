@@ -89,7 +89,10 @@
 
         <div class="form-group">
             <label for="receiverSearch">수신자</label>
-            <input type="text" class="form-control" id="receiverSearch" placeholder="사원명 또는 사번을 입력하세요" autocomplete="off">
+            <input type="text" class="form-control" id="receiverSearch"
+                   placeholder="사원명 또는 사번을 입력하세요"
+                   autocomplete="off"
+                   th:value="${toEmpNo}">
             <div id="employeeList" class="employee-list mt-1"></div>
             <div id="selectedReceivers" class="mt-2"></div>
             <small class="form-text text-muted">여러 명에게 보낼 수 있습니다. 사원을 검색하여 추가하세요.</small>
@@ -124,7 +127,94 @@
     </form>
 </div>
 
-<script src="/js/layout.js"></script>
+<script>
+    // 페이지 로드 시 URL toEmpNo를 확인하고, 자동으로 수신자를 추가하는 초기화 코드
+    $(document).ready(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const toEmpNo = urlParams.get("toEmpNo");
+
+        if (typeof selectedReceivers === 'undefined') {
+            window.selectedReceivers = [];
+        }
+
+        // URL에 toEmpNo 값이 있으면 Ajax로 해당 사원 검색 후 자동 추가
+        if (toEmpNo && toEmpNo.trim() !== '') {
+            setTimeout(function() {
+                $.ajax({
+                    url: '/message/search-employees',
+                    method: 'GET',
+                    data: { keyword: toEmpNo },
+                    success: function(data) {
+                        if (data && data.length > 0) {
+                            const emp = data[0];
+                            $('#receiverSearch').val('');
+
+                            // addReceiver 함수가 있으면 호출, 없으면 직접 추가
+                            if (typeof window.addReceiver === 'function') {
+                                window.addReceiver(emp.empNo, emp.empName, emp.deptName || '', emp.jobName || '');
+                            } else {
+                                directlyAddReceiver(emp);
+                            }
+                        }
+                    },
+                    error: function(xhr, status, err) {
+                        console.error("AJAX 실패", status, err);
+                    }
+                });
+            }, 1000);
+        }
+    });
+
+    // Ajax 검색 후 addReceiver 함수가 없을 경우, 수신자를 직접 추가하는 함수
+    function directlyAddReceiver(emp) {
+        if (typeof window.selectedReceivers === 'undefined') {
+            window.selectedReceivers = [];
+        }
+
+        const receiver = {
+            empNo: emp.empNo,
+            empName: emp.empName,
+            deptName: emp.deptName || '',
+            jobName: emp.jobName || ''
+        };
+
+        // 이미 선택된 사원인지 체크 후 중복 추가 방지
+        const isAlreadySelected = window.selectedReceivers.some(r =>
+            String(r.empNo) === String(emp.empNo)
+        );
+
+        if (!isAlreadySelected) {
+            window.selectedReceivers.push(receiver);
+            updateReceiverTags();
+        }
+    }
+
+    // 선택된 수신자 목록을 화면에 표시하는 함수
+    function updateReceiverTags() {
+        const $container = $('#selectedReceivers');
+        if ($container.length === 0) return;
+
+        $container.empty();
+        if (window.selectedReceivers && window.selectedReceivers.length > 0) {
+            window.selectedReceivers.forEach(function(receiver, index) {
+                $container.append(`
+                <span class="receiver-tag">
+                    ${receiver.empName} (${receiver.empNo})
+                    <span class="remove-btn" onclick="removeReceiverByIndex(${index})">&times;</span>
+                </span>
+            `);
+            });
+        }
+    }
+
+    // 선택된 수신자를 목록에서 제거하는 함수
+    function removeReceiverByIndex(index) {
+        if (window.selectedReceivers && window.selectedReceivers.length > index) {
+            window.selectedReceivers.splice(index, 1);
+            updateReceiverTags();
+        }
+    }
+</script>
 
 </body>
 </html>

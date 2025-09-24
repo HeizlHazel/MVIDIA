@@ -237,13 +237,11 @@ function sendPayroll() {
             $('#loadingModal').modal('hide');
 
             if (result.status === "success") {
-                alert("노션 업로드가 완료되었습니다.");
+                // alert("노션 업로드가 완료되었습니다.");
                 $("#printModal").modal("hide");
                 $(".modal-backdrop").remove();
 
                 window.open(`/finance/salary-pdf-notion?empNo=${empNo}&yearMonth=${payDate}`, "_blank");
-            } else {
-                alert(result.message || "급여데이터가 없습니다.");
             }
         })
         .catch(error => {
@@ -940,6 +938,3 @@ function uploadToNotion(button) {
         }
     });
 }
-
-
-

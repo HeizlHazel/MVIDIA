@@ -97,7 +97,9 @@ public class MessageController {
      * 쪽지 작성 페이지
      */
     @GetMapping("/compose")
-    public String composePage() {
+    public String composePage(@RequestParam(value = "toEmpNo", required = false) String toEmpNo,
+                              Model model) {
+        model.addAttribute("toEmpNo", toEmpNo);
         return "message/compose";
     }
 

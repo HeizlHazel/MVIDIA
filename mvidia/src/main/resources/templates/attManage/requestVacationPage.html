@@ -55,34 +55,33 @@
         const vaStart = document.querySelector('input[name="vaStart"]');
         const vaEnd = document.querySelector('input[name="vaEnd"]');
 
-        // vaCategory 드롭다운에 'change' 이벤트 리스너 추가
-        vaCategory.addEventListener('change', function() {
-            // 선택된 옵션이 "HDL" (반차)인지 확인
-            if (this.value === 'HDL') {
+        // 날짜 동기화 로직을 별도의 함수로 분리
+        function syncDatesForHalfDay() {
+            // "반차"가 선택된 경우에만 실행
+            if (vaCategory.value === 'HDL') {
                 const startDateValue = vaStart.value;
                 const endDateValue = vaEnd.value;
 
-                // 시작일과 종료일이 모두 입력되었는지 확인
                 if (startDateValue && endDateValue) {
-                    // 비교를 위해 Date 객체 생성
                     const startDate = new Date(startDateValue);
                     const endDate = new Date(endDateValue);
 
-                    // 더 이른 날짜를 결정
+                    // 더 이른 날짜를 결정하여 양쪽에 설정
                     const earlierDate = startDate < endDate ? startDateValue : endDateValue;
-
-                    // 시작일과 종료일을 모두 더 이른 날짜로 설정
                     vaStart.value = earlierDate;
                     vaEnd.value = earlierDate;
-                } else if (startDateValue) {
-                    // 시작일만 입력된 경우, 종료일을 시작일로 설정
-                    vaEnd.value = startDateValue;
-                } else if (endDateValue) {
-                    // 종료일만 입력된 경우, 시작일을 종료일로 설정
-                    vaStart.value = endDateValue;
                 }
             }
-        });
+        }
+
+        // 1. 신청 유형(vaCategory) 변경 시 이벤트 리스너
+        vaCategory.addEventListener('change', syncDatesForHalfDay);
+
+        // 2. 시작일(vaStart) 변경 시 이벤트 리스너
+        vaStart.addEventListener('change', syncDatesForHalfDay);
+
+        // 3. 종료일(vaEnd) 변경 시 이벤트 리스너
+        vaEnd.addEventListener('change', syncDatesForHalfDay);
     });
 </script>
 </body>

@@ -452,7 +452,83 @@ public class ApprovalServiceImpl implements ApprovalService {
         return pDao.selectManagerEmployees(sqlSession);
     }
 
-    private final Map<String, AtomicInteger> yearlyCounters = new ConcurrentHashMap<>();
+    /**
+     * 노션 페이지 아카이브 (삭제)
+     */
+    public void archiveNotionPage(String pageId) {
+        String url = "https://api.notion.com/v1/pages/" + pageId;
+
+        JSONObject body = new JSONObject();
+        body.put("archived", true);
+
+        try {
+            HttpResponse<JsonNode> response = Unirest.patch(url)
+                    .header("Authorization", "Bearer " + token)
+                    .header("Notion-Version", "2022-06-28")
+                    .header("Content-Type", "application/json")
+                    .body(body)
+                    .asJson();
+
+            if (response.getStatus() != 200) {
+                throw new RuntimeException("노션 페이지 아카이브 실패: " + response.getStatus());
+            }
+
+            System.out.println("노션 페이지 아카이브 성공: " + pageId);
+
+        } catch (Exception e) {
+            System.err.println("노션 페이지 아카이브 중 오류: " + pageId + ", " + e.getMessage());
+            throw new RuntimeException("노션 연동 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    public boolean updateNotionPage(String pageId, String title, String content, String category, String approval) {
+        String url = "https://api.notion.com/v1/pages/" + pageId;
+        String categoryMap = CATEGORY_MAP.getOrDefault(category, "기타결재");
+
+        try {
+            JSONObject body = new JSONObject();
+            Map<String, Object> properties = new HashMap<>();
+
+            // 제목 업데이트
+            properties.put("제목", Map.of("title",
+                    List.of(Map.of("text", Map.of("content", title)))));
+
+            // 구분 업데이트
+            properties.put("구분", Map.of("select", Map.of("name", categoryMap)));
+
+            // 내용 업데이트
+            properties.put("내용", Map.of("rich_text",
+                    List.of(Map.of("text", Map.of("content", content)))));
+
+            // 결재자 업데이트 (필요시)
+            if (approval != null && !approval.isEmpty()) {
+                String[] approverArray = approval.split(",");
+                List<Map<String, String>> approverOptions = Arrays.stream(approverArray)
+                        .map(String::trim)
+                        .map(approverEmpNo -> {
+                            Employee emp = pDao.selectEmployee(sqlSession, approverEmpNo);
+                            String approverName = emp != null ? (emp.getEmpLName() + emp.getEmpName()) : approverEmpNo;
+                            return Map.of("name", approverName);
+                        })
+                        .collect(Collectors.toList());
+                properties.put("결재자", Map.of("multi_select", approverOptions));
+            }
+
+            body.put("properties", properties);
+
+            HttpResponse<JsonNode> response = Unirest.patch(url)
+                    .header("Authorization", "Bearer " + token)
+                    .header("Notion-Version", "2022-06-28")
+                    .header("Content-Type", "application/json")
+                    .body(body)
+                    .asJson();
+
+            return response.getStatus() == 200;
+        } catch (Exception e) {
+            System.err.println("노션 페이지 업데이트 실패: " + e.getMessage());
+            return false;
+        }
+    }
 
     // ===================== 유틸리티 메서드들 =====================
 

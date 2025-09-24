@@ -269,5 +269,47 @@ public class ApprovalController {
         }
     }
 
+    @DeleteMapping("/approval/delete/{id}")
+    @ResponseBody
+    public Map<String, Object> deleteDocument(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // 노션에서 삭제 (아카이브)
+            aService.archiveNotionPage(id);
+
+            response.put("success", true);
+            response.put("message", "노션에서 문서가 삭제(아카이브)되었습니다.");
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "노션 삭제에 실패했습니다: " + e.getMessage());
+            System.err.println("노션 문서 삭제 실패: " + id + ", " + e.getMessage());
+            e.printStackTrace();
+        }
+        return response;
+    }
+
+    @ResponseBody
+    @PutMapping(value = "update.notion/{id}", consumes = "application/json")
+    public String updateNotion(@PathVariable String id, @RequestBody Map<String, String> map, HttpSession session) {
+        System.out.println("문서 수정 - ID: " + id);
+        System.out.println("받은 데이터: " + map);
+
+        String title = map.get("applyTitle");
+        String details = map.get("details");
+        String category = map.get("swtch");
+        String approval = map.get("approval");
+
+        Employee loginEmp = (Employee) session.getAttribute("loginEmp");
+        String empNo = loginEmp.getEmpNo();
+
+        try {
+            // 노션 페이지 업데이트
+            boolean result = aService.updateNotionPage(id, title, details, category, approval);
+            return result ? "success" : "fail";
+        } catch (Exception e) {
+            System.err.println("문서 수정 실패: " + e.getMessage());
+            return "fail";
+        }
+    }
 
 }

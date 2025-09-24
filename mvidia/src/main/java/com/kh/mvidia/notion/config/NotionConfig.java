@@ -17,9 +17,6 @@ public class NotionConfig {
     @Value("${notion.api.token}")
     private String apiToken;
 
-    @Value("${notion.chart.database.id}")
-    private String databaseId;
-
     @Bean(name = "notionWebClient")
     public WebClient notionWebClient() {
         return WebClient.builder()

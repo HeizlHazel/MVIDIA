@@ -59,7 +59,7 @@ public class ChartController {
 
         return result;
     }
-
+    /*
     // 전체 일정 페이지
     @GetMapping("/schrList.bo")
     public String scheduleList(@RequestParam(value = "bpPartner", required = false) String bpPartner, Model model){
@@ -69,6 +69,9 @@ public class ChartController {
 
         model.addAttribute("schrList", schrList);
         model.addAttribute("schrDonutList", schrDonutList);
+
+        model.addAttribute("isDetailPage", true);
+        System.out.println("isDetailPage: " + model.getAttribute("isDetailPage")); // 디버그
 
         return "product/scheduleAllListView";
     }
@@ -84,7 +87,37 @@ public class ChartController {
 
         return result;
     }
+    */
 
+    /**
+     * '전체 일정 현황' 페이지에서 AJAX로 호출하여
+     * 모든 업체의 일정 현황 데이터를 JSON으로 반환합니다.
+     */
+    @GetMapping("/schrListAjax.bo")
+    @ResponseBody
+    public Map<String, Object> getSchrDataForAjax() {
+        Map<String, Object> result = new HashMap<>();
 
+        // 1. 막대 그래프용 전체 일정 데이터 조회
+        List<ScheduleRegistration> schrList = cService.selectAllSchr(null);
+
+        // 2. 도넛 그래프용 전체 불량 현황 데이터 조회
+        List<ScheduleRegistration> schrDonutList = cService.selectAllSchrDonut(null);
+
+        result.put("schrList", schrList);
+        result.put("schrDonutList", schrDonutList);
+        System.out.println("SCHR LIST SIZE: " + schrList.size());
+        return result;
+    }
+
+    /**
+     * '전체 일정 현황' 페이지를 로드하는 메서드.
+     */
+    @GetMapping("/schrList.bo")
+    public String showAllSchedules() {
+        // 이 메서드는 데이터 없이 페이지 뷰만 반환합니다.
+        // 데이터는 페이지 로드 후 AJAX로 별도 요청합니다.
+        return "product/scheduleAllListView";
+    }
 
 }

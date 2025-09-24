@@ -25,7 +25,7 @@
             <tr th:each="p : ${list}">
                 <td th:text="${p.prodCode}"></td>
                 <td th:text="${p.prodName}"></td>
-                <td th:text="${#numbers.formatDecimal(p.price, 0, 'COMMA')}"></td>
+                <td th:text="${p.price}"></td>
                 <td th:text="${p.stock}"></td>
                 <td th:text="${p.statusName}"></td>
             </tr>

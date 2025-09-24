@@ -57,9 +57,10 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
+       /* 섹션 헤더를 더 굵게 */
         .section-header {
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700; /* 600에서 700으로 변경 - 더 굵게 */
             color: #333;
             margin-bottom: 18px;
             padding-bottom: 8px;
@@ -73,6 +74,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-weight: 700; /* 추가: 더보기 버튼이 있는 헤더도 굵게 */
+        }
+
+        /* 섹션 헤더 내 텍스트도 굵게 */
+        .section-header-with-button span {
+            font-weight: 700;
+            font-size: 16px;
+            color: #333;
         }
 
         /* 더보기 버튼 */
@@ -194,6 +203,7 @@
             height: 100%;
         }
 
+        /* 도넛 차트 컨테이너 - 크기 조정됨 */
         .donut-chart-container {
             flex: 1;
             height: 100%;
@@ -202,12 +212,22 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            max-width: 160px;
+            padding: 10px;
+        }
+
+        /* 도넛 차트 캔버스 크기 제한 */
+        .donut-chart-container canvas {
+            max-width: 120px !important;
+            max-height: 120px !important;
+            width: 120px !important;
+            height: 120px !important;
         }
 
         .donut-title {
             color: #555;
-            font-size: 12px;
-            margin-bottom: 8px;
+            font-size: 11px;
+            margin-bottom: 6px;
             text-align: center;
             font-weight: 500;
         }
@@ -241,6 +261,18 @@
             .bar-chart-container, .donut-chart-container {
                 width: 100%;
                 height: 200px;
+            }
+
+            /* 모바일에서도 도넛 차트 작게 */
+            .donut-chart-container {
+                max-width: 140px;
+            }
+
+            .donut-chart-container canvas {
+                max-width: 100px !important;
+                max-height: 100px !important;
+                width: 100px !important;
+                height: 100px !important;
             }
         }
     </style>
@@ -279,11 +311,17 @@
     const progTop5 = /*[[${progTop5}]]*/ [];
     const schrTop5 = /*[[${schrTop5}]]*/ [];
 
-    // 1. 상단 세로 막대바 차트 생성
+    // 1. 상단 세로 막대바 차트 생성 - 업체명-일정내용 형태로 수정
     function createTopProgressChart() {
         const ctx = document.getElementById('topProgressChart').getContext('2d');
 
-        const labels = progTop5.map(p => p.schName);
+        // 라벨을 "업체명 - 일정내용" 형태로 변경
+        const labels = progTop5.map(p => {
+            const companyName = p.bpPartner || '미등록업체';
+            const scheduleDetails = p.schName || '일정명 없음';
+            return `${companyName} - ${scheduleDetails}`;
+        });
+
         const progressData = progTop5.map(p => p.progRate);
 
         new Chart(ctx, {
@@ -329,13 +367,20 @@
                         },
                         grid: { color: 'rgba(0,0,0,0.1)' }
                     },
-                    x: { grid: { display: false }}
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            maxRotation: 45,  // 긴 라벨을 위한 회전
+                            minRotation: 45,
+                            font: { size: 11 }
+                        }
+                    }
                 }
             }
         });
     }
 
-    // 2. 하단 카드들 생성
+    // 2. 하단 카드들 생성 - 업체명-일정내용 형태로 수정
     function createProgressCards() {
         const container = document.getElementById('cardsContainer');
         container.innerHTML = '';
@@ -346,16 +391,25 @@
         }
 
         schrTop5.forEach((schedule, index) => {
+            // null 체크 및 기본값 설정
+            const companyName = schedule.bpPartner || '미등록업체';
+            const scheduleDetails = schedule.schName || '일정명 없음';
+            const displayTitle = `${companyName} - ${scheduleDetails}`;
+
             // 전체 진행률 계산
             const progressRate = schedule.totalCount > 0
                 ? Math.round((schedule.doneCount / schedule.totalCount) * 100)
                 : 0;
 
+            // 날짜 포맷팅
+            const startDate = schedule.startDate || '-';
+            const endDate = schedule.endDate || '-';
+
             // 카드 HTML 생성
             const cardHTML = `
                 <div class="progress-card">
                     <div class="card-header">
-                        <div class="card-title">${schedule.schName}</div>
+                        <div class="card-title">${displayTitle}</div>
 
                         <div class="progress-info">
                             <div class="progress-bar-container">
@@ -367,7 +421,7 @@
                                     <div class="progress-fill" style="width: ${progressRate}%"></div>
                                 </div>
                                 <div class="date-range">
-                                    ${schedule.startDate} ~ ${schedule.endDate}
+                                    ${startDate} ~ ${endDate}
                                 </div>
                             </div>
                         </div>
@@ -397,9 +451,15 @@
         }, 100);
     }
 
-    // 3. 상태별 누적 가로 막대바 차트 생성
+    // 3. 상태별 누적 가로 막대바 차트 생성 - 데이터 검증 추가
     function createStatusBarChart(d, index) {
         const ctx = document.getElementById(`statusBar_${index}`).getContext('2d');
+
+        // 데이터 검증 및 기본값 설정
+        const doneCount = parseInt(d.doneCount) || 0;
+        const ingCount = parseInt(d.ingCount) || 0;
+        const delayCount = parseInt(d.delayCount) || 0;
+        const waitCount = parseInt(d.waitCount) || 0;
 
         new Chart(ctx, {
             type: 'bar',
@@ -408,7 +468,7 @@
                 datasets: [
                     {
                         label: '완료',
-                        data: [d.doneCount],
+                        data: [doneCount],
                         barThickness: 30,
                         backgroundColor: 'rgba(46, 204, 113, 0.8)',
                         borderColor: 'rgba(46, 204, 113, 1)',
@@ -416,7 +476,7 @@
                     },
                     {
                         label: '진행중',
-                        data: [d.ingCount],
+                        data: [ingCount],
                         barThickness: 30,
                         backgroundColor: 'rgba(52, 152, 219, 0.8)',
                         borderColor: 'rgba(52, 152, 219, 1)',
@@ -424,7 +484,7 @@
                     },
                     {
                         label: '지연',
-                        data: [d.delayCount],
+                        data: [delayCount],
                         barThickness: 30,
                         backgroundColor: 'rgba(241, 196, 15, 0.8)',
                         borderColor: 'rgba(241, 196, 15, 1)',
@@ -432,7 +492,7 @@
                     },
                     {
                         label: '대기',
-                        data: [d.waitCount],
+                        data: [waitCount],
                         barThickness: 30,
                         backgroundColor: 'rgba(149, 165, 166, 0.8)',
                         borderColor: 'rgba(149, 165, 166, 1)',
@@ -455,6 +515,16 @@
                             padding: 8,
                             font: { size: 10 }
                         }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return '진행 상태';
+                            },
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.parsed.x}개`;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -473,18 +543,25 @@
         });
     }
 
-    // 4. 품질검사 도넛 차트 생성
+    // 4. 품질검사 도넛 차트 생성 - 데이터 검증 추가
     function createQualityDonutChart(d, index) {
         const ctx = document.getElementById(`qualityDonut_${index}`).getContext('2d');
 
-        const normalCount = d.totalCount - d.defCount;
+        // 데이터 검증 및 기본값 설정
+        const totalCount = parseInt(d.totalCount) || 0;
+        const defCount = parseInt(d.defCount) || 0;
+        const normalCount = Math.max(0, totalCount - defCount);
+
+        // 데이터가 모두 0인 경우 기본값 설정
+        const chartData = totalCount === 0 ? [90, 10] : [normalCount, defCount];
+        const chartLabels = totalCount === 0 ? ['데이터 없음', ''] : ['정상', '불량'];
 
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['정상', '불량'],
+                labels: chartLabels,
                 datasets: [{
-                    data: [normalCount, d.defCount],
+                    data: chartData,
                     backgroundColor: [
                         'rgba(46, 204, 113, 0.8)',
                         'rgba(231, 76, 60, 0.8)'
@@ -508,12 +585,18 @@
                             boxWidth: 6,
                             boxHeight: 6,
                             padding: 8,
-                            font: { size: 10 }
+                            font: { size: 10 },
+                            filter: function(item) {
+                                return item.text !== ''; // 빈 라벨 숨기기
+                            }
                         }
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
+                                if (totalCount === 0) {
+                                    return '검사 데이터 없음';
+                                }
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = ((context.parsed * 100) / total).toFixed(1);
                                 return `${context.label}: ${context.parsed}개 (${percentage}%)`;

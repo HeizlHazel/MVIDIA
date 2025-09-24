@@ -16,7 +16,7 @@ public class prodDashBoardDao {
     private static final String NAMESPACE = "prodboardMapper."; // mapper.xml namespace
 
     public List<Map<String,Object>> getRecentDefective() {
-        return sqlSession.selectList(NAMESPACE + "selectRecentDefective");
+        return sqlSession.selectList(NAMESPACE + "getRecentDefective");
     }
 
     public Map<String,Object> getSummary() {

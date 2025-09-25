@@ -75,7 +75,7 @@
         border-radius:6px;
         cursor:pointer;
         margin:5px;
-        transition:.2s
+        transition:.2s;
         line-height: 1;
     }
     .btn2 {background:#4169e1;}
@@ -111,11 +111,41 @@
         font-weight: bold;
         font-size: 14px;
     }
+
+#attendPreview .preview-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;          /* 본문 가독성 폰트 크기 */
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums; /* 시간/숫자 정렬 고정폭 */
+  table-layout: fixed;        /* 말줄임 처리를 위해 고정 레이아웃 */
+}
+
+#attendPreview .preview-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f7fafc;        /* 헤더 배경 */
+  color: #223;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 8px 10px;
+  border-bottom: 2px solid #e5edf4;
+}
+
+#attendPreview .preview-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eef3f7;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
     </style>
 </head>
 <body>
 <!-- 메인 컨텐츠 -->
-    <div class="content">
+    <div class="content" th:if="${session.loginEmp.deptCode != 'D1'}">
 
         <!-- HOME -->
         <div class="page active" id="home">
@@ -140,7 +170,7 @@
                 <div class="widget">
                     <div class="widget-header">
                         <div class="widget-title">⭐ 중요 쪽지함</div>
-                        <a class="view-more" onclick="showPage('message-important')">자세히 보기</a>
+                        <a class="view-more" onclick="|location.href='@{/message/inbox}}'|">자세히 보기</a>
                     </div>
                     <div class="message-item" onclick="openMessage('IMP-1')">📝 월말 보고서 제출 요청</div>
                     <div class="message-item" onclick="openMessage('IMP-2')">🔒 보안 정책 변경 안내</div>
@@ -151,7 +181,7 @@
             </div>
 
             <div class="dashboard-grid">
-                <div class="widget">
+                <div class="widget" style="width:300px">
                     <div class="widget-header">
                         <div class="widget-title">📝 최근 활동 로그</div>
                         <a class="view-more" onclick="showPage('calendar')">자세히 보기</a>
@@ -172,6 +202,88 @@
             </div>
         </div>
     </div>
+
+<div class="content" th:unless="${session.loginEmp.deptCode != 'D1'}">
+
+    <!-- HOME -->
+    <div class="page active" id="home">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 th:text="'👋 안녕하세요, ' + ${session.loginEmp.empLName} + ${session.loginEmp.empName} + '님'" style="margin: 0;"></h3>
+            <div id="weather-mini" class="weather-mini">
+                <span style="font-size: 12px; color: #666;">날씨 로딩 중...</span>
+            </div>
+        </div>
+        <!--            <h3 th:text="'👋 안녕하세요, ' + ${session.loginEmp.empLName} + ${session.loginEmp.empName} + '님'"></h3>-->
+        <div class="dashboard-grid">
+            <div class="widget" id="vacationPreview">
+                <div class="card-header-action">
+                    <h4 style="margin:0 0 8px">휴가 신청 (최근 5건)</h4>
+                    <a class="btn card-footer-action" href="/hr/vacationList.hr?cpage=1">정보 더보기</a>
+                </div>
+                <table class="preview-table" >
+                    <thead>
+                    <tr>
+                        <th>사번</th>
+                        <th>이름</th>
+                        <th>종류</th>
+                        <th>기간</th>
+                        <th>사유</th>
+                        <th>상태</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="widget">
+                <div class="widget-header">
+                    <div class="widget-title">⭐ 중요 쪽지함</div>
+                    <a class="view-more" onclick="|location.href='@{/message/inbox}}'|">자세히 보기</a>
+                </div>
+                <div class="message-item" onclick="openMessage('IMP-1')">📝 월말 보고서 제출 요청</div>
+                <div class="message-item" onclick="openMessage('IMP-2')">🔒 보안 정책 변경 안내</div>
+                <div class="message-item" onclick="openMessage('IMP-3')">📊 4분기 실적 검토 회의</div>
+                <div class="message-item" onclick="openMessage('IMP-4')">✅ 프로젝트 승인 완료</div>
+                <div class="message-item" onclick="openMessage('IMP-5')">🎯 목표 설정 미팅 일정</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="widget" id="vacationPreview">
+                <div class="widget-header">
+                    <div class="card-header-action">
+                        <h4 style="margin:0 0 8px">근태 정보 (최근 5건)</h4>
+                        <a class="btn card-footer-action" href="/hr/attendanceList.hr?cpage=1">정보 더보기</a>
+                    </div>
+                        <table class="preview-table">
+                            <thead>
+                            <tr>
+                                <th>사번</th>
+                                <th>이름</th>
+                                <th>일자</th>
+                                <th>출근</th>
+                                <th>퇴근</th>
+                                <th>상태</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                </div>
+            </div>
+
+            <div class="widget">
+                <div class="widget-header"><div class="widget-title">⚡ 빠른 작업</div></div>
+                <!-- 기술지원팀 로그인 시 보이는 메뉴 -->
+                <button class="btn btn2" th:onclick="|location.href='@{/approvalbox}'|">내 전자 결재</button>
+                <button class="btn btn3" th:onclick="|location.href='@{/attManage/requestVacation.attManage}'|">휴가 신청</button><br>
+                <button class="btn" th:onclick="|location.href='@{/attManage/attendanceRecordCheck.attManage}'|">출퇴근 기록 조회</button>
+                <button class="btn btn4" th:onclick="|location.href='@{/hr/integratedAttendance.hr}'|">근태/휴가 통합 관리</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <script>
@@ -229,6 +341,82 @@
         // 10분마다 날씨 정보 갱신
         setInterval(loadWeather, 10 * 60 * 1000);
     });
+
+    $(document).ready(function() {
+        fetchRecentVacations();
+        fetchRecentAttendances();
+    });
+
+    // 최근 휴가 신청 5건을 AJAX로 가져와 테이블에 삽입하는 함수
+    function fetchRecentVacations() {
+        $.ajax({
+            url: '/hr/vacations/recent5',
+            type: 'GET',
+            success: function(response) {
+                const tbody = $('#vacationPreview tbody');
+                tbody.empty();
+                if (response.length > 0) {
+                    response.forEach(va => {
+                        const row = `
+                            <tr>
+                                <td>${va.empNo}</td>
+                                <td>${va.empName}</td>
+                                <td>${va.vaName}</td>
+                                <td>${va.vaStart}~${va.vaEnd}</td>
+                                <td style="width:150px">${va.vaReason}</td>>
+                                <td><span class="chip">${va.vaStatusName}</span></td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    });
+                } else {
+                    const emptyRow = `<tr><td colspan="4" class="muted" style="text-align: center;">신청 내역이 없어요.</td></tr>`;
+                    tbody.append(emptyRow);
+                }
+            },
+            error: function(xhr) {
+                console.error("최근 휴가 신청 목록을 불러오는 데 실패했습니다: ", xhr.responseText);
+                const tbody = $('#vacationPreview tbody');
+                tbody.html(`<tr><td colspan="4" class="muted" style="text-align: center;">데이터 로드 실패</td></tr>`);
+            }
+        });
+    }
+
+    // 최근 근태 기록 5건을 AJAX로 가져와 테이블에 삽입하는 함수
+    function fetchRecentAttendances() {
+        $.ajax({
+            url: '/hr/attendances/recent5',
+            type: 'GET',
+            success: function(response) {
+                const tbody = $('#attendPreview tbody');
+                tbody.empty();
+                if (response.length > 0) {
+                    response.forEach(attend => {
+                        const row = `
+                            <tr>
+                                <td>${attend.empNo}</td>
+                                <td>${attend.empName}</td>
+                                <td>${attend.attDate}</td>
+                                <td>${attend.arrivingTime || '-'}</td>
+                                <td>${attend.leavingTime || '-'}</td>
+                                <td><span class="chip">${attend.attStatusName}</span></td>
+                            </tr>
+                        `;
+                        tbody.append(row);
+                    });
+                } else {
+                    const emptyRow = `<tr><td colspan="5" class="muted" style="text-align: center;">근태 내역이 없어요.</td></tr>`;
+                    tbody.append(emptyRow);
+                }
+            },
+            error: function(xhr) {
+                console.error("최근 근태 기록을 불러오는 데 실패했습니다: ", xhr.responseText);
+                const tbody = $('#attendPreview tbody');
+                tbody.html(`<tr><td colspan="5" class="muted" style="text-align: center;">데이터 로드 실패</td></tr>`);
+            }
+        });
+    }
+
 </script>
 </body>
 </html>

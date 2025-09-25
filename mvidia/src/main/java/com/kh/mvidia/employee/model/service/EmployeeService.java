@@ -54,4 +54,6 @@ public interface EmployeeService {
 	boolean checkPhone(String phone);
 	
 	int demoteAllToLByEmp(String empNo);
+	
+	Attachment selectModifyProfile(String empNo);
 }

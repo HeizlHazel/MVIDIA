@@ -68,5 +68,21 @@
         and file_status = 'U'
     </update>
 
+    <select id="selectModifyProfile" resultMap="attachmentResultSet">
+        select atch_id, ref_type, origin_name, change_name, upload_date, up_emp_no, file_status
+        from (
+        select a.*,
+        row_number() over (
+        order by a.upload_date desc, a.atch_id desc
+        ) as rn
+        from tb_attachment a
+        where a.up_emp_no  = #{empNo}
+        and a.ref_type   = 'F'
+        and a.file_status = 'L'
+        )
+        where rn = 1
+
+    </select>
+
 
 </mapper>

@@ -89,6 +89,10 @@ public class EmployeeDao {
 	public int demoteAllToLByEmp(SqlSessionTemplate sqlSession, String empNo) {
 		return sqlSession.update("AttachmentMapper.demoteAllToLByEmp", empNo);
 	}
+	
+	public Attachment selectModifyProfile(SqlSessionTemplate sqlSession, String empNo) {
+		return sqlSession.selectOne("AttachmentMapper.selectModifyProfile", empNo);
+	}
 }
 
 

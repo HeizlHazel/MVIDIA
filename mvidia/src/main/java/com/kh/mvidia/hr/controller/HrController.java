@@ -63,7 +63,7 @@ public class HrController {
 	@GetMapping("/accountModifyDetail.hr")
 	public String accountModifyDetail(Model model, String empNo){
 		Employee emp = empService.selectEmpNo(empNo);
-		Attachment atch = empService.selectProfile(empNo);
+		Attachment atch = empService.selectModifyProfile(empNo);
 		ArrayList<EmpModifyReq> reqList = empService.selectReq(empNo);
 		model.addAttribute("emp", emp);
 		model.addAttribute("atch", atch);

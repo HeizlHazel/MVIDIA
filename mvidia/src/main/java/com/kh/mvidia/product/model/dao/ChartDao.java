@@ -1,5 +1,6 @@
 package com.kh.mvidia.product.model.dao;
 
+import com.kh.mvidia.notion.dto.ScheduleSummaryDto;
 import com.kh.mvidia.product.model.vo.ProgressChart;
 import com.kh.mvidia.product.model.vo.ScheduleRegistration;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -32,5 +33,7 @@ public class ChartDao {
 
     public List<ScheduleRegistration> selectAllSchrDonut(String bpPartner) { return sqlSession.selectList("chartMapper.selectAllSchrDonut", bpPartner); }
 
+    public List<ScheduleSummaryDto> selectScheduleDetail() { return sqlSession.selectList("chartMapper.selectAllSchrWithProgRate"); }
+    public List<ScheduleSummaryDto> selectCompanySummary() { return sqlSession.selectList("chartMapper.selectCompanySummaryByBp");}
 
 }

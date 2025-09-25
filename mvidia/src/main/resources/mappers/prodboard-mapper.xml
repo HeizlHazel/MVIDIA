@@ -2,68 +2,86 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="prodboardMapper">
 
+    <resultMap id="defectiveResultMap" type="DefectiveProduction">
+        <id property="defNo" column="def_no"/>
+        <result property="prodCode" column="prod_code"/>
+        <result property="prodName" column="prod_name"/>
+        <result property="defType" column="def_type"/>
+        <result property="occurDate" column="occur_date"/>
+        <result property="defStatus" column="def_status"/>
+        <result property="remarks" column="remarks"/>
+    </resultMap>
+
     <!-- 1. 최근 등록된 불량 제품 리스트 (상태가 'R' 아닌 것) -->
-    <select id="selectRecentDefective" resultType="map">
-        select *
-        from (
-        select d.def_no,
-        d.prod_code,
-        p.prod_name,
-        t.def_type,
-        to_char(d.occur_date,'YYYY-MM-DD') as occur_date,
-        d.def_status,
-        d.remarks
-        from tb_defective_production d
-        left join tb_production_quality p on p.prod_code = d.prod_code
-        left join tb_defective_type t on t.def_code = d.def_code
-        where d.def_status != 'R'
-        order by d.occur_date desc
+    <select id="getRecentDefective" resultType="map">
+        SELECT *
+        FROM (
+        SELECT
+        d.def_no AS DEF_NO,
+        d.prod_code AS PROD_CODE,
+        COALESCE(p.prod_name, '제품명 없음') AS PROD_NAME,
+        COALESCE(t.def_type, '미분류') AS DEF_TYPE,
+        TO_CHAR(d.occur_date,'YYYY-MM-DD') AS OCCUR_DATE,
+        d.def_status AS DEF_STATUS,
+        d.remarks AS REMARKS
+        FROM tb_defective_production d
+        LEFT JOIN tb_production_quality p ON p.prod_code = d.prod_code
+        LEFT JOIN tb_defective_type t ON t.def_code = d.def_code
+        WHERE d.def_status != 'R'
+        ORDER BY d.occur_date DESC
         )
-        where rownum &lt;= 10
+        WHERE ROWNUM &lt;= 10
     </select>
 
-    <!-- 2. 요약 지표 -->
+    <!-- 2. 요약 지표 이번 달 기준 -->
     <select id="selectSummary" resultType="map">
-        select
-        (select count(*)
-        from tb_production_quality) as prod_count,
+        SELECT
+        -- 이번달 등록된 제품 수 (전체 제품 수 - reg_date 컬럼 없음)
+        (SELECT COUNT(*) FROM tb_production_quality) AS PROD_COUNT,
 
-        (select count(*)
-        from tb_defective_production) as defective_count,
+        -- 이번달 불량등록 수
+        (SELECT COUNT(*)
+        FROM tb_defective_production
+        WHERE TO_CHAR(occur_date, 'YYYY-MM') = TO_CHAR(SYSDATE, 'YYYY-MM')) AS DEFECTIVE_COUNT,
 
-        round(
-        (select count(*)
-        from tb_defective_production)
-        / (select count(*)
-        from tb_production_quality) * 100, 2
-        ) as defective_rate,
+        -- 불량률 계산 (전체 검사 수 대비 불량 검사 수)
+        ROUND(
+        CASE
+        WHEN (SELECT SUM(TOTAL_COUNT) FROM tb_schedule_registration) > 0
+        THEN (SELECT SUM(DEF_COUNT) FROM tb_schedule_registration)
+        * 100.0 / (SELECT SUM(TOTAL_COUNT) FROM tb_schedule_registration)
+        ELSE 0
+        END, 2
+        ) AS DEFECTIVE_RATE,
 
-        (select count(*)
-        from tb_schedule_registration) as check_count
-        from dual
+        -- 이번달 점검 회수 (일정 등록 수)
+        (SELECT COUNT(*)
+        FROM tb_schedule_registration
+        WHERE TO_CHAR(start_date, 'YYYY-MM') = TO_CHAR(SYSDATE, 'YYYY-MM')) AS CHECK_COUNT
+        FROM DUAL
     </select>
 
-    <!-- 3. 주요 작업 진행 현황 Top 5 -->
+    <!-- 3. 주요 작업 진행 현황 Top 5 - tb_schedule_registration 기준으로 수정 -->
     <select id="selectTop5Prog" resultType="map">
         SELECT *
         FROM (
-        SELECT BP_PARTNER AS company,
-        ROUND(AVG(
+        SELECT
+        BP_PARTNER AS COMPANY,
+        ROUND(
         CASE
-        WHEN DEF_STATUS = 'P' THEN 100
-        WHEN DEF_STATUS = 'W' THEN 0
-        WHEN DEF_STATUS = 'K' THEN 50
-        ELSE 100
-        END
-        ), 2) AS progress
-        FROM TB_DEFECTIVE_PRODUCTION
+        WHEN SUM(TOTAL_COUNT) > 0 THEN
+        (SUM(TOTAL_COUNT) - SUM(DEF_COUNT)) * 100.0 / SUM(TOTAL_COUNT)
+        ELSE 0
+        END, 2
+        ) AS PROGRESS
+        FROM tb_schedule_registration
+        WHERE BP_PARTNER IS NOT NULL
         GROUP BY BP_PARTNER
-        ORDER BY progress DESC
+        HAVING SUM(TOTAL_COUNT) > 0
+        ORDER BY PROGRESS DESC
         )
-        where rownum &lt;= 5
+        WHERE ROWNUM &lt;= 5
     </select>
-
 </mapper>

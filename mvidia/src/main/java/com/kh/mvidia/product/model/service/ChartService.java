@@ -1,5 +1,6 @@
 package com.kh.mvidia.product.model.service;
 
+import com.kh.mvidia.notion.dto.ScheduleSummaryDto;
 import com.kh.mvidia.product.model.vo.ProgressChart;
 import com.kh.mvidia.product.model.vo.ScheduleRegistration;
 import org.apache.ibatis.annotations.Param;
@@ -21,4 +22,7 @@ public interface ChartService {
     List<ScheduleRegistration> selectAllSchr(String bpPartner);
 
     List<ScheduleRegistration> selectAllSchrDonut(String bpPartner);
+
+    List<ScheduleSummaryDto> getScheduleDetail();
+    List<ScheduleSummaryDto> getCompanySummary();
 }

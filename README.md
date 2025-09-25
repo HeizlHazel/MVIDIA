@@ -1,45 +1,71 @@
 <img width="300" height="300" alt="b32b62ffe11d899d" src="https://github.com/user-attachments/assets/b799cfb7-6780-485c-8ed0-5841d39c9d62" />
 
-# 프로젝트 소개
+# 📌 프로젝트 소개
 
 
-# 개발 기간
+# 📆 개발 기간
 
 
-# 구성원 및 역할
+# 👥 구성원 및 역할
 
-### 🧰 조장 어수용
-
-
-
-### 👻 조원 김혜지
-- 실시간 날씨 정보: OpenWeatherMap API 연동으로 근무지 날씨 표시
-- 부서별 맞춤 대시보드: 권한에 따른 차별화된 정보 제공
-- 빠른 작업 바로가기: 주요 업무 기능 원클릭 접근
-- 전자 결재 신청: Notion API 연동을 통한 문서 작성 및 제출
-- 내 문서함: 신청한 결재 문서 CRUD(문서 삭제 시 Notion 아카이브 기능 활용)
-- 승인함: 결재 문서 승인/반려 처리
-- 계정 권한 관리: 사용자별 권한 부여 및 회수
-- 권한 변경 로그: 권한 변경 이력 추적 및 감사
-- 전자결재 처리 로그: 전자결재 처리 이력 추적 및 관리
+### 💬 조장 어수용
 
 
 
-### ✨ 조원 박현아
+### 💭 조원 김혜지
+- 실시간 날씨 정보 - OpenWeatherMap API 연동으로 근무지 날씨 표시
+- 부서별 맞춤 대시보드 - 권한에 따른 차별화된 정보 제공
+- 빠른 작업 바로가기 - 주요 업무 기능 원클릭 접근
+- 전자 결재 신청 - Notion API 연동을 통한 문서 작성 및 제출
+- 내 문서함 - 신청한 결재 문서 CRUD(문서 삭제 시 Notion 아카이브 기능 활용)
+- 승인함 - 결재 문서 승인/반려 처리
+- 계정 권한 관리 - 사용자별 권한 부여 및 회수
+- 권한 변경 로그 - 권한 변경 이력 추적 및 감사
+- 전자결재 처리 로그 - 전자결재 처리 이력 추적 및 관리
 
 
 
-### 🧦 조원 홍세민
+### 🗯 조원 박현아
 
 
-# 개발 환경
 
-# API
+### 🗨 조원 홍세민
 
-# 설계
 
-# 프로젝트 구현
-### 🧰 조장 어수용
-### 👻 조원 김혜지
-### ✨ 조원 박현아
-### 🧦 조원 홍세민
+# ⚙ 개발 환경
+- OS : Windows10
+- Developer Tools : IntelliJ / VS Code / SqlDeveloper
+- Server : Apache Tomcat 9.0
+- DBMS : Oracle
+- Management : Git, GitHub
+
+# 🔧 사용 기술
+- Backend : JAVA, Spring Boot, MyBatis 
+- Frontend : HTML5, CSS3, JavaScript, jQuery, Bootstrap, Thymeleaf
+
+# 💡 라이브러리
+- alertify.js
+- chart.js
+
+# 🔌 외부 API 연동
+- Notion API
+- google calendar API
+- OpenWeatherMap API
+
+# 🧩 설계
+ERD Cloud
+
+# 💻 프로젝트 구현
+### 💬 조장 어수용
+
+
+### 💭 조원 김혜지
+
+
+### 🗯 조원 박현아
+
+
+### 🗨 조원 홍세민
+
+
+# 📑 최종 보고서

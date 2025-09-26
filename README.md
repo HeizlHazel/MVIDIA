@@ -110,6 +110,8 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 
 ## 🧩 설계
 ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
+<img width="1642" height="797" alt="image" src="https://github.com/user-attachments/assets/d9d836c4-a685-41bb-91db-57b2d56e1e7f" />
+
 
 <br>
 

@@ -165,7 +165,7 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 ![전자결재 신청-문서함 이동](https://github.com/user-attachments/assets/1fb79b66-3a8b-4eb7-bc58-96a4639e6602)
 
 - 전자결재 수정
-![전자결재 수정](https://github.com/user-attachments/assets/ada86ca0-69d5-470b-92a7-64c035b0d8bd)
+![메인 날씨 API, 빠른 작업](https://github.com/user-attachments/assets/6666b7c4-69d8-4d0a-8cf9-20a6ac0dfa13)
   
 - 내 문서함
 ![내 문서함](https://github.com/user-attachments/assets/eda585be-ae51-430b-93e8-92bd99426870)

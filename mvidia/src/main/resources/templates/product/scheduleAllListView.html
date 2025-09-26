@@ -290,7 +290,7 @@
         </div>
     </div>
 </div>
-
+<div id="messageBox" style="display:none; margin-top:10px; padding:10px; border-radius:5px;"></div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // 삼성전자 데이터 (SCHR0001, SCHR0006, SCHR0007, SCHR0008, SCHR0009)
@@ -622,6 +622,7 @@
     // Notion으로 보내기 기능
     function exportToNotion() {
         const button = document.querySelector('[onclick="exportToNotion()"]');
+        const messageBox = document.getElementById("messageBox");
         button.disabled = true;
         button.textContent = '전송 중...';
 
@@ -636,17 +637,32 @@
             if (data.status === 'success') {
                 alert('노션 테이블에 데이터가 성공적으로 전송되었습니다!');
             } else {
-                alert('전송 실패: ' + data.message);
+                showMessage('전송 실패: ' + data.message, 'error');
+                console.error('노션 전송 실패 상세:', data);
             }
         })
         .catch(error => {
             console.error('노션 전송 오류:', error);
-            alert('전송 중 오류가 발생했습니다.');
+            showMessage('네트워크 오류 ' + error.message, 'error');
         })
         .finally(() => {
             button.disabled = false;
             button.textContent = '📝 Notion으로 보내기';
         });
+
+        function showMessage(msg, type){
+            messageBox.style.display = "block";
+            messageBox.innerText = msg;
+
+            if(type === 'error'){
+                messageBox.style.color = "red";
+                messageBox.style.background = "#ffebee";
+            }else{
+                messageBox.style.color = "";
+                messageBox.style.background = "";
+            }
+        }
+
     }
 </script>
 </body>

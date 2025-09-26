@@ -120,7 +120,7 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 + 마이페이지 개인정보 조회, 개인정보 수정 요청
 ![마이페이지](https://github.com/lthorl/mvidia/blob/main/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80.gif)
 
-+사원 계정 수정
++ 사원 계정 수정
 ![사원 계정 수정](https://github.com/lthorl/mvidia/blob/main/%EC%82%AC%EC%9B%90%20%EA%B3%84%EC%A0%95%20%EC%88%98%EC%A0%95.gif)
 
 

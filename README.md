@@ -142,6 +142,9 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 
 ### 💭 조원 김혜지
 
+- [메인 날씨 API, 빠른 작업](https://github.com/user-attachments/assets/7440a32a-708d-462a-8105-f7f7e07933e1)
+
+
 
 ### 🗯 조원 박현아
 

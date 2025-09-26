@@ -47,6 +47,7 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 + 휴가 신청/ 사용내역 조회/ 휴가 관리 - ajax, CRUD 사용하여 휴가 신청, 사용 내역 조회 및 휴가 승인,반려 처리
 + 일정 조회 - google calendar API 사용하여 일정 확인
 + 사원 계정 생성/수정/삭제 - CRUD 사용하여 사원 계정 생성 수정 및 삭제
++ 인사 통합 관리 : ajax, CRUD 사용하여 각 부서별 인사 정보 확인 가능
 + 증명서 발급 - Notion API 사용하여 재직증명서, 경력증명서 발급 및 인쇄 가능
 + 조직도 - ajax, CRUD 사용하여 조직도 조회 및 해당 사원 정보 조회 가능
 
@@ -119,9 +120,14 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 + 마이페이지 개인정보 조회, 개인정보 수정 요청
 ![마이페이지](https://github.com/lthorl/mvidia/blob/main/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80.gif)
 
++사원 계정 수정
+
+
 
 + 휴가 신청 및 휴가 신청 목록, 휴가 사용 내역
 ![휴가 신청 및 승인](https://github.com/lthorl/mvidia/blob/main/%ED%9C%B4%EA%B0%80%20%EC%8B%A0%EC%B2%AD%20%EB%B0%8F%20%EC%8A%B9%EC%9D%B8.gif)
+
++ 인사 통합 관리
 
 
 + 일정 조회(google calendar API)

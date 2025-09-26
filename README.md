@@ -142,8 +142,35 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 
 ### 💭 조원 김혜지
 
-- [메인 날씨 API, 빠른 작업](https://github.com/user-attachments/assets/7440a32a-708d-462a-8105-f7f7e07933e1)
+- 부서별 맞춤 대시보드, 날씨 API, 빠른 작업 바로가기
+![메인 날씨 API, 빠른 작업](https://github.com/user-attachments/assets/7dca5d26-dd23-4141-aa85-fc07deaef7b3)
 
+- 전자결재 신청
+![전자결재 신청-문서함 이동](https://github.com/user-attachments/assets/1fb79b66-3a8b-4eb7-bc58-96a4639e6602)
+
+- 내 문서함
+![내 문서함](https://github.com/user-attachments/assets/eda585be-ae51-430b-93e8-92bd99426870)
+
+- 노션 전자결재 문서함
+![노션 전자결재 문서함](https://github.com/user-attachments/assets/f350ea9a-58b0-4661-aed9-e1a305ab4fed)
+
+- 노션 전자결재 아카이빙
+![노션 전자결재 아카이빙](https://github.com/user-attachments/assets/1ff03720-f37b-4f73-ab39-ad39f71c3053)
+
+- 결재 승인함
+![결재 승인함 탭](https://github.com/user-attachments/assets/53918952-4beb-446a-9e59-122c456c779d)
+
+- 결재 승인
+![전자결재 승인](https://github.com/user-attachments/assets/1b29b95a-89e8-4803-91ef-bd87c268fd43)
+
+- 전자결재 처리 로그
+![전자결재 처리 로그](https://github.com/user-attachments/assets/ab878dc4-d261-420e-8b30-c1f26ba13828)
+
+- 계정 권한 관리
+![계정 권한 관리](https://github.com/user-attachments/assets/43174ecc-859b-4e86-8db0-c85b06409d85)
+
+- 권한 변경 로그
+![권한 변경 로그](https://github.com/user-attachments/assets/f40f67ca-f309-43d7-a375-446d83044c4d)
 
 
 ### 🗯 조원 박현아

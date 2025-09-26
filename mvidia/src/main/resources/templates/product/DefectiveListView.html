@@ -179,194 +179,233 @@
 
         /* 모달 */
         /* 모달 배경 - 전체 화면을 덮도록 수정 */
-.modal-background {
-    display: none !important; /* 기본적으로 숨김 */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
+        .modal-background {
+            display: none !important; /* 기본적으로 숨김 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
 
-/* 모달이 열릴 때만 flex로 표시 */
-.modal-background.modal-show {
-    display: flex !important;
-}
+        /* 모달이 열릴 때만 flex로 표시 */
+        .modal-background.modal-show {
+            display: flex !important;
+        }
 
-/* 모달 컨텐츠 */
-.modal-content {
-    width: 600px;
-    max-width: 90vw;
-    max-height: 90vh;
-    background-color: #fff;
-    border-radius: 12px;
-    padding: 30px;
-    position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    overflow-y: auto;
-}
+        /* 모달 컨텐츠 */
+        .modal-content {
+            width: 600px;
+            max-width: 90vw;
+            max-height: 90vh;
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow-y: auto;
+        }
 
-/* 모달 폼 행 스타일 */
-.form-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 15px;
-}
+        /* 모달 폼 행 스타일 */
+        .form-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
 
-.form-row label {
-    width: 100px;
-    text-align: right;
-    font-weight: 600;
-    color: #555;
-    flex-shrink: 0;
-    padding-right: 0;
-}
+        .form-row label {
+            width: 100px;
+            text-align: right;
+            font-weight: 600;
+            color: #555;
+            flex-shrink: 0;
+            padding-right: 0;
+        }
 
-.form-row .form-input {
-    flex: 1;
-    padding: 10px 12px;
-    border: 1px solid #dee0ea;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #333;
-    transition: border-color 0.3s ease;
-}
+        .form-row .form-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #dee0ea;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #333;
+            transition: border-color 0.3s ease;
+        }
 
-.form-row .form-input:focus {
-    outline: none;
-    border-color: #186AEA;
-    box-shadow: 0 0 0 2px rgba(24, 106, 234, 0.1);
-}
+        .form-row .form-input:focus {
+            outline: none;
+            border-color: #186AEA;
+            box-shadow: 0 0 0 2px rgba(24, 106, 234, 0.1);
+        }
 
-/* 텍스트에어리어 영역 - 기존 HTML 구조에 맞춤 */
-.textarea-form {
-    margin: 25px 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 15px;
-}
+        /* 텍스트에어리어 영역 - 기존 HTML 구조에 맞춤 */
+        .textarea-form {
+            margin: 25px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
 
-.textarea-form > div:first-child {
-    width: 100px;
-    text-align: right;
-    flex-shrink: 0;
-    padding-top: 12px;
-}
+        .textarea-form > div:first-child {
+            width: 100px;
+            text-align: right;
+            flex-shrink: 0;
+            padding-top: 12px;
+        }
 
-.textarea-form > div:first-child span {
-    font-weight: 600;
-    color: #555;
-}
+        .textarea-form > div:first-child span {
+            font-weight: 600;
+            color: #555;
+        }
 
-/* 텍스트에어리어 우측 영역 */
-.textarea-form > div:not(:first-child) {
-    flex: 1;
-    display: flex;
-    flex-direction: column; /* 세로 배치로 변경 */
-}
+        /* 텍스트에어리어 우측 영역 */
+        .textarea-form > div:not(:first-child) {
+            flex: 1;
+            display: flex;
+            flex-direction: column; /* 세로 배치로 변경 */
+        }
 
-.text_box {
-    width: 100%;
-    min-height: 120px;
-    padding: 12px;
-    border: 1px solid #dee0ea;
-    border-radius: 6px;
-    resize: vertical;
-    font-family: inherit;
-    font-size: 14px;
-    line-height: 1.5;
-    transition: border-color 0.3s ease;
-    margin-bottom: 8px; /* 글자수 카운터와 간격 */
-}
+        .text_box {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid #dee0ea;
+            border-radius: 6px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            transition: border-color 0.3s ease;
+            margin-bottom: 8px; /* 글자수 카운터와 간격 */
+        }
 
-.text_box:focus {
-    outline: none;
-    border-color: #186AEA;
-    box-shadow: 0 0 0 2px rgba(24, 106, 234, 0.1);
-}
+        .text_box:focus {
+            outline: none;
+            border-color: #186AEA;
+            box-shadow: 0 0 0 2px rgba(24, 106, 234, 0.1);
+        }
 
-.text_length {
-    text-align: right;
-    font-size: 12px;
-    color: #6c757d;
-    margin-top: 0; /* 상단 여백 제거 */
-}
+        .text_length {
+            text-align: right;
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 0; /* 상단 여백 제거 */
+        }
 
-/* 기존 search-row1을 모달 버튼으로 스타일링 */
-.search-row1 {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #f0f0f0;
-}
+        /* 기존 search-row1을 모달 버튼으로 스타일링 */
+        .search-row1 {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #f0f0f0;
+        }
 
-.search-row1 .btn {
-    min-width: 100px;
-    padding: 12px 24px;
-    font-size: 14px;
-    font-weight: 500;
-}
+        .search-row1 .btn {
+            min-width: 100px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+        }
 
-/* 닫기 버튼 */
-#closeModalBtn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    border: none;
-    background: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #999;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-}
+        /* 닫기 버튼 */
+        #closeModalBtn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            border: none;
+            background: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
 
-#closeModalBtn:hover {
-    background-color: #f8f9fa;
-    color: #333;
-}
+        #closeModalBtn:hover {
+            background-color: #f8f9fa;
+            color: #333;
+        }
 
-/* 반응형 모달 */
-@media (max-width: 768px) {
-    .modal-content {
-        width: 95vw;
-        padding: 20px;
-    }
+        /* 반응형 모달 */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95vw;
+                padding: 20px;
+            }
 
-    .form-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
+            .form-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
 
-    .form-row label {
-        width: 100%;
-        text-align: left;
-    }
+            .form-row label {
+                width: 100%;
+                text-align: left;
+            }
 
-    .textarea-form {
-        flex-direction: column;
-        gap: 8px;
-    }
+            .textarea-form {
+                flex-direction: column;
+                gap: 8px;
+            }
 
-    .textarea-form > div:first-child {
-        width: 100%;
-        text-align: left;
-        padding-top: 0;
-    }
-}
+            .textarea-form > div:first-child {
+                width: 100%;
+                text-align: left;
+                padding-top: 0;
+            }
+        }
+
+        /* 상태 배지 공통 스타일 */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            min-width: 50px;
+        }
+
+        /* W - 대기 (회색) */
+        .status-waiting {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+
+        /* K - 접수 (파란색) */
+        .status-received {
+            background-color: #cce7ff;
+            color: #0056b3;
+            border: 1px solid #99d6ff;
+        }
+
+        /* P - 처리중 (주황색) */
+        .status-processing {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        /* C - 완료 (초록색) */
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
     </style>
 </head>
 <body>
@@ -529,6 +568,24 @@
     let codeToName = {};
     let nameToCode = {};
 
+    // 1. 처리상태 배지 생성 함수
+    function getStatusBadge(status) {
+
+    }
+
+    // 2. updateTableAndPagination 함수에서 사용할 때:
+    // 기존: <td>${d.statusName}</td>
+    // 수정: <td>${getStatusBadge(d.defStatus)}</td>
+
+    // 3. 페이지 로드시 기존 테이블 변환 (추가 옵션)
+    $(document).ready(function() {
+        // 기존 테이블의 상태 열을 배지로 변환
+        $('#defTable tbody tr').each(function() {
+
+        });
+    });
+
+
     // DOM 로드 완료 후 실행
     $(document).ready(function() {
         // 페이지 로드시 제품 리스트 미리 로드 (검색창 자동완성용)
@@ -689,7 +746,7 @@ function updateTableAndPagination(list, pi, searchParams) {
                     <td>${d.prodName}</td>
                     <td>${d.defType}</td>
                     <td>${d.defQty}</td>
-                    <td>${d.statusName}</td>
+                    <td>${getStatusBadge(d.defStatus)}</td>
                     <td>${d.remarks}</td>
                 </tr>
             `;
@@ -1074,6 +1131,7 @@ function updateTableAndPagination(list, pi, searchParams) {
         // 또는 브로드캐스트를 통한 다른 탭 갱신
         localStorage.setItem('dashboardRefresh', Date.now());
     }
+
 </script>
 </body>
 </html>

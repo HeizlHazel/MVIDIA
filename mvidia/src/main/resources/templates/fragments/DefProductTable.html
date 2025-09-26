@@ -52,6 +52,8 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
+
+
     </style>
 </head>
 <body>
@@ -79,7 +81,18 @@
                 <td th:text="${d.prodName}"></td>
                 <td th:text="${d.defType}"></td>
                 <td th:text="${d.defQty}"></td>
-                <td th:text="${d.statusName}"></td>
+                <td>
+                    <span th:class="'status-badge ' +
+                        (${d.defStatus} == 'W' ? 'status-waiting' :
+                         ${d.defStatus} == 'K' ? 'status-received' :
+                         ${d.defStatus} == 'P' ? 'status-processing' :
+                         ${d.defStatus} == 'C' ? 'status-completed' : '')"
+                          th:text="${d.defStatus} == 'W' ? '대기' :
+                                   ${d.defStatus} == 'K' ? '접수' :
+                                   ${d.defStatus} == 'P' ? '처리중' :
+                                   ${d.defStatus} == 'C' ? '완료' : ${d.defStatus}">
+                    </span>
+                </td>
                 <td class="remarks" th:text="${d.remarks}"></td>
             </tr>
             </tbody>

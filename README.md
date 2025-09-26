@@ -95,9 +95,6 @@ Connection Pool : HikariCP (Spring Boot 기본)
 Frontend Template Engine : Thymeleaf   
 Markup & Styling : HTML5, CSS3, Bootstrap   
 Scripting : JavaScript, jQuery   
-   
-- Database   
-DBMS : Oracle Database   
 
 <br>
 

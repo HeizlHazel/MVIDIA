@@ -142,3 +142,4 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 
 
 # 📑 최종 보고서
+[2조(codescape)_최종보고서.pdf](https://github.com/user-attachments/files/22552199/2.codescape._.pdf)

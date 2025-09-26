@@ -75,29 +75,39 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 
 ## ⚙ 개발 환경
 - OS : Windows10
-- Developer Tools : IntelliJ / VS Code / SqlDeveloper
+- Developer Tools : IntelliJ IDEA / VS Code / SqlDeveloper
 - Server : Apache Tomcat 9.0
 - DBMS : Oracle
-- Management : Git, GitHub
+- VCS : Git, GitHub, SourceTree
+- Deployment / Environment: Spring Boot 내장 서버 기반 환경 구축
 
 <br>
 
-## 🔧 사용 기술
-- Backend : JAVA, Spring Boot, MyBatis 
-- Frontend : HTML5, CSS3, JavaScript, jQuery, Bootstrap, Thymeleaf
+## 🔧 기술 스택
+- Backend
+Backend Framework : Spring Boot
+Language : Java
+Data Access : MyBatis
+Build Tool : Maven/Gradle
+
+- Frontend
+Frontend Template Engine : Thymeleaf
+Markup & Styling : HTML5, CSS3, Bootstrap
+Scripting : JavaScript, jQuery
+
+- Database
+DBMS : Oracle Database
+Connection Pool : HikariCP (Spring Boot 기본)
 
 <br>
 
-## 💡 라이브러리
-- alertify.js
-- chart.js
-  
-<br>
+## 💡 API 연동 & 라이브러리
+- Notion API(증명서 발급, 전자결재, 품질 모니터링, 급여 명세서 관리 등)
+- Google Calendar API(일정 조회)
+- OpenWeatherMap API(날씨 조회)
+- File Handling: 파일 업로드/다운로드 (프로필 사진, 첨부 문서 등)
+- Chart / Visualization: 차트 라이브러리(작업 일정, 품질 모니터링, 수익 통계 등 시각화)
 
-## 🔌 외부 API 연동
-- Notion API
-- google calendar API
-- OpenWeatherMap API
 
 <br>
 

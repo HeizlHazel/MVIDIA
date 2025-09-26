@@ -162,6 +162,9 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 - 전자결재 신청
 ![전자결재 신청-문서함 이동](https://github.com/user-attachments/assets/1fb79b66-3a8b-4eb7-bc58-96a4639e6602)
 
+- 전자결재 수정
+![전자결재 수정](https://github.com/user-attachments/assets/ada86ca0-69d5-470b-92a7-64c035b0d8bd)
+  
 - 내 문서함
 ![내 문서함](https://github.com/user-attachments/assets/eda585be-ae51-430b-93e8-92bd99426870)
 
@@ -171,10 +174,10 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 - 노션 전자결재 아카이빙
 ![노션 전자결재 아카이빙](https://github.com/user-attachments/assets/1ff03720-f37b-4f73-ab39-ad39f71c3053)
 
-- 결재 승인함
+- 전자결재 승인함
 ![결재 승인함 탭](https://github.com/user-attachments/assets/53918952-4beb-446a-9e59-122c456c779d)
 
-- 결재 승인
+- 전자결재 승인
 ![전자결재 승인](https://github.com/user-attachments/assets/1b29b95a-89e8-4803-91ef-bd87c268fd43)
 
 - 전자결재 처리 로그

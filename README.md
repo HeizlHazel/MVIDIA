@@ -35,6 +35,7 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 - 2025-09-25(금) : 프로젝트 발표
 <img width="1096" height="511" alt="image" src="https://github.com/user-attachments/assets/ecd48314-35fc-44d0-bee8-2f4c59b95217" />
 
+   
 <br>
 
 # 👥 구성원 및 역할

@@ -76,7 +76,7 @@ $(document).ready(function() {
                 alertify.error('퇴근 처리에 실패했습니다.');
             });
     });
-
+});
 
 
 

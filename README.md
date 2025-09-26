@@ -22,7 +22,7 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 이를 통해 기업은 업무 처리 속도의 향상, 부서 간 협업 강화, 데이터 신뢰성 제고, 관리 비용 절감 등 다양한 효과를 기대할 수 있음.
 
 
-
+<br>
 
 # 📆 개발 기간
 - 2025-07-29(화) ~ 2025-08-04(월) : 주제, 프로젝트명, 팀장 선정
@@ -35,7 +35,7 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 - 2025-09-25(금) : 프로젝트 발표
 <img width="1096" height="511" alt="image" src="https://github.com/user-attachments/assets/ecd48314-35fc-44d0-bee8-2f4c59b95217" />
 
-
+<br>
 
 # 👥 구성원 및 역할
 
@@ -67,8 +67,9 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 
 
 
-### 🗨 조원 홍세민
+### 🗨 조원 홍세민  
 
+<br>
 
 # ⚙ 개발 환경
 - OS : Windows10
@@ -77,27 +78,31 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 - DBMS : Oracle
 - Management : Git, GitHub
 
+<br>
 
 # 🔧 사용 기술
 - Backend : JAVA, Spring Boot, MyBatis 
 - Frontend : HTML5, CSS3, JavaScript, jQuery, Bootstrap, Thymeleaf
 
+<br>
 
 # 💡 라이브러리
 - alertify.js
 - chart.js
-
+  
+<br>
 
 # 🔌 외부 API 연동
 - Notion API
 - google calendar API
 - OpenWeatherMap API
 
+<br>
 
 # 🧩 설계
 ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 
-
+<br>
 # 💻 프로젝트 구현
 ### 💬 조장 어수용
 
@@ -141,6 +146,8 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 
 ### 🗨 조원 홍세민
 
+
+<br>
 
 # 📑 최종 보고서
 [2조(codescape)_최종보고서.pdf](https://github.com/user-attachments/files/22552199/2.codescape._.pdf)

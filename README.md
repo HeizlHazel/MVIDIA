@@ -1,7 +1,7 @@
 <img width="300" height="300" alt="b32b62ffe11d899d" src="https://github.com/user-attachments/assets/b799cfb7-6780-485c-8ed0-5841d39c9d62" />
 
-# 📌 프로젝트 소개
-## ERP 시스템 - MVIDIA 구축
+## 📌 프로젝트 소개
+### ERP 시스템 - MVIDIA 구축
 _외부 공용협업툴과 실시간 연동되는 사내 ERP 시스템 만들기_   
 _(인적자원관리, 재무관리, 품질보증관리)_   
    
@@ -24,7 +24,7 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 
 <br>
 
-# 📆 개발 기간
+## 📆 개발 기간
 - 2025-07-29(화) ~ 2025-08-04(월) : 주제, 프로젝트명, 팀장 선정
 - 2025-08-04(월) ~ 2025-08-11(월) : 기획의도, 유사사이트 분석, 클라이언트 요구사항분석, UseCase Diagram 작성
 - 2025-08-11(월) ~ 2025-08-18(월) : 사이트맵, 화면설계 회의, 메인페이지 화면설계
@@ -38,7 +38,7 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 <br>
 <br>
 
-# 👥 구성원 및 역할
+## 👥 구성원 및 역할
 
 ### 💬 조장 어수용
 + 로그인/로그아웃 - CRUD 사용하여 login한 사용자 정보 session에 저장
@@ -72,7 +72,7 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 
 <br>
 
-# ⚙ 개발 환경
+## ⚙ 개발 환경
 - OS : Windows10
 - Developer Tools : IntelliJ / VS Code / SqlDeveloper
 - Server : Apache Tomcat 9.0
@@ -81,31 +81,31 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 
 <br>
 
-# 🔧 사용 기술
+## 🔧 사용 기술
 - Backend : JAVA, Spring Boot, MyBatis 
 - Frontend : HTML5, CSS3, JavaScript, jQuery, Bootstrap, Thymeleaf
 
 <br>
 
-# 💡 라이브러리
+## 💡 라이브러리
 - alertify.js
 - chart.js
   
 <br>
 
-# 🔌 외부 API 연동
+## 🔌 외부 API 연동
 - Notion API
 - google calendar API
 - OpenWeatherMap API
 
 <br>
 
-# 🧩 설계
+## 🧩 설계
 ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 
 <br>
 
-# 💻 프로젝트 구현
+## 💻 프로젝트 구현
 ### 💬 조장 어수용
 
 + 로그인 로그아웃
@@ -151,5 +151,5 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 
 <br>
 
-# 📑 최종 보고서
+## 📑 최종 보고서
 [2조(codescape)_최종보고서.pdf](https://github.com/user-attachments/files/22552199/2.codescape._.pdf)

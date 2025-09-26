@@ -47,6 +47,7 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 + 휴가 신청/ 사용내역 조회/ 휴가 관리 - ajax, CRUD 사용하여 휴가 신청, 사용 내역 조회 및 휴가 승인,반려 처리
 + 일정 조회 - google calendar API 사용하여 일정 확인
 + 사원 계정 생성/수정/삭제 - CRUD 사용하여 사원 계정 생성 수정 및 삭제
++ 인사 통합 관리 - ajax, CRUD 사용하여 각 부서별 인사 정보 확인 가능
 + 증명서 발급 - Notion API 사용하여 재직증명서, 경력증명서 발급 및 인쇄 가능
 + 조직도 - ajax, CRUD 사용하여 조직도 조회 및 해당 사원 정보 조회 가능
 
@@ -74,29 +75,39 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 
 ## ⚙ 개발 환경
 - OS : Windows10
-- Developer Tools : IntelliJ / VS Code / SqlDeveloper
+- Developer Tools : IntelliJ IDEA / VS Code / SqlDeveloper
 - Server : Apache Tomcat 9.0
 - DBMS : Oracle
-- Management : Git, GitHub
+- VCS : Git, GitHub, SourceTree
+- Deployment / Environment: Spring Boot 내장 서버 기반 환경 구축
 
 <br>
 
-## 🔧 사용 기술
-- Backend : JAVA, Spring Boot, MyBatis 
-- Frontend : HTML5, CSS3, JavaScript, jQuery, Bootstrap, Thymeleaf
+## 🔧 기술 스택
+- Backend
+Backend Framework : Spring Boot
+Language : Java
+Data Access : MyBatis
+Build Tool : Maven/Gradle
+
+- Frontend
+Frontend Template Engine : Thymeleaf
+Markup & Styling : HTML5, CSS3, Bootstrap
+Scripting : JavaScript, jQuery
+
+- Database
+DBMS : Oracle Database
+Connection Pool : HikariCP (Spring Boot 기본)
 
 <br>
 
-## 💡 라이브러리
-- alertify.js
-- chart.js
-  
-<br>
+## 💡 API 연동 & 라이브러리
+- Notion API(증명서 발급, 전자결재, 품질 모니터링, 급여 명세서 관리 등)
+- Google Calendar API(일정 조회)
+- OpenWeatherMap API(날씨 조회)
+- File Handling: 파일 업로드/다운로드 (프로필 사진, 첨부 문서 등)
+- Chart / Visualization: 차트 라이브러리(작업 일정, 품질 모니터링, 수익 통계 등 시각화)
 
-## 🔌 외부 API 연동
-- Notion API
-- google calendar API
-- OpenWeatherMap API
 
 <br>
 
@@ -119,9 +130,15 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 + 마이페이지 개인정보 조회, 개인정보 수정 요청
 ![마이페이지](https://github.com/lthorl/mvidia/blob/main/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80.gif)
 
++ 사원 계정 수정
+![사원 계정 수정](https://github.com/lthorl/mvidia/blob/main/%EC%82%AC%EC%9B%90%20%EA%B3%84%EC%A0%95%20%EC%88%98%EC%A0%95.gif)
+
 
 + 휴가 신청 및 휴가 신청 목록, 휴가 사용 내역
 ![휴가 신청 및 승인](https://github.com/lthorl/mvidia/blob/main/%ED%9C%B4%EA%B0%80%20%EC%8B%A0%EC%B2%AD%20%EB%B0%8F%20%EC%8A%B9%EC%9D%B8.gif)
+
++ 인사 통합 관리
+![인사 통합 관리](https://github.com/lthorl/mvidia/blob/main/%EC%9D%B8%EC%82%AC%20%ED%86%B5%ED%95%A9%20%EA%B4%80%EB%A6%AC.gif)
 
 
 + 일정 조회(google calendar API)
@@ -141,6 +158,36 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 
 
 ### 💭 조원 김혜지
+
+- 부서별 맞춤 대시보드, 날씨 API, 빠른 작업 바로가기
+![메인 날씨 API, 빠른 작업](https://github.com/user-attachments/assets/7dca5d26-dd23-4141-aa85-fc07deaef7b3)
+
+- 전자결재 신청
+![전자결재 신청-문서함 이동](https://github.com/user-attachments/assets/1fb79b66-3a8b-4eb7-bc58-96a4639e6602)
+
+- 내 문서함
+![내 문서함](https://github.com/user-attachments/assets/eda585be-ae51-430b-93e8-92bd99426870)
+
+- 노션 전자결재 문서함
+![노션 전자결재 문서함](https://github.com/user-attachments/assets/f350ea9a-58b0-4661-aed9-e1a305ab4fed)
+
+- 노션 전자결재 아카이빙
+![노션 전자결재 아카이빙](https://github.com/user-attachments/assets/1ff03720-f37b-4f73-ab39-ad39f71c3053)
+
+- 결재 승인함
+![결재 승인함 탭](https://github.com/user-attachments/assets/53918952-4beb-446a-9e59-122c456c779d)
+
+- 결재 승인
+![전자결재 승인](https://github.com/user-attachments/assets/1b29b95a-89e8-4803-91ef-bd87c268fd43)
+
+- 전자결재 처리 로그
+![전자결재 처리 로그](https://github.com/user-attachments/assets/ab878dc4-d261-420e-8b30-c1f26ba13828)
+
+- 계정 권한 관리
+![계정 권한 관리](https://github.com/user-attachments/assets/43174ecc-859b-4e86-8db0-c85b06409d85)
+
+- 권한 변경 로그
+![권한 변경 로그](https://github.com/user-attachments/assets/f40f67ca-f309-43d7-a375-446d83044c4d)
 
 
 ### 🗯 조원 박현아

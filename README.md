@@ -121,13 +121,14 @@ ERD 설계: [ERD Cloud](https://www.erdcloud.com/d/63X6sALm9KCksFYod)
 ![마이페이지](https://github.com/lthorl/mvidia/blob/main/%EB%A7%88%EC%9D%B4%ED%8E%98%EC%9D%B4%EC%A7%80.gif)
 
 +사원 계정 수정
-
+![사원 계정 수정](https://github.com/lthorl/mvidia/blob/main/%EC%82%AC%EC%9B%90%20%EA%B3%84%EC%A0%95%20%EC%88%98%EC%A0%95.gif)
 
 
 + 휴가 신청 및 휴가 신청 목록, 휴가 사용 내역
 ![휴가 신청 및 승인](https://github.com/lthorl/mvidia/blob/main/%ED%9C%B4%EA%B0%80%20%EC%8B%A0%EC%B2%AD%20%EB%B0%8F%20%EC%8A%B9%EC%9D%B8.gif)
 
 + 인사 통합 관리
+![인사 통합 관리](https://github.com/lthorl/mvidia/blob/main/%EC%9D%B8%EC%82%AC%20%ED%86%B5%ED%95%A9%20%EA%B4%80%EB%A6%AC.gif)
 
 
 + 일정 조회(google calendar API)

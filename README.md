@@ -88,7 +88,8 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 Backend Framework : Spring Boot   
 Language : Java   
 Data Access : MyBatis   
-Build Tool : Maven/Gradle   
+Build Tool : Maven/Gradle
+Connection Pool : HikariCP (Spring Boot 기본)   
    
 - Frontend   
 Frontend Template Engine : Thymeleaf   
@@ -97,7 +98,6 @@ Scripting : JavaScript, jQuery
    
 - Database   
 DBMS : Oracle Database   
-Connection Pool : HikariCP (Spring Boot 기본)
 
 <br>
 

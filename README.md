@@ -83,15 +83,15 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 
 <br>
 
-## 🔧 기술 스택
-###Backend   
+## 🔧 기술 스택   
+### Backend   
 - Backend Framework : Spring Boot   
 - Language : Java   
 - Data Access : MyBatis   
 - Build Tool : Maven/Gradle
 - Connection Pool : HikariCP (Spring Boot 기본)   
    
-###Frontend   
+### Frontend
 - Frontend Template Engine : Thymeleaf   
 - Markup & Styling : HTML5, CSS3, Bootstrap   
 - Scripting : JavaScript, jQuery   

@@ -1,4 +1,5 @@
-<img width="300" height="300" alt="b32b62ffe11d899d" src="https://github.com/user-attachments/assets/b799cfb7-6780-485c-8ed0-5841d39c9d62" />
+<img width="300" height="300" alt="MVIDIA_LOGO" src="https://github.com/user-attachments/assets/5aff0f0d-a627-4ee2-9e50-ebf5240772cc" />
+
 
 ## 📌 프로젝트 소개
 ### ERP 시스템 - MVIDIA 구축

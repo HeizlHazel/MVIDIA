@@ -569,9 +569,58 @@
     let nameToCode = {};
 
     // 1. 처리상태 배지 생성 함수
-    function getStatusBadge(status) {
+function getStatusBadge(status) {
+    let badgeClass = 'status-badge ';
+    let statusText = '';
 
+    switch(status) {
+        case 'W':
+            badgeClass += 'status-waiting';
+            statusText = '대기';
+            break;
+        case 'K':
+            badgeClass += 'status-received';
+            statusText = '접수';
+            break;
+        case 'P':
+            badgeClass += 'status-processing';
+            statusText = '처리중';
+            break;
+        case 'C':
+            badgeClass += 'status-completed';
+            statusText = '완료';
+            break;
+        default:
+            statusText = status || '';
     }
+
+    return `<span class="${badgeClass}">${statusText}</span>`;
+}
+
+// 3. 페이지 로드시 기존 테이블 변환 (추가 옵션)
+$(document).ready(function() {
+    // 기존 테이블의 상태 열을 배지로 변환
+    $('#defTable tbody tr').each(function() {
+        const $statusCell = $(this).find('td').eq(7); // 처리 상태는 8번째 열
+        const statusText = $statusCell.text().trim();
+
+        // 이미 span 태그가 있으면 건너뜀
+        if ($statusCell.find('span.status-badge').length > 0) {
+            return;
+        }
+
+        // 상태 텍스트를 코드로 변환
+        let statusCode = '';
+        if (statusText === '대기') statusCode = 'W';
+        else if (statusText === '접수') statusCode = 'K';
+        else if (statusText === '처리중') statusCode = 'P';
+        else if (statusText === '완료') statusCode = 'C';
+
+        if (statusCode) {
+            $statusCell.html(getStatusBadge(statusCode));
+        }
+    });
+});
 
     // 2. updateTableAndPagination 함수에서 사용할 때:
     // 기존: <td>${d.statusName}</td>

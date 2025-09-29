@@ -16,7 +16,7 @@
         }
 
         th {
-            text-align: center; /* 헤더 중앙 정렬 */
+            text-align: center;
             background-color: #f8f9fa;
             padding: 12px;
             font-weight: 600;
@@ -30,15 +30,13 @@
             color: #555;
         }
 
-        /* 체크박스 컬럼 */
         td:first-child {
             width: 40px;
             padding: 0;
         }
 
-        /* 비고 컬럼 */
         th:last-child, td:last-child {
-            width: 300px; /* 필요에 따라 조정 */
+            width: 300px;
             text-align: left;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -46,57 +44,83 @@
         }
 
         th.remarks, td.remarks {
-            width: 300px;       /* 필요에 따라 조정 */
-            text-align: left;   /* 내용은 왼쪽 정렬 */
+            width: 300px;
+            text-align: left;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
 
+        /* 상태 배지 스타일 */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            min-width: 50px;
+        }
 
+        .status-waiting {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+
+        .status-received {
+            background-color: #cce7ff;
+            color: #0056b3;
+            border: 1px solid #99d6ff;
+        }
+
+        .status-processing {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
     </style>
 </head>
 <body>
-    <div th:fragment="defTable">
-        <table id="defTable" align="left">
-            <thead>
-            <tr>
-                <th>선택</th>
-                <th>불량등록번호</th>
-                <th>발생일</th>
-                <th>제품코드</th>
-                <th>제품명</th>
-                <th>불량유형</th>
-                <th>수량</th>
-                <th>처리 상태</th>
-                <th class="remarks">비고</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="d : ${list}" th:data-defno="${d.defNo}">
-                <td><input type="checkbox" class="chk" name="dno" th:value="${d.defNo}"></td>
-                <td class="defNo" th:text="${d.defNo}"></td>
-                <td th:text="${d.occurDate}"></td>
-                <td th:text="${d.prodCode}"></td>
-                <td th:text="${d.prodName}"></td>
-                <td th:text="${d.defType}"></td>
-                <td th:text="${d.defQty}"></td>
-                <td>
-                    <span th:class="'status-badge ' +
-                        (${d.defStatus} == 'W' ? 'status-waiting' :
-                         ${d.defStatus} == 'K' ? 'status-received' :
-                         ${d.defStatus} == 'P' ? 'status-processing' :
-                         ${d.defStatus} == 'C' ? 'status-completed' : '')"
-                          th:text="${d.defStatus} == 'W' ? '대기' :
-                                   ${d.defStatus} == 'K' ? '접수' :
-                                   ${d.defStatus} == 'P' ? '처리중' :
-                                   ${d.defStatus} == 'C' ? '완료' : ${d.defStatus}">
+<div th:fragment="defTable">
+    <table id="defTable" align="left">
+        <thead>
+        <tr>
+            <th>선택</th>
+            <th>불량등록번호</th>
+            <th>발생일</th>
+            <th>제품코드</th>
+            <th>제품명</th>
+            <th>불량유형</th>
+            <th>수량</th>
+            <th>처리 상태</th>
+            <th class="remarks">비고</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="d : ${list}" th:data-defno="${d.defNo}">
+            <td><input type="checkbox" class="chk" name="dno" th:value="${d.defNo}"></td>
+            <td class="defNo" th:text="${d.defNo}"></td>
+            <td th:text="${d.occurDate}"></td>
+            <td th:text="${d.prodCode}"></td>
+            <td th:text="${d.prodName}"></td>
+            <td th:text="${d.defType}"></td>
+            <td th:text="${d.defQty}"></td>
+            <td>
+                    <span th:class="${'status-badge ' + (d.defStatus == 'W' ? 'status-waiting' : d.defStatus == 'K' ? 'status-received' : d.defStatus == 'P' ? 'status-processing' : d.defStatus == 'C' ? 'status-completed' : '')}"
+                          th:text="${d.defStatus == 'W' ? '대기' : d.defStatus == 'K' ? '접수' : d.defStatus == 'P' ? '처리중' : d.defStatus == 'C' ? '완료' : d.defStatus}">
                     </span>
-                </td>
-                <td class="remarks" th:text="${d.remarks}"></td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+            </td>
+            <td class="remarks" th:text="${d.remarks}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
 </body>
 </html>

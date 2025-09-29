@@ -1,4 +1,5 @@
-<img width="300" height="300" alt="b32b62ffe11d899d" src="https://github.com/user-attachments/assets/b799cfb7-6780-485c-8ed0-5841d39c9d62" />
+<img width="300" height="300" alt="MVIDIA_LOGO" src="https://github.com/user-attachments/assets/5aff0f0d-a627-4ee2-9e50-ebf5240772cc" />
+
 
 ## 📌 프로젝트 소개
 ### ERP 시스템 - MVIDIA 구축
@@ -70,6 +71,13 @@ ERP 내에서는 각 부서가 요구하는 기능과 메뉴를 맞춤형으로 
 
 
 ### 🗨 조원 홍세민  
+- 쪽지 보내기 - 조직도 기반 사원 검색 후 수신자 지정 가능 및 AJAX를 활용한 실시간 전송/수신
+- 수신함 - 페이징 및 필터 지원 (별 표시로 중요 표시 토글)
+- 급여 현황 - 사원별 조건 검색 가능
+- 급여 계산 로직 - 추가 수당 자동 계산 및 세금 자동 공제
+- 급여 명세서 출력 - Notion API 연동을 이용한 PDF 출력
+- 분기별 수익 출력 - Chart.js를 활용한 막대 + 라인 혼합 그래프 구현
+- 부품 재고 검색 - CRUD + AJAX 기반 검색창에 키워드 입력 시 자동 목록 출력
 
 <br>
 

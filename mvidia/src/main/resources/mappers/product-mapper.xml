@@ -15,13 +15,13 @@
     </resultMap>
 
     <!-- 생산 제품 리스트 카운트 -->
-    <select id="selectListCount" resultType="_int" parameterType="string">
+    <select id="selectListCount" resultType="_int">
         select
                count(*)
           from tb_production_Quality q
         <where>
-            <if test="keyword != null and keyword.trim() != ''">
-                (
+            <if test="keyword != null and keyword != ''">
+                and (
                     upper(q.prod_code) like '%' || upper(#{keyword}) || '%'
                  or upper(q.prod_name) like '%' || upper(#{keyword}) || '%'
                 )
@@ -30,7 +30,7 @@
     </select>
 
     <!-- 생산 제품 리스트 조회 -->
-    <select id="selectList" resultMap="ProductResultSet" parameterType="string">
+    <select id="selectList" resultMap="ProductResultSet">
         select
                q.prod_code
              , q.prod_name
@@ -41,8 +41,8 @@
           left join tb_product_store p on p.local_code = q.local_code
           left join tb_status s on s.status_code = q.prod_status
         <where>
-            <if test="keyword != null and keyword.trim() != ''">
-                (
+            <if test="keyword != null and keyword != ''">
+                and (
                     upper(q.prod_code) like '%' || upper(#{keyword}) || '%'
                  or upper(q.prod_name) like '%' || upper(#{keyword}) || '%'
                 )

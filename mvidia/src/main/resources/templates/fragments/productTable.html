@@ -7,30 +7,96 @@
 <head>
     <meta charset="UTF-8">
     <title>productTable</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            table-layout: fixed;
+        }
+
+        th {
+            text-align: center;
+            background-color: #f8f9fa;
+            padding: 12px;
+            font-weight: 600;
+            border-bottom: 2px solid #dee0ea;
+        }
+
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            color: #555;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* 상태 배지 공통 스타일 */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            min-width: 50px;
+        }
+
+        /* 정상 - 초록색 */
+        .status-normal {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* 주의 - 노란색 */
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        /* 부족 - 빨간색 */
+        .status-shortage {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
 </head>
 <body>
-    <div th:fragment="prodTable">
-        <table>
-            <thead>
-            <tr>
-                <th>제품코드</th>
-                <th>제품명</th>
-                <th>단가(원)</th>
-                <th>재고수량</th>
-                <th>재고상태</th>
-            </tr>
-            </thead>
+<div th:fragment="prodTable">
+    <table>
+        <thead>
+        <tr>
+            <th>제품코드</th>
+            <th>제품명</th>
+            <th>단가(원)</th>
+            <th>재고수량</th>
+            <th>재고상태</th>
+        </tr>
+        </thead>
 
-            <tbody>
-            <tr th:each="p : ${list}">
-                <td th:text="${p.prodCode}"></td>
-                <td th:text="${p.prodName}"></td>
-                <td th:text="${p.price}"></td>
-                <td th:text="${p.stock}"></td>
-                <td th:text="${p.statusName}"></td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+        <tbody>
+        <tr th:each="p : ${list}">
+            <td th:text="${p.prodCode}"></td>
+            <td th:text="${p.prodName}"></td>
+            <td th:text="${p.price}"></td>
+            <td th:text="${p.stock}"></td>
+            <td>
+                    <span th:class="${'status-badge ' +
+                        (p.statusName == '정상' ? 'status-normal' :
+                         p.statusName == '주의' ? 'status-warning' :
+                         p.statusName == '부족' ? 'status-shortage' : '')}"
+                          th:text="${p.statusName}">
+                    </span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
 </body>
 </html>

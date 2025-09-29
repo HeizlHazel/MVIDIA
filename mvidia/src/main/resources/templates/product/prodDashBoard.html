@@ -198,25 +198,41 @@
         }
 
         .status-badge {
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 12px;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            min-width: 50px;
         }
 
+        /* W - 대기 (회색) */
         .status-pending {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #dee2e6;
+        }
+
+        /* K - 접수 (파란색) */
+        .status-received {
+            background-color: #cce7ff;
+            color: #0056b3;
+            border: 1px solid #99d6ff;
+        }
+
+        /* P - 처리중 (주황색) */
+        .status-processing {
             background-color: #fff3cd;
             color: #856404;
+            border: 1px solid #ffeaa7;
         }
 
-        .status-processing {
+        /* C - 완료 (초록색) */
+        .status-completed {
             background-color: #d4edda;
             color: #155724;
-        }
-
-        .status-completed {
-            background-color: #d1ecf1;
-            color: #0c5460;
+            border: 1px solid #c3e6cb;
         }
 
         /* 4분면 - 차트 */
@@ -390,7 +406,7 @@
     console.log('recentDefective:', recentDefective);
     console.log('top5Prog:', top5Prog);
 
-    // 1. 불량 제품 테이블 업데이트 함수
+    // 1. 불량 제품 테이블 업데이트 함수 내부의 statusMap 수정
     function updateDefectiveTable() {
         const tbody = document.getElementById('defectiveTableBody');
 
@@ -400,9 +416,9 @@
         }
 
         const statusMap = {
-            'P': { text: '처리중', class: 'status-processing' },
             'W': { text: '대기', class: 'status-pending' },
-            'K': { text: '접수', class: 'status-completed' },
+            'K': { text: '접수', class: 'status-received' },
+            'P': { text: '처리중', class: 'status-processing' },
             'C': { text: '완료', class: 'status-completed' }
         };
 

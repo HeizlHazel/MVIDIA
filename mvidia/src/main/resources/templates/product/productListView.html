@@ -158,6 +158,34 @@
             color: #adb5bd;
             pointer-events: none;
         }
+        /* 상태 배지 공통 스타일 - JavaScript 동적 생성용 */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            display: inline-block;
+            min-width: 50px;
+        }
+
+        .status-normal {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-shortage {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
@@ -178,41 +206,167 @@
     <!-- 테이블 영역 -->
     <div class="table-container" id="tableArea" th:include="~{fragments/productTable :: prodTable}"></div>
 
-    <!-- 페이징 -->
+    <!-- 페이징 - 기존 Thymeleaf 방식 삭제하고 아래로 교체 -->
     <div id="pagingArea">
         <ul class="pagination">
             <li th:classappend="${pi.currentPage == 1} ? 'disabled'">
-                <a th:href="@{|plist.bo?cpage=${pi.currentPage > 1 ? pi.currentPage-1 : 1}&keyword=${keyword}|}">이전</a>
+                <a href="javascript:void(0);"
+                   th:attr="data-page=${pi.currentPage > 1 ? pi.currentPage-1 : 1}">이전</a>
             </li>
             <li th:each="pageNum : ${#numbers.sequence(pi.startPage, pi.endPage)}"
                 th:classappend="${pageNum == pi.currentPage} ? 'active'">
-                <a th:href="@{|plist.bo?cpage=${pageNum}&keyword=${keyword}|}" th:text="${pageNum}"></a>
+                <a href="javascript:void(0);"
+                   th:attr="data-page=${pageNum}"
+                   th:text="${pageNum}"></a>
             </li>
             <li th:classappend="${pi.currentPage == pi.maxPage} ? 'disabled'">
-                <a th:href="@{|plist.bo?cpage=${pi.currentPage < pi.maxPage ? pi.currentPage+1 : pi.maxPage}&keyword=${keyword}|}">다음</a>
+                <a href="javascript:void(0);"
+                   th:attr="data-page=${pi.currentPage < pi.maxPage ? pi.currentPage+1 : pi.maxPage}">다음</a>
             </li>
         </ul>
     </div>
-</div>
 
 <script>
+    // 전역 변수 - Thymeleaf 값이 제대로 안 들어올 수 있으므로 기본값 명시
+    let currentKeyword = '[[${keyword}]]' || '';
+
+    // 페이지 로드 시 실행
+    document.addEventListener('DOMContentLoaded', function() {
+        // currentKeyword 초기화 확인
+        console.log('초기 keyword:', currentKeyword);
+
+        // 페이지네이션 링크에 이벤트 연결
+        bindPaginationEvents();
+    });
+
+    // 검색 폼 제출
     document.querySelector("#searchForm").addEventListener("submit", function(e) {
         e.preventDefault();
         let form = e.target;
-        let keyword = form.keyword.value;
+        let keyword = form.keyword.value.trim();
 
         if(keyword.includes("|")){
             keyword = keyword.split("|")[0].trim();
         }
 
-        fetch(`/plist.bo?keyword=${encodeURIComponent(keyword)}&ajax=true`, {
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        })
-        .then(resp => resp.text())
-        .then(html => {
-            document.querySelector("#tableArea").innerHTML = html;
-        });
+        currentKeyword = keyword;
+        searchProducts(1, keyword);
     });
+
+    // 검색 실행 함수
+    function searchProducts(cpage, keyword) {
+        console.log('searchProducts 호출:', cpage, keyword); // 디버깅용
+
+        fetch(`/search-products.bo?cpage=${cpage}&keyword=${encodeURIComponent(keyword)}`)
+            .then(resp => {
+                if(!resp.ok) {
+                    throw new Error('서버 응답 오류: ' + resp.status);
+                }
+                return resp.json();
+            })
+            .then(data => {
+                console.log('받은 데이터:', data); // 디버깅용
+                updateTable(data.list);
+                updatePagination(data.pi, keyword);
+            })
+            .catch(error => {
+                console.error('검색 중 오류 발생:', error);
+                alert('검색 중 오류가 발생했습니다: ' + error.message);
+            });
+    }
+
+    // 테이블 업데이트 함수
+    function updateTable(list) {
+        const tbody = document.querySelector('#tableArea table tbody');
+
+        if(!tbody) {
+            console.error('tbody를 찾을 수 없습니다');
+            return;
+        }
+
+        tbody.innerHTML = '';
+
+        if(list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5">검색 결과가 없습니다.</td></tr>';
+            return;
+        }
+
+        list.forEach(p => {
+            let statusClass = '';
+            let statusText = p.statusName || '';
+
+            if(statusText === '정상') statusClass = 'status-normal';
+            else if(statusText === '주의') statusClass = 'status-warning';
+            else if(statusText === '부족') statusClass = 'status-shortage';
+
+            const row = `
+                <tr>
+                    <td>${p.prodCode || ''}</td>
+                    <td>${p.prodName || ''}</td>
+                    <td>${p.price || ''}</td>
+                    <td>${p.stock || ''}</td>
+                    <td>
+                        <span class="status-badge ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    }
+
+    // 페이지네이션 업데이트 함수
+    // 페이지네이션 업데이트 함수 (innerHTML 방식 유지)
+function updatePagination(pi, keyword) {
+    const pagination = document.querySelector('#pagingArea .pagination');
+
+    if(!pagination) {
+        console.error('pagination을 찾을 수 없습니다');
+        return;
+    }
+
+    let html = '';
+
+    // 이전 버튼
+    const prevDisabled = pi.currentPage === 1 ? 'disabled' : '';
+    const prevPage = pi.currentPage > 1 ? pi.currentPage - 1 : 1;
+    html += `<li class="${prevDisabled}"><a href="#" data-page="${prevPage}">이전</a></li>`;
+
+    // 페이지 번호
+    for(let i = pi.startPage; i <= pi.endPage; i++) {
+        const activeClass = i === pi.currentPage ? 'active' : '';
+        html += `<li class="${activeClass}"><a href="#" data-page="${i}">${i}</a></li>`;
+    }
+
+    // 다음 버튼
+    const nextDisabled = pi.currentPage === pi.maxPage ? 'disabled' : '';
+    const nextPage = pi.currentPage < pi.maxPage ? pi.currentPage + 1 : pi.maxPage;
+    html += `<li class="${nextDisabled}"><a href="#" data-page="${nextPage}">다음</a></li>`;
+
+    pagination.innerHTML = html;
+
+    // 페이지네이션 이벤트 재연결
+    bindPaginationEvents();
+}
+
+    // 페이지네이션 클릭 이벤트 연결
+    function bindPaginationEvents() {
+        document.querySelectorAll('#pagingArea .pagination a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // disabled 상태면 무시
+                if(this.parentElement.classList.contains('disabled')) {
+                    return;
+                }
+
+                const page = parseInt(this.dataset.page);
+                console.log('페이지 클릭:', page, 'keyword:', currentKeyword); // 디버깅용
+                searchProducts(page, currentKeyword);
+            });
+        });
+    }
 
     // 제품 등록 완료 후 동일한 방식으로 갱신 트리거
     function afterProductRegistration() {
